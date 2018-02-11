@@ -1,0 +1,204 @@
+diff --git a/common.mak b/common.mak
+index a8475a1..0851625 100644
+--- a/common.mak
++++ b/common.mak
+@@ -133,6 +133,18 @@ ifeq ($(OSNAME), Linux)
+ 	endif
+ endif
+ 
++ifeq ($(ht_channels), true)
++HT_CHANNELS     = true
++endif
++
++ifeq ($(HT_CHANNELS), true)
++	# HT_CHANNELS depends on CONFIG_LIBNL
++	ifneq (,$(findstring DCONFIG_LIBNL, $(COMMON_CFLAGS)))
++		COMMON_CFLAGS += -DHT_CHANNELS
++	endif
++endif
++
++
+ ifeq ($(subst TRUE,true,$(filter TRUE true,$(airpcap) $(AIRPCAP))),true)
+ 	LIBAIRPCAP = -DHAVE_AIRPCAP -I$(AC_ROOT)/../developers/Airpcap_Devpack/include
+ endif
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index 0ce2131..b999267 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -65,6 +65,10 @@
+ #include <pcre.h>
+ #endif
+ 
++#ifdef HT_CHANNELS
++#include <linux/nl80211.h>
++#endif //HT_CHANNELS
++
+ #include "version.h"
+ #include "pcap.h"
+ #include "uniqueiv.h"
+@@ -5415,7 +5419,11 @@ void channel_hopper(struct wif *wi[], int if_num, int chan_count, pid_t parent)
+ 
+             ch = G.channels[ch_idx];
+ 
++#ifdef HT_CHANNELS
++            if(wi_set_ht_channel(wi[card], ch, G.htval) == 0 )
++#else
+             if(wi_set_channel(wi[card], ch ) == 0 )
++#endif
+             {
+                 G.channel[card] = ch;
+                 unused = write( G.cd_pipe[1], &card, sizeof(int) );
+@@ -5966,7 +5974,11 @@ int check_channel(struct wif *wi[], int cards)
+         {
+             memset(G.message, '\x00', sizeof(G.message));
+             snprintf(G.message, sizeof(G.message), "][ fixed channel %s: %d ", wi_get_ifname(wi[i]), chan);
++#ifdef HT_CHANNELS
++            wi_set_ht_channel(wi[i], G.channel[i], G.htval);
++#else
+             wi_set_channel(wi[i], G.channel[i]);
++#endif
+         }
+     }
+     return 0;
+@@ -6148,6 +6160,11 @@ int main( int argc, char *argv[] )
+     fd_set             rfds;
+ 
+     static struct option long_options[] = {
++#ifdef HT_CHANNELS
++        {"ht20",     0, 0, '2'},
++        {"ht40-",    0, 0, '3'},
++        {"ht40+",    0, 0, '5'},
++#endif
+         {"band",     1, 0, 'b'},
+         {"beacon",   0, 0, 'e'},
+         {"beacons",  0, 0, 'e'},
+@@ -6263,6 +6280,9 @@ int main( int argc, char *argv[] )
+     G.file_write_interval = 5; // Write file every 5 seconds by default
+     G.maxsize_wps_seen  =  6;
+     G.show_wps     = 0;
++#ifdef HT_CHANNELS
++    G.htval        = 0;
++#endif
+ #ifdef HAVE_PCRE
+     G.f_essid_regex = NULL;
+ #endif
+@@ -6744,6 +6764,18 @@ int main( int argc, char *argv[] )
+                     G.active_scan_sim = 0;
+                 break;
+ 
++#ifdef HT_CHANNELS
++            case '2':
++                G.htval = NL80211_CHAN_HT20;
++                break;
++            case '3':
++                G.htval = NL80211_CHAN_HT40MINUS;
++                break;
++            case '5':
++                G.htval = NL80211_CHAN_HT40PLUS;
++                break;
++#endif //HT_CHANNELS
++
+             default : goto usage;
+         }
+     } while ( 1 );
+@@ -6901,7 +6933,11 @@ usage:
+             {
+                 for( i=0; i<G.num_cards; i++ )
+                 {
++#ifdef HT_CHANNELS
++                    wi_set_ht_channel(wi[i], G.channel[0], G.htval);
++#else
+                     wi_set_channel(wi[i], G.channel[0]);
++#endif
+                     G.channel[i] = G.channel[0];
+                 }
+                 G.singlechan = 1;
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index 8358cb3..bce189c 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -476,6 +476,9 @@ struct globals
+     int file_write_interval;
+     u_int maxsize_wps_seen;
+     int show_wps;
++#ifdef HT_CHANNELS
++    int htval;
++#endif
+ }
+ G;
+ 
+diff --git a/src/osdep/linux.c b/src/osdep/linux.c
+index 034c4a0..3beb171 100644
+--- a/src/osdep/linux.c
++++ b/src/osdep/linux.c
+@@ -943,8 +943,14 @@ static int ieee80211_channel_to_frequency(int chan)
+     return (chan + 1000) * 5;
+ }
+ 
++static int linux_set_ht_channel_nl80211(struct wif *wi, int channel, unsigned int htval);
+ static int linux_set_channel_nl80211(struct wif *wi, int channel)
+ {
++    return linux_set_ht_channel_nl80211(wi, channel, NL80211_CHAN_NO_HT);
++}
++
++static int linux_set_ht_channel_nl80211(struct wif *wi, int channel, unsigned int htval)
++{
+     struct priv_linux *dev = wi_priv(wi);
+     char s[32];
+     int pid, status, unused;
+@@ -952,7 +958,6 @@ static int linux_set_channel_nl80211(struct wif *wi, int channel)
+     unsigned int devid;
+     struct nl_msg *msg;
+     unsigned int freq;
+-    unsigned int htval = NL80211_CHAN_NO_HT;
+ 
+     memset( s, 0, sizeof( s ) );
+ 
+@@ -2192,10 +2197,13 @@ static struct wif *linux_open(char *iface)
+         wi->wi_write            = linux_write;
+ #ifdef CONFIG_LIBNL
+         linux_nl80211_init(&state);
++#ifdef HT_CHANNELS
++        wi->wi_set_ht_channel      = linux_set_ht_channel_nl80211;
++#endif //HT_CHANNELS
+         wi->wi_set_channel      = linux_set_channel_nl80211;
+ #else
+         wi->wi_set_channel      = linux_set_channel;
+-#endif
++#endif //CONFIG_LIBNL
+         wi->wi_get_channel      = linux_get_channel;
+         wi->wi_set_freq		= linux_set_freq;
+         wi->wi_get_freq		= linux_get_freq;
+diff --git a/src/osdep/osdep.c b/src/osdep/osdep.c
+index f54a2db..bf636b0 100644
+--- a/src/osdep/osdep.c
++++ b/src/osdep/osdep.c
+@@ -40,6 +40,14 @@ int wi_write(struct wif *wi, unsigned char *h80211, int len,
+         return wi->wi_write(wi, h80211, len, ti);
+ }
+ 
++#ifdef HT_CHANNELS
++int wi_set_ht_channel(struct wif *wi, int chan, unsigned int htval)
++{
++        assert(wi->wi_set_ht_channel);
++        return wi->wi_set_ht_channel(wi, chan, htval);
++}
++#endif
++
+ int wi_set_channel(struct wif *wi, int chan)
+ {
+         assert(wi->wi_set_channel);
+diff --git a/src/osdep/osdep.h b/src/osdep/osdep.h
+index 5a67283..71cfa15 100644
+--- a/src/osdep/osdep.h
++++ b/src/osdep/osdep.h
+@@ -85,6 +85,9 @@ struct wif {
+                            struct rx_info *ri);
+         int     (*wi_write)(struct wif *wi, unsigned char *h80211, int len,
+                             struct tx_info *ti);
++#ifdef HT_CHANNELS
++        int     (*wi_set_ht_channel)(struct wif *wi, int chan, unsigned int htval);
++#endif
+         int     (*wi_set_channel)(struct wif *wi, int chan);
+         int     (*wi_get_channel)(struct wif *wi);
+         int     (*wi_set_freq)(struct wif *wi, int freq);

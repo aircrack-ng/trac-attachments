@@ -1,0 +1,13 @@
+diff --git a/src/osdep/byteorder.h b/src/osdep/byteorder.h
+index 2cf8873..307e1fb 100644
+--- a/src/osdep/byteorder.h
++++ b/src/osdep/byteorder.h
+@@ -181,7 +181,7 @@
+ 	 * Solaris
+ 	 * -------
+ 	 */
+-	#if defined(__sparc__)
++	#if defined(__sparc__) && defined(__sun__)
+ 	#include <sys/byteorder.h>
+ 	#include <sys/types.h>
+ 	#include <unistd.h>

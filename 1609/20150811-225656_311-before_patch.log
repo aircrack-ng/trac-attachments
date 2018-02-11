@@ -1,0 +1,470 @@
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -C src all
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o aircrack-ng.o aircrack-ng.c
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:164:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key1, strlen(key1), (unsigned char*)essid, slen, pmk1, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:164:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key1, strlen(key1), (unsigned char*)essid, slen, pmk1, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:165:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key2, strlen(key2), (unsigned char*)essid, slen, pmk2, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:165:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key2, strlen(key2), (unsigned char*)essid, slen, pmk2, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:166:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key3, strlen(key3), (unsigned char*)essid, slen, pmk3, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:166:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key3, strlen(key3), (unsigned char*)essid, slen, pmk3, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:167:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key4, strlen(key4), (unsigned char*)essid, slen, pmk4, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:167:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key4, strlen(key4), (unsigned char*)essid, slen, pmk4, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:215:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key1, strlen(key1), (unsigned char*)essid, slen, pmk1 + 20, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:215:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key1, strlen(key1), (unsigned char*)essid, slen, pmk1 + 20, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:216:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key2, strlen(key2), (unsigned char*)essid, slen, pmk2 + 20, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:216:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key2, strlen(key2), (unsigned char*)essid, slen, pmk2 + 20, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:217:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key3, strlen(key3), (unsigned char*)essid, slen, pmk3 + 20, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:217:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key3, strlen(key3), (unsigned char*)essid, slen, pmk3 + 20, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:218:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key4, strlen(key4), (unsigned char*)essid, slen, pmk4 + 20, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+In file included from aircrack-ng.c:69:
+./sha1-sse2.h:218:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), (unsigned char *)key4, strlen(key4), (unsigned char*)essid, slen, pmk4 + 20, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+aircrack-ng.c:4007:5: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_sha1(), pmk[j], 32, pke, 100, ptk[j] + i * 20, NULL);
+                                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+aircrack-ng.c:4007:10: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_sha1(), pmk[j], 32, pke, 100, ptk[j] + i * 20, NULL);
+                                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+aircrack-ng.c:4011:5: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_md5(), ptk[j], 16, ap->wpa.eapol, ap->wpa.eapol_size, mic[j], NULL);
+                                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+aircrack-ng.c:4011:10: warning: 'EVP_md5' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_md5(), ptk[j], 16, ap->wpa.eapol, ap->wpa.eapol_size, mic[j], NULL);
+                                     ^
+/usr/include/openssl/evp.h:662:15: note: 'EVP_md5' has been explicitly marked deprecated here
+const EVP_MD *EVP_md5(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+aircrack-ng.c:4013:5: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_sha1(), ptk[j], 16, ap->wpa.eapol, ap->wpa.eapol_size, mic[j], NULL);
+                                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+aircrack-ng.c:4013:10: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                                HMAC(EVP_sha1(), ptk[j], 16, ap->wpa.eapol, ap->wpa.eapol_size, mic[j], NULL);
+                                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+22 warnings generated.
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o crypto.o crypto.c
+crypto.c:90:5: warning: 'RC4_set_key' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    RC4_set_key( &S, keylen, key );
+    ^
+/usr/include/openssl/rc4.h:84:6: note: 'RC4_set_key' has been explicitly marked deprecated here
+void RC4_set_key(RC4_KEY *key, int len, const unsigned char *data) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+     ^
+crypto.c:91:5: warning: 'RC4' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    RC4( &S, len, data, data );
+    ^
+/usr/include/openssl/rc4.h:85:6: note: 'RC4' has been explicitly marked deprecated here
+void RC4(RC4_KEY *key, unsigned long len, const unsigned char *indata,
+     ^
+crypto.c:198:2: warning: 'SHA1_Init' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        SHA1_Init( &ctx_ipad );
+        ^
+/usr/include/openssl/sha.h:121:5: note: 'SHA1_Init' has been explicitly marked deprecated here
+int SHA1_Init(SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:199:2: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        SHA1_Update( &ctx_ipad, buffer, 64 );
+        ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:204:2: warning: 'SHA1_Init' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        SHA1_Init( &ctx_opad );
+        ^
+/usr/include/openssl/sha.h:121:5: note: 'SHA1_Init' has been explicitly marked deprecated here
+int SHA1_Init(SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:205:2: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        SHA1_Update( &ctx_opad, buffer, 64 );
+        ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:210:2: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), (unsigned char *)key, strlen(key), (unsigned char*)essid, slen, pmk, NULL);
+        ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:210:7: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), (unsigned char *)key, strlen(key), (unsigned char*)essid, slen, pmk, NULL);
+             ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:216:3: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Update( &sha1_ctx, buffer, 20 );
+                ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:217:3: warning: 'SHA1_Final' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Final( buffer, &sha1_ctx );
+                ^
+/usr/include/openssl/sha.h:123:5: note: 'SHA1_Final' has been explicitly marked deprecated here
+int SHA1_Final(unsigned char *md, SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:220:3: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Update( &sha1_ctx, buffer, 20 );
+                ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:221:3: warning: 'SHA1_Final' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Final( buffer, &sha1_ctx );
+                ^
+/usr/include/openssl/sha.h:123:5: note: 'SHA1_Final' has been explicitly marked deprecated here
+int SHA1_Final(unsigned char *md, SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:228:2: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), (unsigned char *)key, strlen(key), (unsigned char*)essid, slen, pmk+20, NULL);
+        ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:228:7: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), (unsigned char *)key, strlen(key), (unsigned char*)essid, slen, pmk+20, NULL);
+             ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:234:3: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Update( &sha1_ctx, buffer, 20 );
+                ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:235:3: warning: 'SHA1_Final' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Final( buffer, &sha1_ctx );
+                ^
+/usr/include/openssl/sha.h:123:5: note: 'SHA1_Final' has been explicitly marked deprecated here
+int SHA1_Final(unsigned char *md, SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:238:3: warning: 'SHA1_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Update( &sha1_ctx, buffer, 20 );
+                ^
+/usr/include/openssl/sha.h:122:5: note: 'SHA1_Update' has been explicitly marked deprecated here
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:239:3: warning: 'SHA1_Final' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                SHA1_Final( buffer, &sha1_ctx );
+                ^
+/usr/include/openssl/sha.h:123:5: note: 'SHA1_Final' has been explicitly marked deprecated here
+int SHA1_Final(unsigned char *md, SHA_CTX *c) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+    ^
+crypto.c:317:2: warning: 'HMAC_CTX_init' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC_CTX_init(&ctx);
+        ^
+/usr/include/openssl/hmac.h:90:6: note: 'HMAC_CTX_init' has been explicitly marked deprecated here
+void HMAC_CTX_init(HMAC_CTX *ctx) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+     ^
+crypto.c:318:2: warning: 'HMAC_Init_ex' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC_Init_ex(&ctx, pmk, 32, EVP_sha1(), NULL);
+        ^
+/usr/include/openssl/hmac.h:97:6: note: 'HMAC_Init_ex' has been explicitly marked deprecated here
+void HMAC_Init_ex(HMAC_CTX *ctx, const void *key, int len,
+     ^
+crypto.c:318:30: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC_Init_ex(&ctx, pmk, 32, EVP_sha1(), NULL);
+                                    ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:323:3: warning: 'HMAC_Init_ex' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC_Init_ex(&ctx, 0, 0, 0, 0);
+                ^
+/usr/include/openssl/hmac.h:97:6: note: 'HMAC_Init_ex' has been explicitly marked deprecated here
+void HMAC_Init_ex(HMAC_CTX *ctx, const void *key, int len,
+     ^
+crypto.c:324:3: warning: 'HMAC_Update' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC_Update(&ctx, pke, 100);
+                ^
+/usr/include/openssl/hmac.h:99:6: note: 'HMAC_Update' has been explicitly marked deprecated here
+void HMAC_Update(HMAC_CTX *ctx, const unsigned char *data, size_t len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+     ^
+crypto.c:325:3: warning: 'HMAC_Final' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC_Final(&ctx, ptk + i*20, NULL);
+                ^
+/usr/include/openssl/hmac.h:100:6: note: 'HMAC_Final' has been explicitly marked deprecated here
+void HMAC_Final(HMAC_CTX *ctx, unsigned char *md, unsigned int *len) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+     ^
+crypto.c:327:2: warning: 'HMAC_CTX_cleanup' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC_CTX_cleanup(&ctx);
+        ^
+/usr/include/openssl/hmac.h:91:6: note: 'HMAC_CTX_cleanup' has been explicitly marked deprecated here
+void HMAC_CTX_cleanup(HMAC_CTX *ctx) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+     ^
+crypto.c:331:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_md5(), ptk, 16, ap->wpa.eapol, ap->wpa.eapol_size, mic, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:331:8: warning: 'EVP_md5' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_md5(), ptk, 16, ap->wpa.eapol, ap->wpa.eapol_size, mic, NULL);
+                     ^
+/usr/include/openssl/evp.h:662:15: note: 'EVP_md5' has been explicitly marked deprecated here
+const EVP_MD *EVP_md5(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:335:3: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), ptk, 16, ap->wpa.eapol, ap->wpa.eapol_size, mic, NULL);
+                ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:335:8: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+                HMAC(EVP_sha1(), ptk, 16, ap->wpa.eapol, ap->wpa.eapol_size, mic, NULL);
+                     ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:684:9: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), pmk, 32, pke, 100, wpa->ptk + i * 20, NULL );
+        ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:684:14: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), pmk, 32, pke, 100, wpa->ptk + i * 20, NULL );
+             ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:690:9: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_md5(), wpa->ptk, 16, wpa->eapol, wpa->eapol_size, mic, NULL );
+        ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:690:14: warning: 'EVP_md5' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_md5(), wpa->ptk, 16, wpa->eapol, wpa->eapol_size, mic, NULL );
+             ^
+/usr/include/openssl/evp.h:662:15: note: 'EVP_md5' has been explicitly marked deprecated here
+const EVP_MD *EVP_md5(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:692:9: warning: 'HMAC' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), wpa->ptk, 16, wpa->eapol, wpa->eapol_size, mic, NULL );
+        ^
+/usr/include/openssl/hmac.h:101:16: note: 'HMAC' has been explicitly marked deprecated here
+unsigned char *HMAC(const EVP_MD *evp_md, const void *key, int key_len,
+               ^
+crypto.c:692:14: warning: 'EVP_sha1' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        HMAC(EVP_sha1(), wpa->ptk, 16, wpa->eapol, wpa->eapol_size, mic, NULL );
+             ^
+/usr/include/openssl/evp.h:666:15: note: 'EVP_sha1' has been explicitly marked deprecated here
+const EVP_MD *EVP_sha1(void) DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+              ^
+crypto.c:1288:5: warning: 'AES_set_encrypt_key' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_set_encrypt_key( TK1, 128, &aes_ctx );
+    ^
+/usr/include/openssl/aes.h:92:5: note: 'AES_set_encrypt_key' has been explicitly marked deprecated here
+int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
+    ^
+crypto.c:1289:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( B0, MIC, &aes_ctx );       // X_1 := E( K, B_0 )
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1291:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( MIC, MIC, &aes_ctx );      //
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1293:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( MIC, MIC, &aes_ctx );      //
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1301:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( B0, B, &aes_ctx );         // S_0 := E( K, A_i )
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1315:9: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        AES_encrypt( MIC, MIC, &aes_ctx );  //
+        ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1322:9: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        AES_encrypt( B0, B, &aes_ctx );     // S_i := E( K, A_i )
+        ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1415:5: warning: 'AES_set_encrypt_key' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_set_encrypt_key( TK1, 128, &aes_ctx );
+    ^
+/usr/include/openssl/aes.h:92:5: note: 'AES_set_encrypt_key' has been explicitly marked deprecated here
+int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
+    ^
+crypto.c:1416:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( B0, MIC, &aes_ctx );       // X_1 := E( K, B_0 )
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1418:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( MIC, MIC, &aes_ctx );      //
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1420:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( MIC, MIC, &aes_ctx );      //
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1428:5: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+    AES_encrypt( B0, B, &aes_ctx );         // S_0 := E( K, A_i )
+    ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1444:9: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        AES_encrypt( B0, B, &aes_ctx );     // S_i := E( K, A_i )
+        ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+crypto.c:1450:9: warning: 'AES_encrypt' is deprecated: first deprecated in OS X 10.7 [-Wdeprecated-declarations]
+        AES_encrypt( MIC, MIC, &aes_ctx );  //
+        ^
+/usr/include/openssl/aes.h:97:6: note: 'AES_encrypt' has been explicitly marked deprecated here
+void AES_encrypt(const unsigned char *in, unsigned char *out,
+     ^
+49 warnings generated.
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o common.o common.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o uniqueiv.o uniqueiv.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o aircrack-ptw-lib.o aircrack-ptw-lib.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  aircrack-ng.o crypto.o common.o uniqueiv.o aircrack-ptw-lib.o sha1-sse2.S -o aircrack-ng -lpthread -lssl -lcrypto  
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o airdecap-ng.o airdecap-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  airdecap-ng.o crypto.o common.o -o airdecap-ng -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o packetforge-ng.o packetforge-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  packetforge-ng.o common.o crypto.o -o packetforge-ng -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o ivstools.o ivstools.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  ivstools.o common.o crypto.o uniqueiv.o -o ivstools -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o kstats.o kstats.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  kstats.o -o kstats 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o makeivs-ng.o makeivs-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude  makeivs-ng.o common.o uniqueiv.o -o makeivs-ng 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o airdecloak-ng.o airdecloak-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -fstack-protector -Iinclude   -c -o osdep/radiotap/radiotap.o osdep/radiotap/radiotap.c
+In file included from osdep/radiotap/radiotap.c:17:
+osdep/radiotap/platform.h:6:10: fatal error: 'endian.h' file not found
+#include <endian.h>
+         ^
+1 error generated.
+make[1]: *** [osdep/radiotap/radiotap.o] Error 1
+make: *** [all] Error 2

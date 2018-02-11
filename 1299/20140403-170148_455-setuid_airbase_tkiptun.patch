@@ -1,0 +1,28 @@
+Index: src/tkiptun-ng.c
+===================================================================
+--- src/tkiptun-ng.c	(revisione 2389)
++++ src/tkiptun-ng.c	(copia locale)
+@@ -4192,7 +4192,9 @@
+     }
+ 
+     /* drop privileges */
+-    setuid( getuid() );
++    if (setuid( getuid() ) == -1) {
++            perror("setuid");
++    }
+ 
+     /* XXX */
+     if( opt.r_nbpps == 0 )
+Index: src/airbase-ng.c
+===================================================================
+--- src/airbase-ng.c	(revisione 2389)
++++ src/airbase-ng.c	(copia locale)
+@@ -4563,8 +4563,6 @@
+ 		perror("setuid");
+ 	}
+ 
+-    setuid( getuid() );
+-
+     /* XXX */
+     if( opt.r_nbpps == 0 )
+     {

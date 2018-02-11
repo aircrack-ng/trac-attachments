@@ -1,0 +1,3287 @@
+Description: Move manpages of sbin binaries to section 8
+Author: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Bug-Debian: http://bugs.debian.org/570981
+Forwarded: http://trac.aircrack-ng.org/ticket/1018
+---
+--- a/common.mak
++++ b/common.mak
+@@ -74,6 +74,7 @@
+ bindir          = $(prefix)/bin
+ sbindir         = $(prefix)/sbin
+ mandir          = $(prefix)/share/man/man1
++smandir         = $(prefix)/share/man/man8
+ datadir         = $(prefix)/share
+ docdir          = $(datadir)/doc/aircrack-ng
+ libdir		= $(prefix)/lib
+--- a/manpages/Makefile
++++ b/manpages/Makefile
+@@ -1,11 +1,11 @@
+ AC_ROOT		= ..
+ include		$(AC_ROOT)/common.mak
+ 
+-MP_FILES        = aircrack-ng.1 airdecap-ng.1 airdriver-ng.1 aireplay-ng.1 \
+-                  airmon-ng.1 airodump-ng.1 airserv-ng.1 airtun-ng.1 \
+-                  ivstools.1 kstats.1 makeivs-ng.1 airbase-ng.1 \
+-                  packetforge-ng.1 airdecloak-ng.1 airodump-ng-oui-update.1
++MP_FILES        = aircrack-ng.1 airdecap-ng.1 ivstools.1 kstats.1 makeivs-ng.1 \
++                  packetforge-ng.1 airdecloak-ng.1
+ 
++SMP_FILES       = airdriver-ng.8 aireplay-ng.8 airmon-ng.8 airodump-ng.8 \
++                  airserv-ng.8 airtun-ng.8 airbase-ng.8 airodump-ng-oui-update.8
+ 
+ ifeq ($(SQLITE), true)
+ 	MP_FILES += airolib-ng.1
+@@ -25,16 +25,20 @@
+ 
+ 
+ ifeq ($(UNSTABLE), true)
+-	MP_FILES	+= wesside-ng.1 tkiptun-ng.1 buddy-ng.1 easside-ng.1 
++	MP_FILES        += buddy-ng.1
++	SMP_FILES	+= easside-ng.8 tkiptun-ng.8 wesside-ng.8
+ else
+ 	ifeq ($(unstable), true)
+-		MP_FILES        += wesside-ng.1 tkiptun-ng.1 buddy-ng.1 easside-ng.1 
++		MP_FILES        += buddy-ng.1
++		SMP_FILES	+= easside-ng.8 tkiptun-ng.8 wesside-ng.8
+ 	else
+ 		ifeq ($(UNSTABLE), TRUE)
+-			MP_FILES        += wesside-ng.1 tkiptun-ng.1 buddy-ng.1 easside-ng.1 
++			MP_FILES        += buddy-ng.1
++			SMP_FILES	+= easside-ng.8 tkiptun-ng.8 wesside-ng.8
+ 		else
+ 			ifeq ($(unstable), TRUE)
+-				MP_FILES        += wesside-ng.1 tkiptun-ng.1 buddy-ng.1 easside-ng.1 
++				MP_FILES        += buddy-ng.1
++				SMP_FILES	+= easside-ng.8 tkiptun-ng.8 wesside-ng.8
+ 			endif
+ 		endif
+ 	endif
+@@ -48,12 +52,10 @@
+ 	
+ install: uninstall
+ 	install -d $(DESTDIR)$(mandir)
++	install -d $(DESTDIR)$(smandir)
+ 	install -m 644 $(MP_FILES) $(DESTDIR)$(mandir)
++	install -m 644 $(SMP_FILES) $(DESTDIR)$(smandir)
+ 
+ uninstall:
+ 	@-$(foreach CUR_MP,$(MP_FILES), rm -f $(DESTDIR)$(mandir)/$(CUR_MP); echo rm -f $(DESTDIR)$(mandir)/$(CUR_MP); ) 
+-	-rm -f $(DESTDIR)$(mandir)/airolib-ng.1
+-	-rm -f $(DESTDIR)$(mandir)/wesside-ng.1
+-	-rm -f $(DESTDIR)$(mandir)/tkiptun-ng.1
+-	-rm -f $(DESTDIR)$(mandir)/buddy-ng.1
+-	-rm -f $(DESTDIR)$(mandir)/easside-ng.1
++	@-$(foreach CUR_SMP,$(SMP_FILES), rm -f $(DESTDIR)$(smandir)/$(CUR_SMP); echo rm -f $(DESTDIR)$(smandir)/$(CUR_SMP); )
+--- a/manpages/airbase-ng.1
++++ /dev/null
+@@ -1,204 +0,0 @@
+-.TH AIRBASE-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airbase-ng - multi-purpose tool aimed at attacking clients as opposed to the Access Point (AP) itself
+-.SH SYNOPSIS
+-.B airbase-ng
+-[options] <interface name>
+-.SH DESCRIPTION
+-.BI airbase-ng
+-is multi-purpose tool aimed at attacking clients as opposed to the Access Point (AP) itself. Since it is so versatile and flexible, summarizing it is a challenge. Here are some of the feature highlights: 
+-.br
+-- Implements the Caffe Latte WEP client attack
+-.br
+-- Implements the Hirte WEP client attack
+-.br
+-- Ability to cause the WPA/WPA2 handshake to be captured
+-.br
+-- Ability to act as an ad-hoc Access Point
+-.br
+-- Ability to act as a full Access Point
+-.br
+-- Ability to filter by SSID or client MAC addresses
+-.br
+-- Ability to manipulate and resend packets
+-.br
+-- Ability to encrypt sent packets and decrypt received packets
+-
+-The main idea is of the implementation is that it should encourage clients to associate with the fake AP, not prevent them from accessing the real AP. 
+-
+-A tap interface (atX) is created when airbase-ng is run. This can be used to receive decrypted packets or to send encrypted packets. 
+-
+-As real clients will most probably send probe requests for common/configured networks, these frames are important for binding a client to our softAP. In this case, the AP will respond to any probe request with a proper probe response, which tells the client to authenticate to the airbase-ng BSSID. That being said, this mode could possibly disrupt the correct functionality of many APs on the same channel. 
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -H, --help
+-Shows the help screen.
+-.TP
+-.I -a <bssid>
+-If the BSSID is not explicitly specified by using "-a <BSSID>", then the current MAC of the specified interface is used.
+-.TP
+-.I -i <iface>
+-Also capture and process from this interface in addition to the replay interface.
+-.TP
+-.I -w <WEP key>
+-If WEP should be used as encryption, then the parameter "-w <WEP key>" sets the en-/decryption key. This is sufficient to let airbase-ng set all the appropriate flags by itself. 
+-If the softAP operates with WEP encryption, the client can choose to use open system authentication or shared key authentication. Both authentication methods are supported by airbase-ng. But to get a keystream, the user can try to force the client to use shared key authentication. "-s" forces a shared key auth and "-S <len>" sets the challenge length.
+-.TP
+-.I -h <MAC>
+-This is the source MAC for the man-in-the-middle attack. The "-M" must also be specified.
+-.TP
+-.I -f <disallow>
+-If this option is not specified, it defaults to "-f allow". This means the various client MAC filters (-d and -D) define which clients to accept. 
+-
+-By using the "-f disallow" option, this reverses selection and causes airbase to ignore the clients specified by the filters.
+-.TP
+-.I -W <0|1>
+-This sets the beacon WEP flag. Remember that clients will normally only connect to APs which are the same as themselves. Meaning WEP to WEP, open to open. 
+-
+-The "auto" option is to allow airbase-ng to automatically set the flag based on context of the other options specified. For example, if you set a WEP key with -w, then the beacon flag would be set to WEP. 
+-
+-One other use of "auto" is to deal with clients which can automatically adjust their connection type. However, these are few and far between. 
+-
+-In practice, it is best to set the value to the type of clients you are dealing with. 
+-.TP
+-.I -q
+-This surpresses printing any statistics or status information.
+-.TP
+-.I -v
+-This prints additional messages and details to assist in debugging.
+-.TP
+-.I -M
+-This option is not implemented yet. It is a man-in-the-middle attack between specified clients and BSSIDs.
+-.TP
+-.I -A, --ad-hoc
+-This causes airbase-ng to act as an ad-hoc client instead of a normal Access Point. 
+-
+-In ad-hoc mode airbase-ng also sends beacons, but doesn't need any authentication/association. It can be activated by using "-A". The soft AP will adjust all flags needed to simulate a station in ad-hoc mode automatically and generate a random MAC, which is used as CELL MAC instead of the BSSID. This can be overwritten by the "-a <BSSID>" tag. The interface MAC will then be used as source mac, which can be changed with "-h <sourceMAC>".
+-.TP
+-.I -Y <in|out|both>
+-The parameter "-Y" enables the "external processing" Mode. This creates a second interface "atX", which is used to replay/modify/drop or inject packets at will. This interface must also be brought up with ifconfig and an external tool is needed to create a loop on that interface. 
+-
+-The packet structure is rather simple: the ethernet header (14 bytes) is ignored and right after that follows the complete ieee80211 frame the same way it is going to be processed by airbase-ng (for incoming packets) or before the packets will be sent out of the wireless card (outgoing packets). This mode intercepts all data packets and loops them through an external application, which decides what happens with them. The MAC and IP of the second tap interface doesn't matter, as real ethernet frames on this interface are dropped dropped anyway. 
+-
+-There are 3 arguments for "-Y": "in", "out" and "both", which specify the direction of frames to loop through the external application. Obviously "in" redirects only incoming (through the wireless NIC) frames, while outgoing frames aren't touched. "out" does the opposite, it only loops outgoing packets and "both" sends all both directions through the second tap interface. 
+-
+-There is a small and simple example application to replay all frames on the second interface. The tool is called "replay.py" and is located in "./test". It's written in python, but the language doesn't matter. It uses pcapy to read the frames and scapy to possibly alter/show and reinject the frames. The tool as it is, simply replays all frames and prints a short summary of the received frames. The variable "packet" contains the complete ieee80211 packet, which can easily be dissected and modified using scapy. 
+-
+-This can be compared to ettercap filters, but is more powerful, as a real programming language can be used to build complex logic for filtering and packet customization. The downside on using python is, that it adds a delay of around 100ms and the cpu utilizations is rather large on a high speed network, but its perfect for a demonstration with only a few lines of code.
+-.TP
+-.I -c <channel>
+-This is used to specify the channel on which to run the Access Point.
+-.TP
+-.I -X, --hidden
+-This causes the Access Point to hide the SSID and to not broadcast the value.
+-.TP
+-.I -s
+-When specfiied, this forces shared key authentication for all clients. 
+-
+-The soft AP will send an "authentication method unsupported" rejection to any open system authentication request if "-s" is specified.
+-.TP
+-.I -S
+-It sets the shared key challenge length, which can be anything from 16 to 1480. The default is 128 bytes. It is the number of bytes used in the random challenge. Since one tag can contain a maximum size of 255 bytes, any value above 255 creates several challenge tags until all specified bytes are written. Many clients ignore values different than 128 bytes so this option may not always work.
+-.TP
+-.I -L, --caffe-latte
+-Airbase-ng also contains the new caffe-latte attack, which is also implemented in aireplay-ng as attack "-6". It can be used with "-L" or "caffe-latte". This attack specifically works against clients, as it waits for a broadcast arp request, which happens to be a gratuitous arp. See this for an explaination of what a gratuitous arp is. It then flips a few bits in the sender MAC and IP, corrects the ICV (crc32) value and sends it back to the client, where it came from. The point why this attack works in practice is, that at least windows sends gratuitous arps after a connection on layer 2 is established and a static ip is set, or dhcp fails and windows assigned an IP out of 169.254.X.X. 
+-
+-"-x <pps>" sets the number of packets per second to send when performing the caffe-latte attack. At the moment, this attack doesn't stop, it continuously sends arp requests. Airodump-ng is needed to capture the replys.
+-.TP
+-.I -N, --cfrag
+-This attack listens for an ARP request or IP packet from the client. Once one is received, a small amount of PRGA is extracted and then used to create an ARP request packet targeted to the client. This ARP request is actually made of up of multiple packet fragments such that when received, the client will respond. 
+-
+-This attack works especially well against ad-hoc networks. As well it can be used against softAP clients and normal AP clients.
+-.TP
+-.I -x <nbpps>
+-This sets the number of packets per second that packets will be sent (default: 100).
+-.TP
+-.I -y
+-When using this option, the fake AP will not respond to broadcast probes. A broadcast probe is where the the specific AP is not identified uniquely. Typically, most APs will respond with probe responses to a broadcast probe. This flag will prevent this happening. It will only respond when the specific AP is uniquely requested.
+-.TP
+-.I -0
+-This enables all WPA/WPA2/WEP Tags to be enabled in the beacons sent. It cannot be specified when also using -z or -Z.
+-.TP
+-.I -z <type>
+-This specifies the WPA beacon tags. The valid values are: 1=WEP40 2=TKIP 3=WRAP 4=CCMP 5=WEP104.
+-.TP
+-.I -Z <type>
+-same as -z, but for WPA2
+-.TP
+-.I -V <type>
+-This specifies the valid EAPOL types. The valid values are: 1=MD5 2=SHA1 3=auto 
+-.TP
+-.I -F <prefix>
+-This option causes airbase-ng to write all sent and received packets to a pcap file on disk. This is the file prefix (like airodump-ng -w).
+-.TP
+-.I -P
+-This causes the fake access point to respond to all probes regardless of the ESSIDs specified.
+-.TP
+-.I -I <interval>
+-This sets the time in milliseconds between each beacon.
+-.TP
+-.I -C <seconds>
+-The wildcard ESSIDs will also be beaconed this number of seconds. A good typical value to use is "-C 60" (require -P).
+-.PP
+-.TP
+-.B Filter options:
+-.TP
+-.I --bssid <MAC>, -b <MAC>
+-BSSID to filter/use.
+-.TP
+-.I --bssids <file>, -B <file>
+-Read a list of BSSIDs out of that file.
+-.TP
+-.I --client <MAC>, -d <MAC>
+-MAC of client to accept.
+-.TP
+-.I --clients <file>, -D <file>
+-Read a list of client's MACs out of that file 
+-.TP
+-.I --essid <ESSID>, -e <ESSID>
+-Specify a single ESSID. For SSID containing special characters, see http://www.aircrack-ng.org/doku.php?id=faq#how_to_use_spaces_double_quote_and_single_quote_etc._in_ap_names
+-.TP
+-.I --essids <file>, -E <file>
+-read a list of ESSIDs out of that file.
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.PP
+-.SH SEE ALSO
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airbase-ng.8
+@@ -0,0 +1,204 @@
++.TH AIRBASE-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airbase-ng - multi-purpose tool aimed at attacking clients as opposed to the Access Point (AP) itself
++.SH SYNOPSIS
++.B airbase-ng
++[options] <interface name>
++.SH DESCRIPTION
++.BI airbase-ng
++is multi-purpose tool aimed at attacking clients as opposed to the Access Point (AP) itself. Since it is so versatile and flexible, summarizing it is a challenge. Here are some of the feature highlights: 
++.br
++- Implements the Caffe Latte WEP client attack
++.br
++- Implements the Hirte WEP client attack
++.br
++- Ability to cause the WPA/WPA2 handshake to be captured
++.br
++- Ability to act as an ad-hoc Access Point
++.br
++- Ability to act as a full Access Point
++.br
++- Ability to filter by SSID or client MAC addresses
++.br
++- Ability to manipulate and resend packets
++.br
++- Ability to encrypt sent packets and decrypt received packets
++
++The main idea is of the implementation is that it should encourage clients to associate with the fake AP, not prevent them from accessing the real AP. 
++
++A tap interface (atX) is created when airbase-ng is run. This can be used to receive decrypted packets or to send encrypted packets. 
++
++As real clients will most probably send probe requests for common/configured networks, these frames are important for binding a client to our softAP. In this case, the AP will respond to any probe request with a proper probe response, which tells the client to authenticate to the airbase-ng BSSID. That being said, this mode could possibly disrupt the correct functionality of many APs on the same channel. 
++.SH OPTIONS
++.PP
++.TP
++.I -H, --help
++Shows the help screen.
++.TP
++.I -a <bssid>
++If the BSSID is not explicitly specified by using "-a <BSSID>", then the current MAC of the specified interface is used.
++.TP
++.I -i <iface>
++Also capture and process from this interface in addition to the replay interface.
++.TP
++.I -w <WEP key>
++If WEP should be used as encryption, then the parameter "-w <WEP key>" sets the en-/decryption key. This is sufficient to let airbase-ng set all the appropriate flags by itself. 
++If the softAP operates with WEP encryption, the client can choose to use open system authentication or shared key authentication. Both authentication methods are supported by airbase-ng. But to get a keystream, the user can try to force the client to use shared key authentication. "-s" forces a shared key auth and "-S <len>" sets the challenge length.
++.TP
++.I -h <MAC>
++This is the source MAC for the man-in-the-middle attack. The "-M" must also be specified.
++.TP
++.I -f <disallow>
++If this option is not specified, it defaults to "-f allow". This means the various client MAC filters (-d and -D) define which clients to accept. 
++
++By using the "-f disallow" option, this reverses selection and causes airbase to ignore the clients specified by the filters.
++.TP
++.I -W <0|1>
++This sets the beacon WEP flag. Remember that clients will normally only connect to APs which are the same as themselves. Meaning WEP to WEP, open to open. 
++
++The "auto" option is to allow airbase-ng to automatically set the flag based on context of the other options specified. For example, if you set a WEP key with -w, then the beacon flag would be set to WEP. 
++
++One other use of "auto" is to deal with clients which can automatically adjust their connection type. However, these are few and far between. 
++
++In practice, it is best to set the value to the type of clients you are dealing with. 
++.TP
++.I -q
++This surpresses printing any statistics or status information.
++.TP
++.I -v
++This prints additional messages and details to assist in debugging.
++.TP
++.I -M
++This option is not implemented yet. It is a man-in-the-middle attack between specified clients and BSSIDs.
++.TP
++.I -A, --ad-hoc
++This causes airbase-ng to act as an ad-hoc client instead of a normal Access Point. 
++
++In ad-hoc mode airbase-ng also sends beacons, but doesn't need any authentication/association. It can be activated by using "-A". The soft AP will adjust all flags needed to simulate a station in ad-hoc mode automatically and generate a random MAC, which is used as CELL MAC instead of the BSSID. This can be overwritten by the "-a <BSSID>" tag. The interface MAC will then be used as source mac, which can be changed with "-h <sourceMAC>".
++.TP
++.I -Y <in|out|both>
++The parameter "-Y" enables the "external processing" Mode. This creates a second interface "atX", which is used to replay/modify/drop or inject packets at will. This interface must also be brought up with ifconfig and an external tool is needed to create a loop on that interface. 
++
++The packet structure is rather simple: the ethernet header (14 bytes) is ignored and right after that follows the complete ieee80211 frame the same way it is going to be processed by airbase-ng (for incoming packets) or before the packets will be sent out of the wireless card (outgoing packets). This mode intercepts all data packets and loops them through an external application, which decides what happens with them. The MAC and IP of the second tap interface doesn't matter, as real ethernet frames on this interface are dropped dropped anyway. 
++
++There are 3 arguments for "-Y": "in", "out" and "both", which specify the direction of frames to loop through the external application. Obviously "in" redirects only incoming (through the wireless NIC) frames, while outgoing frames aren't touched. "out" does the opposite, it only loops outgoing packets and "both" sends all both directions through the second tap interface. 
++
++There is a small and simple example application to replay all frames on the second interface. The tool is called "replay.py" and is located in "./test". It's written in python, but the language doesn't matter. It uses pcapy to read the frames and scapy to possibly alter/show and reinject the frames. The tool as it is, simply replays all frames and prints a short summary of the received frames. The variable "packet" contains the complete ieee80211 packet, which can easily be dissected and modified using scapy. 
++
++This can be compared to ettercap filters, but is more powerful, as a real programming language can be used to build complex logic for filtering and packet customization. The downside on using python is, that it adds a delay of around 100ms and the cpu utilizations is rather large on a high speed network, but its perfect for a demonstration with only a few lines of code.
++.TP
++.I -c <channel>
++This is used to specify the channel on which to run the Access Point.
++.TP
++.I -X, --hidden
++This causes the Access Point to hide the SSID and to not broadcast the value.
++.TP
++.I -s
++When specfiied, this forces shared key authentication for all clients. 
++
++The soft AP will send an "authentication method unsupported" rejection to any open system authentication request if "-s" is specified.
++.TP
++.I -S
++It sets the shared key challenge length, which can be anything from 16 to 1480. The default is 128 bytes. It is the number of bytes used in the random challenge. Since one tag can contain a maximum size of 255 bytes, any value above 255 creates several challenge tags until all specified bytes are written. Many clients ignore values different than 128 bytes so this option may not always work.
++.TP
++.I -L, --caffe-latte
++Airbase-ng also contains the new caffe-latte attack, which is also implemented in aireplay-ng as attack "-6". It can be used with "-L" or "caffe-latte". This attack specifically works against clients, as it waits for a broadcast arp request, which happens to be a gratuitous arp. See this for an explaination of what a gratuitous arp is. It then flips a few bits in the sender MAC and IP, corrects the ICV (crc32) value and sends it back to the client, where it came from. The point why this attack works in practice is, that at least windows sends gratuitous arps after a connection on layer 2 is established and a static ip is set, or dhcp fails and windows assigned an IP out of 169.254.X.X. 
++
++"-x <pps>" sets the number of packets per second to send when performing the caffe-latte attack. At the moment, this attack doesn't stop, it continuously sends arp requests. Airodump-ng is needed to capture the replys.
++.TP
++.I -N, --cfrag
++This attack listens for an ARP request or IP packet from the client. Once one is received, a small amount of PRGA is extracted and then used to create an ARP request packet targeted to the client. This ARP request is actually made of up of multiple packet fragments such that when received, the client will respond. 
++
++This attack works especially well against ad-hoc networks. As well it can be used against softAP clients and normal AP clients.
++.TP
++.I -x <nbpps>
++This sets the number of packets per second that packets will be sent (default: 100).
++.TP
++.I -y
++When using this option, the fake AP will not respond to broadcast probes. A broadcast probe is where the the specific AP is not identified uniquely. Typically, most APs will respond with probe responses to a broadcast probe. This flag will prevent this happening. It will only respond when the specific AP is uniquely requested.
++.TP
++.I -0
++This enables all WPA/WPA2/WEP Tags to be enabled in the beacons sent. It cannot be specified when also using -z or -Z.
++.TP
++.I -z <type>
++This specifies the WPA beacon tags. The valid values are: 1=WEP40 2=TKIP 3=WRAP 4=CCMP 5=WEP104.
++.TP
++.I -Z <type>
++same as -z, but for WPA2
++.TP
++.I -V <type>
++This specifies the valid EAPOL types. The valid values are: 1=MD5 2=SHA1 3=auto 
++.TP
++.I -F <prefix>
++This option causes airbase-ng to write all sent and received packets to a pcap file on disk. This is the file prefix (like airodump-ng -w).
++.TP
++.I -P
++This causes the fake access point to respond to all probes regardless of the ESSIDs specified.
++.TP
++.I -I <interval>
++This sets the time in milliseconds between each beacon.
++.TP
++.I -C <seconds>
++The wildcard ESSIDs will also be beaconed this number of seconds. A good typical value to use is "-C 60" (require -P).
++.PP
++.TP
++.B Filter options:
++.TP
++.I --bssid <MAC>, -b <MAC>
++BSSID to filter/use.
++.TP
++.I --bssids <file>, -B <file>
++Read a list of BSSIDs out of that file.
++.TP
++.I --client <MAC>, -d <MAC>
++MAC of client to accept.
++.TP
++.I --clients <file>, -D <file>
++Read a list of client's MACs out of that file 
++.TP
++.I --essid <ESSID>, -e <ESSID>
++Specify a single ESSID. For SSID containing special characters, see http://www.aircrack-ng.org/doku.php?id=faq#how_to_use_spaces_double_quote_and_single_quote_etc._in_ap_names
++.TP
++.I --essids <file>, -E <file>
++read a list of ESSIDs out of that file.
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.PP
++.SH SEE ALSO
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airdriver-ng.1
++++ /dev/null
+@@ -1,92 +0,0 @@
+-.TH AIRDRIVER-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airdriver-ng - automatically install/uninstall and patch drivers and 802.11 stacks
+-.SH SYNOPSIS
+-.B airdriver-ng
+-<command> [drivernumber]
+-.SH DESCRIPTION
+-.BI airdriver-ng
+-is a script that provides status information about the wireless drivers on your system plus the ability to load and unload the drivers. Additionally, airdriver-ng allows you to install and uninstall drivers complete with the patches required for monitor and injection modes. Plus a number of other functions.
+-.SH COMMAND
+-.PP
+-.TP
+-.I supported
+-Lists all supported drivers
+-.TP
+-.I kernel
+-Lists all in-kernel drivers
+-.TP
+-.I installed
+-Lists all installed drivers
+-.TP
+-.I loaded
+-Lists all loaded drivers
+-.TP
+-.I load <drivernum>
+-Loads a driver
+-.TP
+-.I unload <drivernum>
+-Unloads a driver
+-.TP
+-.I reload <drivernum>
+-Reloads a driver
+-.TP
+-.I install <drivernum>
+-Installs a driver
+-.TP
+-.I remove <drivernum>
+-Removes a driver
+-.TP
+-.I remove_stack <num>
+-Removes a stack
+-.TP
+-.I install_stack <num>
+-Installs a stack
+-.TP
+-.I details <drivernum>
+-Prints driver details
+-.TP
+-.I detect
+-Detects wireless cards
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airdriver-ng.8
+@@ -0,0 +1,92 @@
++.TH AIRDRIVER-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airdriver-ng - automatically install/uninstall and patch drivers and 802.11 stacks
++.SH SYNOPSIS
++.B airdriver-ng
++<command> [drivernumber]
++.SH DESCRIPTION
++.BI airdriver-ng
++is a script that provides status information about the wireless drivers on your system plus the ability to load and unload the drivers. Additionally, airdriver-ng allows you to install and uninstall drivers complete with the patches required for monitor and injection modes. Plus a number of other functions.
++.SH COMMAND
++.PP
++.TP
++.I supported
++Lists all supported drivers
++.TP
++.I kernel
++Lists all in-kernel drivers
++.TP
++.I installed
++Lists all installed drivers
++.TP
++.I loaded
++Lists all loaded drivers
++.TP
++.I load <drivernum>
++Loads a driver
++.TP
++.I unload <drivernum>
++Unloads a driver
++.TP
++.I reload <drivernum>
++Reloads a driver
++.TP
++.I install <drivernum>
++Installs a driver
++.TP
++.I remove <drivernum>
++Removes a driver
++.TP
++.I remove_stack <num>
++Removes a stack
++.TP
++.I install_stack <num>
++Installs a stack
++.TP
++.I details <drivernum>
++Prints driver details
++.TP
++.I detect
++Detects wireless cards
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/aireplay-ng.1
++++ /dev/null
+@@ -1,236 +0,0 @@
+-.TH AIREPLAY-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-aireplay-ng - inject packets into a wireless network to generate traffic
+-.SH SYNOPSIS
+-.B aireplay-ng
+-[options] <replay interface>
+-.SH DESCRIPTION
+-.B aireplay-ng
+-is used to inject/replay frames.
+-The primary function is to generate traffic for the later use in aircrack-ng for cracking the WEP and WPA-PSK keys. There are different attacks which can cause deauthentications for the purpose of capturing WPA handshake data, fake authentications, Interactive packet replay, hand-crafted ARP request injection and ARP-request reinjection. With the packetforge-ng tool it's possible to create arbitrary frames.
+-.br
+-.PP
+-.B aireplay-ng
+-supports single-NIC injection/monitor.
+-.br
+-This feature needs driver patching.
+-.br
+-.SH OPTIONS
+-.TP
+-.I -H, --help
+-Shows the help screen.
+-.PP
+-.TP
+-.B Filter options:
+-.TP
+-.I -b <bssid>
+-MAC address of access point.
+-.TP
+-.I -d <dmac>
+-MAC address of destination.
+-.TP
+-.I -s <smac>
+-MAC address of source.
+-.TP
+-.I -m <len>
+-Minimum packet length.
+-.TP
+-.I -n <len>
+-Maximum packet length.
+-.TP
+-.I -u <type>
+-Frame control, type field.
+-.TP
+-.I -v <subt>
+-Frame control, subtype field.
+-.TP
+-.I -t <tods>
+-Frame control, "To" DS bit (0 or 1).
+-.TP
+-.I -f <fromds>
+-Frame control, "From" DS bit (0 or 1).
+-.TP
+-.I -w <iswep>
+-Frame control, WEP bit (0 or 1).
+-.TP
+-.I -D 
+-Disable AP Detection.
+-.PP
+-.TP
+-.B Replay options:
+-.TP
+-.I -x <nbpps>
+-Number of packets per second.
+-.TP
+-.I -p <fctrl>
+-Set frame control word (hex).
+-.TP
+-.I -a <bssid>
+-Set Access Point MAC address.
+-.TP
+-.I -c <dmac>
+-Set destination MAC address.
+-.TP
+-.I -h <smac>
+-Set source MAC address.
+-.TP
+-.I -g <nb_packets>
+-Change ring buffer size (default: 8 packets). The minimum is 1.
+-.TP
+-.I -F
+-Choose first matching packet.
+-.TP
+-.I -e <essid>
+-Fake Authentication attack: Set target SSID (see below). For SSID containing special characters, see http://www.aircrack-ng.org/doku.php?id=faq#how_to_use_spaces_double_quote_and_single_quote_etc._in_ap_names
+-.TP
+-.I -o <npackets>
+-Fake Authentication attack: Set the number of packets for every authentication and association attempt (Default: 1). 0 means auto
+-.TP
+-.I -q <seconds>
+-Fake Authentication attack: Set the time between keep-alive packets in fake authentication mode.
+-.TP
+-.I -y <prga>
+-Fake Authentication attack: Specifies the keystream file for fake shared key authentication.
+-.TP
+-.I -T n
+-Fake Authentication attack: Exit if fake authentication fails 'n' time(s).
+-.TP
+-.I -j
+-ARP Replay attack : inject FromDS pakets (see below).
+-.TP
+-.I -k <IP>
+-Fragmentation attack: Set destination IP in fragments.
+-.TP
+-.I -l <IP>
+-Fragmentation attack: Set source IP in fragments.
+-.TP
+-.I -B
+-Test option: bitrate test.
+-.PP
+-.TP
+-.B Source options:
+-.TP
+-.I -i <iface>
+-Capture packets from this interface.
+-.TP
+-.I -r <file>
+-Extract packets from this pcap file.
+-.PP
+-.TP
+-.B Miscellaneous options:
+-.TP
+-.I -R
+-disable /dev/rtc usage.
+-.PP
+-.TP
+-.B Attack modes:          
+-.TP
+-.I -0 <count>, --deauth=<count>
+-This attack sends deauthentication packets to one or more clients which are currently associated with a particular access point. Deauthenticating clients can be done for a number of reasons: 
+-Recovering a hidden ESSID. This is an ESSID which is not being broadcast. Another term for this is "cloaked" or
+-Capturing WPA/WPA2 handshakes by forcing clients to reauthenticate or
+-Generate ARP requests (Windows clients sometimes flush their ARP cache when disconnected).
+-Of course, this attack is totally useless if there are no associated wireless client or on fake authentications.
+-.TP
+-.I -1 <delay>, --fakeauth=<delay>
+-The fake authentication attack allows you to perform the two types of WEP authentication (Open System and Shared Key) plus associate with the access point (AP). This is useful is only useful when you need an associated MAC address in various aireplay-ng attacks and there is currently no associated client. It should be noted that the fake authentication attack does NOT generate any ARP packets. Fake authentication cannot be used to authenticate/associate with WPA/WPA2 Access Points.
+-.TP
+-.I -2, --interactive
+-This attack allows you to choose a specific packet for replaying (injecting). The attack can obtain packets to replay from two sources. The first being a live flow of packets from your wireless card. The second being from a pcap file. Reading from a file is an often overlooked feature of aireplay-ng. This allows you read packets from other capture sessions or quite often, various attacks generate pcap files for easy reuse. A common use of reading a file containing a packet your created with packetforge-ng.
+-.TP
+-.I -3, --arpreplay
+-The classic ARP request replay attack is the most effective way to generate new initialization vectors (IVs), and works very reliably. The program listens for an ARP packet then retransmits it back to the access point. This, in turn, causes the access point to repeat the ARP packet with a new IV. The program retransmits the same ARP packet over and over. However, each ARP packet repeated by the access point has a new IVs. It is all these new IVs which allow you to determine the WEP key.
+-.TP
+-.I -4, --chopchop
+-This attack, when successful, can decrypt a WEP data packet without knowing the key. It can even work against dynamic WEP. This attack does not recover the WEP key itself, but merely reveals the plaintext. However, some access points are not vulnerable to this attack. Some may seem vulnerable at first but actually drop data packets shorter that 60 bytes. If the access point drops packets shorter than 42 bytes, aireplay tries to guess the rest of the missing data, as far as the headers are predictable. If an IP packet is captured, it additionally checks if the checksum of the header is correct after guessing the missing parts of it. This attack requires at least one WEP data packet.
+-.TP
+-.I -5, --fragment
+-This attack, when successful, can obtain 1500 bytes of PRGA (pseudo random generation algorithm). This attack does not recover the WEP key itself, but merely obtains the PRGA. The PRGA can then be used to generate packets with packetforge-ng which are in turn used for various injection attacks. It requires at least one data packet to be received from the access point in order to initiate the attack.
+-.TP
+-.I -6, --caffe-latte
+-In general, for an attack to work, the attacker has to be in the range of an AP and a connected client (fake or real). Caffe Latte attacks allows to gather enough packets to crack a WEP key without the need of an AP, it just need a client to be in range.
+-.TP
+-.I -7, --cfrag
+-This attack turns IP or ARP packets from a client into ARP request against the client. This attack works especially well against ad-hoc networks. As well it can be used against softAP clients and normal AP clients.
+-.TP
+-.I -9, --test
+-Tests injection and quality.
+-.SH FRAGMENTATION VERSUS CHOPCHOP
+-.PP
+-.PP
+-.B Fragmentation:
+-.TP
+-.PP
+-.I Pros
+-.br
+-- Can obtain the full packet length of 1500 bytes XOR. This means you can subsequently pretty well create any size of packet.
+-.br
+-- May work where chopchop does not
+-.br
+-- Is extremely fast. It yields the XOR stream extremely quickly when successful.
+-.TP
+-.PP
+-.I Cons
+-.br
+-- Setup to execute the attack is more subject to the device drivers. For example, Atheros does not generate the correct packets unless the wireless card is set to the mac address you are spoofing.
+-.br
+-- You need to be physically closer to the access point since if any packets are lost then the attack fails.
+-.PP
+-.B Chopchop
+-.TP
+-.PP
+-.I Pro
+-.br
+-- May work where frag does not work.
+-.TP
+-.PP
+-.I Cons
+-.br
+-- Cannot be used against every access point.
+-.br
+-- The maximum XOR bits is limited to the length of the packet you chopchop against.
+-.br
+-- Much slower then the fragmentation attack.
+-.br
+-.SH AUTHOR
+-This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/aireplay-ng.8
+@@ -0,0 +1,236 @@
++.TH AIREPLAY-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++aireplay-ng - inject packets into a wireless network to generate traffic
++.SH SYNOPSIS
++.B aireplay-ng
++[options] <replay interface>
++.SH DESCRIPTION
++.B aireplay-ng
++is used to inject/replay frames.
++The primary function is to generate traffic for the later use in aircrack-ng for cracking the WEP and WPA-PSK keys. There are different attacks which can cause deauthentications for the purpose of capturing WPA handshake data, fake authentications, Interactive packet replay, hand-crafted ARP request injection and ARP-request reinjection. With the packetforge-ng tool it's possible to create arbitrary frames.
++.br
++.PP
++.B aireplay-ng
++supports single-NIC injection/monitor.
++.br
++This feature needs driver patching.
++.br
++.SH OPTIONS
++.TP
++.I -H, --help
++Shows the help screen.
++.PP
++.TP
++.B Filter options:
++.TP
++.I -b <bssid>
++MAC address of access point.
++.TP
++.I -d <dmac>
++MAC address of destination.
++.TP
++.I -s <smac>
++MAC address of source.
++.TP
++.I -m <len>
++Minimum packet length.
++.TP
++.I -n <len>
++Maximum packet length.
++.TP
++.I -u <type>
++Frame control, type field.
++.TP
++.I -v <subt>
++Frame control, subtype field.
++.TP
++.I -t <tods>
++Frame control, "To" DS bit (0 or 1).
++.TP
++.I -f <fromds>
++Frame control, "From" DS bit (0 or 1).
++.TP
++.I -w <iswep>
++Frame control, WEP bit (0 or 1).
++.TP
++.I -D 
++Disable AP Detection.
++.PP
++.TP
++.B Replay options:
++.TP
++.I -x <nbpps>
++Number of packets per second.
++.TP
++.I -p <fctrl>
++Set frame control word (hex).
++.TP
++.I -a <bssid>
++Set Access Point MAC address.
++.TP
++.I -c <dmac>
++Set destination MAC address.
++.TP
++.I -h <smac>
++Set source MAC address.
++.TP
++.I -g <nb_packets>
++Change ring buffer size (default: 8 packets). The minimum is 1.
++.TP
++.I -F
++Choose first matching packet.
++.TP
++.I -e <essid>
++Fake Authentication attack: Set target SSID (see below). For SSID containing special characters, see http://www.aircrack-ng.org/doku.php?id=faq#how_to_use_spaces_double_quote_and_single_quote_etc._in_ap_names
++.TP
++.I -o <npackets>
++Fake Authentication attack: Set the number of packets for every authentication and association attempt (Default: 1). 0 means auto
++.TP
++.I -q <seconds>
++Fake Authentication attack: Set the time between keep-alive packets in fake authentication mode.
++.TP
++.I -y <prga>
++Fake Authentication attack: Specifies the keystream file for fake shared key authentication.
++.TP
++.I -T n
++Fake Authentication attack: Exit if fake authentication fails 'n' time(s).
++.TP
++.I -j
++ARP Replay attack : inject FromDS pakets (see below).
++.TP
++.I -k <IP>
++Fragmentation attack: Set destination IP in fragments.
++.TP
++.I -l <IP>
++Fragmentation attack: Set source IP in fragments.
++.TP
++.I -B
++Test option: bitrate test.
++.PP
++.TP
++.B Source options:
++.TP
++.I -i <iface>
++Capture packets from this interface.
++.TP
++.I -r <file>
++Extract packets from this pcap file.
++.PP
++.TP
++.B Miscellaneous options:
++.TP
++.I -R
++disable /dev/rtc usage.
++.PP
++.TP
++.B Attack modes:          
++.TP
++.I -0 <count>, --deauth=<count>
++This attack sends deauthentication packets to one or more clients which are currently associated with a particular access point. Deauthenticating clients can be done for a number of reasons: 
++Recovering a hidden ESSID. This is an ESSID which is not being broadcast. Another term for this is "cloaked" or
++Capturing WPA/WPA2 handshakes by forcing clients to reauthenticate or
++Generate ARP requests (Windows clients sometimes flush their ARP cache when disconnected).
++Of course, this attack is totally useless if there are no associated wireless client or on fake authentications.
++.TP
++.I -1 <delay>, --fakeauth=<delay>
++The fake authentication attack allows you to perform the two types of WEP authentication (Open System and Shared Key) plus associate with the access point (AP). This is useful is only useful when you need an associated MAC address in various aireplay-ng attacks and there is currently no associated client. It should be noted that the fake authentication attack does NOT generate any ARP packets. Fake authentication cannot be used to authenticate/associate with WPA/WPA2 Access Points.
++.TP
++.I -2, --interactive
++This attack allows you to choose a specific packet for replaying (injecting). The attack can obtain packets to replay from two sources. The first being a live flow of packets from your wireless card. The second being from a pcap file. Reading from a file is an often overlooked feature of aireplay-ng. This allows you read packets from other capture sessions or quite often, various attacks generate pcap files for easy reuse. A common use of reading a file containing a packet your created with packetforge-ng.
++.TP
++.I -3, --arpreplay
++The classic ARP request replay attack is the most effective way to generate new initialization vectors (IVs), and works very reliably. The program listens for an ARP packet then retransmits it back to the access point. This, in turn, causes the access point to repeat the ARP packet with a new IV. The program retransmits the same ARP packet over and over. However, each ARP packet repeated by the access point has a new IVs. It is all these new IVs which allow you to determine the WEP key.
++.TP
++.I -4, --chopchop
++This attack, when successful, can decrypt a WEP data packet without knowing the key. It can even work against dynamic WEP. This attack does not recover the WEP key itself, but merely reveals the plaintext. However, some access points are not vulnerable to this attack. Some may seem vulnerable at first but actually drop data packets shorter that 60 bytes. If the access point drops packets shorter than 42 bytes, aireplay tries to guess the rest of the missing data, as far as the headers are predictable. If an IP packet is captured, it additionally checks if the checksum of the header is correct after guessing the missing parts of it. This attack requires at least one WEP data packet.
++.TP
++.I -5, --fragment
++This attack, when successful, can obtain 1500 bytes of PRGA (pseudo random generation algorithm). This attack does not recover the WEP key itself, but merely obtains the PRGA. The PRGA can then be used to generate packets with packetforge-ng which are in turn used for various injection attacks. It requires at least one data packet to be received from the access point in order to initiate the attack.
++.TP
++.I -6, --caffe-latte
++In general, for an attack to work, the attacker has to be in the range of an AP and a connected client (fake or real). Caffe Latte attacks allows to gather enough packets to crack a WEP key without the need of an AP, it just need a client to be in range.
++.TP
++.I -7, --cfrag
++This attack turns IP or ARP packets from a client into ARP request against the client. This attack works especially well against ad-hoc networks. As well it can be used against softAP clients and normal AP clients.
++.TP
++.I -9, --test
++Tests injection and quality.
++.SH FRAGMENTATION VERSUS CHOPCHOP
++.PP
++.PP
++.B Fragmentation:
++.TP
++.PP
++.I Pros
++.br
++- Can obtain the full packet length of 1500 bytes XOR. This means you can subsequently pretty well create any size of packet.
++.br
++- May work where chopchop does not
++.br
++- Is extremely fast. It yields the XOR stream extremely quickly when successful.
++.TP
++.PP
++.I Cons
++.br
++- Setup to execute the attack is more subject to the device drivers. For example, Atheros does not generate the correct packets unless the wireless card is set to the mac address you are spoofing.
++.br
++- You need to be physically closer to the access point since if any packets are lost then the attack fails.
++.PP
++.B Chopchop
++.TP
++.PP
++.I Pro
++.br
++- May work where frag does not work.
++.TP
++.PP
++.I Cons
++.br
++- Cannot be used against every access point.
++.br
++- The maximum XOR bits is limited to the length of the packet you chopchop against.
++.br
++- Much slower then the fragmentation attack.
++.br
++.SH AUTHOR
++This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airmon-ng.1
++++ /dev/null
+@@ -1,64 +0,0 @@
+-.TH AIRMON-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airmon-ng - bash script designed to turn wireless cards into monitor mode.
+-.SH SYNOPSIS
+-.B airmon-ng
+-<start|stop> <interface> [channel]
+-.B airmon-ng
+-<check> [kill]
+-.SH DESCRIPTION
+-.BI airmon-ng
+-is script can be used to enable monitor mode on wireless interfaces. It may also be used to go back from monitor mode to managed mode. Entering the airmon-ng command without parameters will show the interfaces status. 
+-It can list/kill programs that can interfere with the wireless card and set the right sources in /etc/kismet/kismet.conf too.
+-.SH OPTIONAL PARAMETERS
+-.PP
+-.TP
+-.I start <interface> [channel]
+-Enable monitor mode on an interface (and specify a channel). Note: Madwifi-ng is a special case, 'start' has to be used on wifi interfaces and 'stop' on ath interfaces.
+-.I stop <interface>
+-Disable monitor mode and go back to managed mode (except for madwifi-ng where it kills the ath VAP).
+-.TP
+-.I check [kill]
+-List all possible programs that could interfere with the wireless card. If 'kill' is specified, it will try to kill all of them.
+-.SH AUTHOR
+-This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airmon-ng.8
+@@ -0,0 +1,64 @@
++.TH AIRMON-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airmon-ng - bash script designed to turn wireless cards into monitor mode.
++.SH SYNOPSIS
++.B airmon-ng
++<start|stop> <interface> [channel]
++.B airmon-ng
++<check> [kill]
++.SH DESCRIPTION
++.BI airmon-ng
++is script can be used to enable monitor mode on wireless interfaces. It may also be used to go back from monitor mode to managed mode. Entering the airmon-ng command without parameters will show the interfaces status. 
++It can list/kill programs that can interfere with the wireless card and set the right sources in /etc/kismet/kismet.conf too.
++.SH OPTIONAL PARAMETERS
++.PP
++.TP
++.I start <interface> [channel]
++Enable monitor mode on an interface (and specify a channel). Note: Madwifi-ng is a special case, 'start' has to be used on wifi interfaces and 'stop' on ath interfaces.
++.I stop <interface>
++Disable monitor mode and go back to managed mode (except for madwifi-ng where it kills the ath VAP).
++.TP
++.I check [kill]
++List all possible programs that could interfere with the wireless card. If 'kill' is specified, it will try to kill all of them.
++.SH AUTHOR
++This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airodump-ng-oui-update.1
++++ /dev/null
+@@ -1,53 +0,0 @@
+-.TH AIRODUMP-NG-OUI-UPDATE 1 "February 2012" "Version 1.1"
+-
+-.SH NAME
+-airodump-ng-oui-update - IEEE oui list updater for airodump-ng
+-
+-.SH SYNOPSIS
+-.B airodump-ng-oui-update
+-
+-.SH DESCRIPTION
+-.BI airodump-ng-oui-update
+-downloads and parses IEEE OUI list.
+-
+-.SH AUTHOR
+-This manual page was written by David Francos Cuartero.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-
+-.PP
+-.SH SEE ALSO
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airodump-ng-oui-update.8
+@@ -0,0 +1,53 @@
++.TH AIRODUMP-NG-OUI-UPDATE 8 "February 2012" "Version 1.1"
++
++.SH NAME
++airodump-ng-oui-update - IEEE oui list updater for airodump-ng
++
++.SH SYNOPSIS
++.B airodump-ng-oui-update
++
++.SH DESCRIPTION
++.BI airodump-ng-oui-update
++downloads and parses IEEE OUI list.
++
++.SH AUTHOR
++This manual page was written by David Francos Cuartero.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++
++.PP
++.SH SEE ALSO
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airodump-ng.1
++++ /dev/null
+@@ -1,239 +0,0 @@
+-.TH AIRODUMP-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airodump-ng - a wireless packet capture tool for aircrack-ng
+-.SH SYNOPSIS
+-.B airodump-ng
+-[options] <interface name>
+-.SH DESCRIPTION
+-.BI airodump-ng
+-is used for packet capturing of raw 802.11 frames for the intent of using them with aircrack-ng. If you have a GPS receiver connected to the computer, airodump-ng is capable of logging the coordinates of the found access points. Additionally, airodump-ng writes out a text file containing the details of all access points and clients seen.
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -H, --help
+-Shows the help screen.
+-.TP
+-.I -i, --ivs
+-It only saves IVs (only useful for cracking). If this option is specified, you have to give a dump prefix (\-\-write option)
+-.TP
+-.I -g, --gpsd
+-Indicate that airodump-ng should try to use GPSd to get coordinates.
+-.TP
+-.I -w <prefix>, --write <prefix>
+-Is the dump file prefix to use. If this option is not given, it will only show data on the screen. Beside this file a CSV file with the same filename as the capture will be created.
+-.TP
+-.I -e, --beacons
+-It will record all beacons into the cap file. By default it only records one beacon for each network.
+-.TP
+-.I -u <secs>, --update <secs>
+-Delay <secs> seconds delay between display updates (default: 1 second). Useful for slow CPU.
+-.TP
+-.I --showack
+-Prints ACK/CTS/RTS statistics. Helps in debugging and general injection optimization. It is indication if you inject, inject too fast, reach the AP, the frames are valid encrypted frames. Allows to detect "hidden" stations, which are too far away to capture high bitrate frames, as ACK frames are sent at 1Mbps.
+-.TP
+-.I -h
+-Hides known stations for \-\-showack.
+-.TP
+-.I --berlin <secs>
+-Time before removing the AP/client from the screen when no more packets are received (Default: 120 seconds). See airodump-ng source for the history behind this option ;).
+-.TP
+-.I -c <channel>[,<channel>[,...]], --channel <channel>[,<channel>[,...]]
+-Indicate the channel(s) to listen to. By default airodump-ng hop on all 2.4GHz channels.
+-.TP
+-.I -b <abg>, --band <abg>
+-Indicate the band on which airodump-ng should hop. It can be a combination of 'a', 'b' and 'g' letters ('b' and 'g' uses 2.4GHz and 'a' uses 5GHz). Incompatible with --channel option.
+-.TP
+-.I -s <method>, --cswitch <method>
+-Defines the way airodump-ng sets the channels when using more than one card. Valid values: 0, 1 or 2.
+-.TP
+-.I -r <file>
+-Reads packet from a file.
+-.TP
+-.I -x <msecs>
+-Active Scanning Simulation (send probe requests and parse the probe responses).
+-.TP
+-.I --output-format <formats>
+-Define the formats to use (separated by a comma). Possible values are: pcap, ivs, csv, gps, kismet, netxml. The default values are: pcap, csv, kismet, kismet-newcore.
+-\'pcap\' is for recording a capture in pcap format, 'ivs' is for ivs format (it is a shortcut for --ivs). 'csv' will create an airodump-ng CSV file, 'kismet' will create a kismet csv file and 'kismet-newcore' will create the kismet netxml file. 'gps' is a shortcut for --gps.
+-.br
+-Theses values can be combined with the exception of ivs and pcap.
+-.PP
+-.B Filter options:
+-.TP
+-.I -t <OPN|WEP|WPA|WPA1|WPA2>, --encrypt <OPN|WEP|WPA|WPA1|WPA2>
+-It will only show networks matching the given encryption. May be specified more than once: '\-t OPN \-t WPA2'
+-.TP
+-.I -d <bssid>, --bssid <bssid>
+-It will only show networks, matching the given bssid.
+-.TP
+-.I -m <mask>, --netmask <mask>
+-It will only show networks, matching the given bssid ^ netmask combination. Need \-\-bssid (or \-d) to be specified.
+-.TP
+-.I -a
+-It will only show associated clients.
+-.SH INTERACTION
+-.PP
+-.BI airodump-ng
+-can receive and interpret key strokes while running. The following list describes the currently assigned keys and supposed actions:
+-.TP
+-.I a
+-Select active areas by cycling through these display options: AP+STA; AP+STA+ACK; AP only; STA only
+-.TP
+-.I d
+-Reset sorting to defaults (Power)
+-.TP
+-.I i
+-Invert sorting algorithm
+-.TP
+-.I m
+-Mark the selected AP or cycle through different colors if the selected AP is already marked
+-.TP
+-.I r
+-(De-)Activate realtime sorting - applies sorting algorithm everytime the display will be redrawn
+-.TP
+-.I s
+-Change column to sort by, which currently includes: First seen; BSSID; PWR level; Beacons; Data packets; Packet rate; Channel; Max. data rate; Encryption; Strongest Ciphersuite; Strongest Authentication; ESSID
+-.TP
+-.I SPACE
+-Pause display redrawing/ Resume redrawing
+-.TP
+-.I TAB
+-Enable/Disable scrolling through AP list
+-.TP
+-.I UP
+-Select the AP prior to the currently marked AP in the displayed list if available
+-.TP
+-.I DOWN
+-Select the AP after the currently marked AP if available
+-.PP
+-If an AP is selected or marked, all the connected stations will also be selected or marked with the same color as the corresponding Access Point. 
+-.SH EXAMPLES
+-.B airodump-ng
+-\-\-band bg ath0
+-.PP
+-Here is an example screenshot:
+-.PP
+------------------------------------------------------------------------
+-.br
+-CH  9 ][ Elapsed: 1 min ][ 2007-04-26 17:41 ][ BAT: 2 hours 10 mins ][ WPA handshake: 00:14:6C:7E:40:80
+-.br
+-.PP
+-BSSID              PWR RXQ  Beacons    #Data, #/s  CH  MB  ENC  CIPHER AUTH ESSID
+-.br
+-.PP
+-00:09:5B:1C:AA:1D   11  16       10        0    0  11  54. OPN              <length: 7>
+-.br
+-00:14:6C:7A:41:81   34 100       57       14    1   9  11  WEP  WEP         bigbear
+-.br
+-00:14:6C:7E:40:80   32 100      752       73    2   9  54  WPA  TKIP   PSK  teddy
+-.br
+-.PP
+-BSSID              STATION            PWR   Rate   Lost  Packets  Probes
+-.br
+-.PP
+-00:14:6C:7A:41:81  00:0F:B5:32:31:31   51   11-11     2       14  bigbear
+-.br
+-(not associated)   00:14:A4:3F:8D:13   19   11-11     0        4  mossy
+-.br
+-00:14:6C:7A:41:81  00:0C:41:52:D1:D1   \-1    11-2     0        5  bigbear
+-.br
+-00:14:6C:7E:40:80  00:0F:B5:FD:FB:C2   35   36-24     0       99  teddy
+-.br
+------------------------------------------------------------------------
+-.br
+-.PP
+-.TP
+-.I BSSID
+-MAC address of the access point. In the Client section, a BSSID of "(not associated)" means that the client is not associated with any AP. In this unassociated state, it is searching for an AP to connect with.
+-.TP
+-.I PWR
+-Signal level reported by the card. Its signification depends on the driver, but as the signal gets higher you get closer to the AP or the station. If the BSSID PWR is -1, then the driver doesn't support signal level reporting. If the PWR is -1 for a limited number of stations then this is for a packet which came from the AP to the client but the client transmissions are out of range for your card. Meaning you are hearing only 1/2 of the communication. If all clients have PWR as -1 then the driver doesn't support signal level reporting.
+-.TP
+-.I RXQ
+-Only shown when on a fixed channel. Receive Quality as measured by the percentage of packets (management and data frames) successfully received over the last 10 seconds. It's measured over all management and data frames. That's the clue, this allows you to read more things out of this value. Lets say you got 100 percent RXQ and all 10 (or whatever the rate) beacons per second coming in. Now all of a sudden the RXQ drops below 90, but you still capture all sent beacons. Thus you know that the AP is sending frames to a client but you can't hear the client nor the AP sending to the client (need to get closer). Another thing would be, that you got a 11MB card to monitor and capture frames (say a prism2.5) and you have a very good position to the AP. The AP is set to 54MBit and then again the RXQ drops, so you know that there is at least one 54MBit client connected to the AP.
+-.TP
+-.I Beacons
+-Number of beacons sent by the AP. Each access point sends about ten beacons per second at the lowest rate (1M), so they can usually be picked up from very far.
+-.TP
+-.I #Data
+-Number of captured data packets (if WEP, unique IV count), including data broadcast packets.
+-.TP
+-.I #/s
+-Number of data packets per second measure over the last 10 seconds.
+-.TP
+-.I CH
+-Channel number (taken from beacon packets). Note: sometimes packets from other channels are captured even if airodump-ng is not hopping, because of radio interference.
+-.TP
+-.I MB
+-Maximum speed supported by the AP. If MB = 11, it's 802.11b, if MB = 22 it's 802.11b+ and higher rates are 802.11g. The dot (after 54 above) indicates short preamble is supported. 'e' indicates that the network has QoS (802.11e) enabled.
+-.TP
+-.I ENC
+-Encryption algorithm in use. OPN = no encryption,"WEP?" = WEP or higher (not enough data to choose between WEP and WPA/WPA2), WEP (without the question mark) indicates static or dynamic WEP, and WPA or WPA2 if TKIP or CCMP or MGT is present.
+-.TP
+-.I CIPHER
+-The cipher detected. One of CCMP, WRAP, TKIP, WEP, WEP40, or WEP104. Not mandatory, but TKIP is typically used with WPA and CCMP is typically used with WPA2. WEP40 is displayed when the key index is greater then 0. The standard states that the index can be 0-3 for 40bit and should be 0 for 104 bit.
+-.TP
+-.I AUTH
+-The authentication protocol used. One of MGT (WPA/WPA2 using a separate authentication server), SKA (shared key for WEP), PSK (pre-shared key for WPA/WPA2), or OPN (open for WEP).
+-.TP
+-.I ESSID
+-The so-called "SSID", which can be empty if SSID hiding is activated. In this case, airodump-ng will try to recover the SSID from probe responses and association requests.
+-.TP
+-.I STATION
+-MAC address of each associated station or stations searching for an AP to connect with. Clients not currently associated with an AP have a BSSID of "(not associated)".
+-.TP
+-.I Rate
+-This is only displayed when using a single channel. The first number is the last data rate from the AP (BSSID) to the Client (STATION). The second number is the last data rate from Client (STATION) to the AP (BSSID).
+-.TP
+-.I Lost
+-It means lost packets coming from the client. To determine the number of packets lost, there is a sequence field on every non-control frame, so you can subtract the second last sequence number from the last sequence number and you know how many packets you have lost.
+-.TP
+-.I Packets
+-The number of data packets sent by the client.
+-.TP
+-.I Probes
+-The ESSIDs probed by the client. These are the networks the client is trying to connect to if it is not currently connected.
+-.PP
+-The first part is the detected access points. The second part is a list of detected wireless clients, stations. By relying on the signal power, one can even physically pinpoint the location of a given station.
+-.SH AUTHOR
+-This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airodump-ng.8
+@@ -0,0 +1,239 @@
++.TH AIRODUMP-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airodump-ng - a wireless packet capture tool for aircrack-ng
++.SH SYNOPSIS
++.B airodump-ng
++[options] <interface name>
++.SH DESCRIPTION
++.BI airodump-ng
++is used for packet capturing of raw 802.11 frames for the intent of using them with aircrack-ng. If you have a GPS receiver connected to the computer, airodump-ng is capable of logging the coordinates of the found access points. Additionally, airodump-ng writes out a text file containing the details of all access points and clients seen.
++.SH OPTIONS
++.PP
++.TP
++.I -H, --help
++Shows the help screen.
++.TP
++.I -i, --ivs
++It only saves IVs (only useful for cracking). If this option is specified, you have to give a dump prefix (\-\-write option)
++.TP
++.I -g, --gpsd
++Indicate that airodump-ng should try to use GPSd to get coordinates.
++.TP
++.I -w <prefix>, --write <prefix>
++Is the dump file prefix to use. If this option is not given, it will only show data on the screen. Beside this file a CSV file with the same filename as the capture will be created.
++.TP
++.I -e, --beacons
++It will record all beacons into the cap file. By default it only records one beacon for each network.
++.TP
++.I -u <secs>, --update <secs>
++Delay <secs> seconds delay between display updates (default: 1 second). Useful for slow CPU.
++.TP
++.I --showack
++Prints ACK/CTS/RTS statistics. Helps in debugging and general injection optimization. It is indication if you inject, inject too fast, reach the AP, the frames are valid encrypted frames. Allows to detect "hidden" stations, which are too far away to capture high bitrate frames, as ACK frames are sent at 1Mbps.
++.TP
++.I -h
++Hides known stations for \-\-showack.
++.TP
++.I --berlin <secs>
++Time before removing the AP/client from the screen when no more packets are received (Default: 120 seconds). See airodump-ng source for the history behind this option ;).
++.TP
++.I -c <channel>[,<channel>[,...]], --channel <channel>[,<channel>[,...]]
++Indicate the channel(s) to listen to. By default airodump-ng hop on all 2.4GHz channels.
++.TP
++.I -b <abg>, --band <abg>
++Indicate the band on which airodump-ng should hop. It can be a combination of 'a', 'b' and 'g' letters ('b' and 'g' uses 2.4GHz and 'a' uses 5GHz). Incompatible with --channel option.
++.TP
++.I -s <method>, --cswitch <method>
++Defines the way airodump-ng sets the channels when using more than one card. Valid values: 0, 1 or 2.
++.TP
++.I -r <file>
++Reads packet from a file.
++.TP
++.I -x <msecs>
++Active Scanning Simulation (send probe requests and parse the probe responses).
++.TP
++.I --output-format <formats>
++Define the formats to use (separated by a comma). Possible values are: pcap, ivs, csv, gps, kismet, netxml. The default values are: pcap, csv, kismet, kismet-newcore.
++\'pcap\' is for recording a capture in pcap format, 'ivs' is for ivs format (it is a shortcut for --ivs). 'csv' will create an airodump-ng CSV file, 'kismet' will create a kismet csv file and 'kismet-newcore' will create the kismet netxml file. 'gps' is a shortcut for --gps.
++.br
++Theses values can be combined with the exception of ivs and pcap.
++.PP
++.B Filter options:
++.TP
++.I -t <OPN|WEP|WPA|WPA1|WPA2>, --encrypt <OPN|WEP|WPA|WPA1|WPA2>
++It will only show networks matching the given encryption. May be specified more than once: '\-t OPN \-t WPA2'
++.TP
++.I -d <bssid>, --bssid <bssid>
++It will only show networks, matching the given bssid.
++.TP
++.I -m <mask>, --netmask <mask>
++It will only show networks, matching the given bssid ^ netmask combination. Need \-\-bssid (or \-d) to be specified.
++.TP
++.I -a
++It will only show associated clients.
++.SH INTERACTION
++.PP
++.BI airodump-ng
++can receive and interpret key strokes while running. The following list describes the currently assigned keys and supposed actions:
++.TP
++.I a
++Select active areas by cycling through these display options: AP+STA; AP+STA+ACK; AP only; STA only
++.TP
++.I d
++Reset sorting to defaults (Power)
++.TP
++.I i
++Invert sorting algorithm
++.TP
++.I m
++Mark the selected AP or cycle through different colors if the selected AP is already marked
++.TP
++.I r
++(De-)Activate realtime sorting - applies sorting algorithm everytime the display will be redrawn
++.TP
++.I s
++Change column to sort by, which currently includes: First seen; BSSID; PWR level; Beacons; Data packets; Packet rate; Channel; Max. data rate; Encryption; Strongest Ciphersuite; Strongest Authentication; ESSID
++.TP
++.I SPACE
++Pause display redrawing/ Resume redrawing
++.TP
++.I TAB
++Enable/Disable scrolling through AP list
++.TP
++.I UP
++Select the AP prior to the currently marked AP in the displayed list if available
++.TP
++.I DOWN
++Select the AP after the currently marked AP if available
++.PP
++If an AP is selected or marked, all the connected stations will also be selected or marked with the same color as the corresponding Access Point. 
++.SH EXAMPLES
++.B airodump-ng
++\-\-band bg ath0
++.PP
++Here is an example screenshot:
++.PP
++-----------------------------------------------------------------------
++.br
++CH  9 ][ Elapsed: 1 min ][ 2007-04-26 17:41 ][ BAT: 2 hours 10 mins ][ WPA handshake: 00:14:6C:7E:40:80
++.br
++.PP
++BSSID              PWR RXQ  Beacons    #Data, #/s  CH  MB  ENC  CIPHER AUTH ESSID
++.br
++.PP
++00:09:5B:1C:AA:1D   11  16       10        0    0  11  54. OPN              <length: 7>
++.br
++00:14:6C:7A:41:81   34 100       57       14    1   9  11  WEP  WEP         bigbear
++.br
++00:14:6C:7E:40:80   32 100      752       73    2   9  54  WPA  TKIP   PSK  teddy
++.br
++.PP
++BSSID              STATION            PWR   Rate   Lost  Packets  Probes
++.br
++.PP
++00:14:6C:7A:41:81  00:0F:B5:32:31:31   51   11-11     2       14  bigbear
++.br
++(not associated)   00:14:A4:3F:8D:13   19   11-11     0        4  mossy
++.br
++00:14:6C:7A:41:81  00:0C:41:52:D1:D1   \-1    11-2     0        5  bigbear
++.br
++00:14:6C:7E:40:80  00:0F:B5:FD:FB:C2   35   36-24     0       99  teddy
++.br
++-----------------------------------------------------------------------
++.br
++.PP
++.TP
++.I BSSID
++MAC address of the access point. In the Client section, a BSSID of "(not associated)" means that the client is not associated with any AP. In this unassociated state, it is searching for an AP to connect with.
++.TP
++.I PWR
++Signal level reported by the card. Its signification depends on the driver, but as the signal gets higher you get closer to the AP or the station. If the BSSID PWR is -1, then the driver doesn't support signal level reporting. If the PWR is -1 for a limited number of stations then this is for a packet which came from the AP to the client but the client transmissions are out of range for your card. Meaning you are hearing only 1/2 of the communication. If all clients have PWR as -1 then the driver doesn't support signal level reporting.
++.TP
++.I RXQ
++Only shown when on a fixed channel. Receive Quality as measured by the percentage of packets (management and data frames) successfully received over the last 10 seconds. It's measured over all management and data frames. That's the clue, this allows you to read more things out of this value. Lets say you got 100 percent RXQ and all 10 (or whatever the rate) beacons per second coming in. Now all of a sudden the RXQ drops below 90, but you still capture all sent beacons. Thus you know that the AP is sending frames to a client but you can't hear the client nor the AP sending to the client (need to get closer). Another thing would be, that you got a 11MB card to monitor and capture frames (say a prism2.5) and you have a very good position to the AP. The AP is set to 54MBit and then again the RXQ drops, so you know that there is at least one 54MBit client connected to the AP.
++.TP
++.I Beacons
++Number of beacons sent by the AP. Each access point sends about ten beacons per second at the lowest rate (1M), so they can usually be picked up from very far.
++.TP
++.I #Data
++Number of captured data packets (if WEP, unique IV count), including data broadcast packets.
++.TP
++.I #/s
++Number of data packets per second measure over the last 10 seconds.
++.TP
++.I CH
++Channel number (taken from beacon packets). Note: sometimes packets from other channels are captured even if airodump-ng is not hopping, because of radio interference.
++.TP
++.I MB
++Maximum speed supported by the AP. If MB = 11, it's 802.11b, if MB = 22 it's 802.11b+ and higher rates are 802.11g. The dot (after 54 above) indicates short preamble is supported. 'e' indicates that the network has QoS (802.11e) enabled.
++.TP
++.I ENC
++Encryption algorithm in use. OPN = no encryption,"WEP?" = WEP or higher (not enough data to choose between WEP and WPA/WPA2), WEP (without the question mark) indicates static or dynamic WEP, and WPA or WPA2 if TKIP or CCMP or MGT is present.
++.TP
++.I CIPHER
++The cipher detected. One of CCMP, WRAP, TKIP, WEP, WEP40, or WEP104. Not mandatory, but TKIP is typically used with WPA and CCMP is typically used with WPA2. WEP40 is displayed when the key index is greater then 0. The standard states that the index can be 0-3 for 40bit and should be 0 for 104 bit.
++.TP
++.I AUTH
++The authentication protocol used. One of MGT (WPA/WPA2 using a separate authentication server), SKA (shared key for WEP), PSK (pre-shared key for WPA/WPA2), or OPN (open for WEP).
++.TP
++.I ESSID
++The so-called "SSID", which can be empty if SSID hiding is activated. In this case, airodump-ng will try to recover the SSID from probe responses and association requests.
++.TP
++.I STATION
++MAC address of each associated station or stations searching for an AP to connect with. Clients not currently associated with an AP have a BSSID of "(not associated)".
++.TP
++.I Rate
++This is only displayed when using a single channel. The first number is the last data rate from the AP (BSSID) to the Client (STATION). The second number is the last data rate from Client (STATION) to the AP (BSSID).
++.TP
++.I Lost
++It means lost packets coming from the client. To determine the number of packets lost, there is a sequence field on every non-control frame, so you can subtract the second last sequence number from the last sequence number and you know how many packets you have lost.
++.TP
++.I Packets
++The number of data packets sent by the client.
++.TP
++.I Probes
++The ESSIDs probed by the client. These are the networks the client is trying to connect to if it is not currently connected.
++.PP
++The first part is the detected access points. The second part is a list of detected wireless clients, stations. By relying on the signal power, one can even physically pinpoint the location of a given station.
++.SH AUTHOR
++This manual page was written by Adam Cecile <gandalf@le-vert.net> for the Debian system (but may be used by others).
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airserv-ng.1
++++ /dev/null
+@@ -1,71 +0,0 @@
+-.TH AIRSERV-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airserv-ng - a wireless card server
+-.SH SYNOPSIS
+-.B airserv-ng
+-<options>
+-.SH DESCRIPTION
+-.BI airserv-ng
+-is a wireless card server which allows multiple wireless application programs to independently use a wireless card via a client-server TCP network connection. All operating system and wireless card driver specific code is incorporated into the server. This eliminates the need for each wireless application to contain the complex wireless card and driver logic. It is also supports multiple operating systems.
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -h
+-Shows the help screen.
+-.TP
+-.I -p <port>
+-TCP port to listen on (by default: 666).
+-.TP
+-.I -d <iface>
+-Wifi interface to use.
+-.TP
+-.I -c <chan>
+-Lock interface to this channel.
+-.TP
+-.I -v <level>
+-Debug level. There are 3 debug levels.
+-Debug level of 1 shows client connection/disconnection (default).
+-Debug level of 2 shows channel change requests and invalid client command requests in addition to the debug level 1 messages.
+-Debug level of 3 displays a message each time a packet (and its length) is sent to the client. It also include messages from level 2 (and 1).
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airserv-ng.8
+@@ -0,0 +1,71 @@
++.TH AIRSERV-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airserv-ng - a wireless card server
++.SH SYNOPSIS
++.B airserv-ng
++<options>
++.SH DESCRIPTION
++.BI airserv-ng
++is a wireless card server which allows multiple wireless application programs to independently use a wireless card via a client-server TCP network connection. All operating system and wireless card driver specific code is incorporated into the server. This eliminates the need for each wireless application to contain the complex wireless card and driver logic. It is also supports multiple operating systems.
++.SH OPTIONS
++.PP
++.TP
++.I -h
++Shows the help screen.
++.TP
++.I -p <port>
++TCP port to listen on (by default: 666).
++.TP
++.I -d <iface>
++Wifi interface to use.
++.TP
++.I -c <chan>
++Lock interface to this channel.
++.TP
++.I -v <level>
++Debug level. There are 3 debug levels.
++Debug level of 1 shows client connection/disconnection (default).
++Debug level of 2 shows channel change requests and invalid client command requests in addition to the debug level 1 messages.
++Debug level of 3 displays a message each time a packet (and its length) is sent to the client. It also include messages from level 2 (and 1).
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/airtun-ng.1
++++ /dev/null
+@@ -1,95 +0,0 @@
+-.TH AIRTUN-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-airtun-ng - a virtual tunnel interface creator for aircrack-ng
+-.SH SYNOPSIS
+-.B airtun-ng
+-[options] <interface name>
+-.SH DESCRIPTION
+-.BI airtun-ng
+-creates a virtual tunnel interface (atX) for sending arbitrary IP packets by using raw ieee802.11 packet injection.
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -H, --help
+-Shows the help screen.
+-.TP
+-.I -x <pps>
+-Sets maximum number of packets per second.
+-.TP
+-.I -a <BSSID>
+-Specifies the BSSID for the iee802.11 header. In WDS Mode this sets the Receiver.
+-.TP
+-.I -h <SMAC>
+-Specifies the source MAC for the iee802.11 header.
+-.TP
+-.I -i <iface>
+-Sets the capture interface.
+-.TP
+-.I -r <file>
+-Specifies a file to read 802.11 frames.
+-.TP
+-.I -y <PRGA-file>
+-Is the name of the file, which provides the keystream for WEP encoding. (No receiving, just transmitting of IP packets.)
+-.TP
+-.I -w <WEP-key>
+-This is the WEP key to en-/decrypt all traffic going through the tunnel.
+-.TP
+-.I -t <tods>
+-Defines the ToDS and FromDS bit in the ieee802.11 header. For tods=1, the ToDS bit is set to 1 and FromDS to 0, while tods=0 sets them the other way around. If set to 2, it will be tunneled in a WDS/bridge.
+-.TP
+-.I -m <netmask>, --netmask <netmask>
+-Filters networks based on bssid ^ netmask combination. Needs \-d, used in replay mode. 
+-.TP
+-.I -d <BSSID>, --bssid <BSSID>
+-Filters networks based on the <BSSID>. Used in replay mode.
+-.TP
+-.I -f, --repeat
+-Enables replay mode. All read frames, filtered by bssid and netmask (if specified), will be replayed.
+-.TP
+-.I -s <transmitter>
+-Set Transmitter MAC address for WDS Mode.
+-.TP
+-.I -b
+-Bidirectional mode. This enables communication in Transmitter's AND Receiver's networks. Works only if you can see both stations.
+-.SH EXAMPLES
+-.B airtun-ng
+-\-a 00:14:22:56:F3:4E \-t 0 \-y keystream.xor wlan0
+-.PP
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/airtun-ng.8
+@@ -0,0 +1,95 @@
++.TH AIRTUN-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++airtun-ng - a virtual tunnel interface creator for aircrack-ng
++.SH SYNOPSIS
++.B airtun-ng
++[options] <interface name>
++.SH DESCRIPTION
++.BI airtun-ng
++creates a virtual tunnel interface (atX) for sending arbitrary IP packets by using raw ieee802.11 packet injection.
++.SH OPTIONS
++.PP
++.TP
++.I -H, --help
++Shows the help screen.
++.TP
++.I -x <pps>
++Sets maximum number of packets per second.
++.TP
++.I -a <BSSID>
++Specifies the BSSID for the iee802.11 header. In WDS Mode this sets the Receiver.
++.TP
++.I -h <SMAC>
++Specifies the source MAC for the iee802.11 header.
++.TP
++.I -i <iface>
++Sets the capture interface.
++.TP
++.I -r <file>
++Specifies a file to read 802.11 frames.
++.TP
++.I -y <PRGA-file>
++Is the name of the file, which provides the keystream for WEP encoding. (No receiving, just transmitting of IP packets.)
++.TP
++.I -w <WEP-key>
++This is the WEP key to en-/decrypt all traffic going through the tunnel.
++.TP
++.I -t <tods>
++Defines the ToDS and FromDS bit in the ieee802.11 header. For tods=1, the ToDS bit is set to 1 and FromDS to 0, while tods=0 sets them the other way around. If set to 2, it will be tunneled in a WDS/bridge.
++.TP
++.I -m <netmask>, --netmask <netmask>
++Filters networks based on bssid ^ netmask combination. Needs \-d, used in replay mode. 
++.TP
++.I -d <BSSID>, --bssid <BSSID>
++Filters networks based on the <BSSID>. Used in replay mode.
++.TP
++.I -f, --repeat
++Enables replay mode. All read frames, filtered by bssid and netmask (if specified), will be replayed.
++.TP
++.I -s <transmitter>
++Set Transmitter MAC address for WDS Mode.
++.TP
++.I -b
++Bidirectional mode. This enables communication in Transmitter's AND Receiver's networks. Works only if you can see both stations.
++.SH EXAMPLES
++.B airtun-ng
++\-a 00:14:22:56:F3:4E \-t 0 \-y keystream.xor wlan0
++.PP
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/easside-ng.1
++++ /dev/null
+@@ -1,82 +0,0 @@
+-.TH EASSIDE-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-easside-ng - an auto-magic tool which allows you to communicate via an WEP-encrypted AP without knowing the key
+-.SH SYNOPSIS
+-.B easside-ng
+-<options>
+-.SH DESCRIPTION
+-.BI easside-ng
+-is an auto-magic tool which allows you to communicate via an WEP-encrypted access point (AP) without knowing the WEP key. It first identifies a network, then proceeds to associate with it, obtain PRGA (pseudo random generation algorithm) xor data, determine the network IP scheme and then setup a TAP interface so that you can communicate with the AP without requiring the WEP key. All this is done without your intervention.
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -h
+-Shows the help screen.
+-.TP
+-.I -v <victim mac>
+-Victim BSSID (Optional).
+-.TP
+-.I -m <src mac>
+-Source MAC address to be used (Optional).
+-.TP
+-.I -i <ip>
+-Source IP address to be used on the wireless LAN. Defaults to the decoded network plus '.123' (Optional).
+-.TP
+-.I -r <router ip>
+-IP address of the AP router. This could be the WAN IP of the AP or an actual router IP depending on the topology. Defaults to the decoded network plus '.1' (Optional).
+-.TP
+-.I -s <buddy ip>
+-IP address of Buddy-ng server (Mandatory)
+-.TP
+-.I -f <iface>
+-Wireless interface to use (Mandatory)
+-.TP
+-.I -c <channel>
+-Lock interface to this channel (Optional).
+-.TP
+-.I -n
+-Determine Internet IP only.
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/easside-ng.8
+@@ -0,0 +1,82 @@
++.TH EASSIDE-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++easside-ng - an auto-magic tool which allows you to communicate via an WEP-encrypted AP without knowing the key
++.SH SYNOPSIS
++.B easside-ng
++<options>
++.SH DESCRIPTION
++.BI easside-ng
++is an auto-magic tool which allows you to communicate via an WEP-encrypted access point (AP) without knowing the WEP key. It first identifies a network, then proceeds to associate with it, obtain PRGA (pseudo random generation algorithm) xor data, determine the network IP scheme and then setup a TAP interface so that you can communicate with the AP without requiring the WEP key. All this is done without your intervention.
++.SH OPTIONS
++.PP
++.TP
++.I -h
++Shows the help screen.
++.TP
++.I -v <victim mac>
++Victim BSSID (Optional).
++.TP
++.I -m <src mac>
++Source MAC address to be used (Optional).
++.TP
++.I -i <ip>
++Source IP address to be used on the wireless LAN. Defaults to the decoded network plus '.123' (Optional).
++.TP
++.I -r <router ip>
++IP address of the AP router. This could be the WAN IP of the AP or an actual router IP depending on the topology. Defaults to the decoded network plus '.1' (Optional).
++.TP
++.I -s <buddy ip>
++IP address of Buddy-ng server (Mandatory)
++.TP
++.I -f <iface>
++Wireless interface to use (Mandatory)
++.TP
++.I -c <channel>
++Lock interface to this channel (Optional).
++.TP
++.I -n
++Determine Internet IP only.
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
++.br
++.B wesside-ng(8)
+--- a/manpages/tkiptun-ng.1
++++ /dev/null
+@@ -1,130 +0,0 @@
+-.TH TKIPTUN-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-tkiptun-ng - inject a few frames into a WPA TKIP network with QoS
+-.SH SYNOPSIS
+-.B tkiptun-ng
+-[options] <replay interface>
+-.SH DESCRIPTION
+-.BI tkiptun-ng
+-is a tool created by Martin Beck aka hirte, a member of aircrack-ng team. This tool is able to inject a few frames into a WPA TKIP network with QoS. He worked with Erik Tews (who created PTW attack) for a conference in PacSec 2008: "Gone in 900 Seconds, Some Crypto Issues with WPA".
+-.SH OPERATION
+-.PP
+-.TP
+-.I -H, --help
+-Shows the help screen.
+-.TP
+-.B Filter options:
+-.TP
+-.I -d <dmac>
+-MAC address of destination.
+-.TP
+-.I -s <smac>
+-MAC address of source.
+-.TP
+-.I -m <len>
+-Minimum packet length.
+-.TP
+-.I -n <len>
+-Maximum packet length.
+-.TP
+-.I -t <tods>
+-Frame control, "To" DS bit.
+-.TP
+-.I -f <fromds>
+-Frame control, "From" DS bit.
+-.TP
+-.I -D 
+-Disable AP Detection.
+-.PP
+-.TP
+-.B Replay options:
+-.TP
+-.I -x <nbpps>
+-Number of packets per second.
+-.TP
+-.I -p <fctrl>
+-Set frame control word (hex).
+-.TP
+-.I -a <bssid>
+-Set Access Point MAC address.
+-.TP
+-.I -c <dmac>
+-Set destination MAC address.
+-.TP
+-.I -h <smac>
+-Set source MAC address.
+-.TP
+-.I -F
+-Choose first matching packet.
+-.TP
+-.I -e <essid>
+-Set target SSID.
+-.PP
+-.TP
+-.B Debug options:
+-.TP
+-.I -K <prga>
+-Keystream for continuation.
+-.TP
+-.I -y <file>
+-Keystream file for continuation.
+-.TP
+-.I -j
+-Inject FromFS packets.
+-.TP
+-.I -P <PMK>
+-Pairwise Master key (PMK) for verification or vulnerability testing.
+-.TP
+-.I -p <PSK>
+-Preshared key (PSK) to calculate PMK with essid.
+-.PP
+-.TP
+-.B Source options:
+-.TP
+-.I -i <iface>
+-Capture packets from this interface.
+-.TP
+-.I -r <file>
+-Extract packets from this pcap file.
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B wesside-ng(1)
+--- /dev/null
++++ b/manpages/tkiptun-ng.8
+@@ -0,0 +1,130 @@
++.TH TKIPTUN-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++tkiptun-ng - inject a few frames into a WPA TKIP network with QoS
++.SH SYNOPSIS
++.B tkiptun-ng
++[options] <replay interface>
++.SH DESCRIPTION
++.BI tkiptun-ng
++is a tool created by Martin Beck aka hirte, a member of aircrack-ng team. This tool is able to inject a few frames into a WPA TKIP network with QoS. He worked with Erik Tews (who created PTW attack) for a conference in PacSec 2008: "Gone in 900 Seconds, Some Crypto Issues with WPA".
++.SH OPERATION
++.PP
++.TP
++.I -H, --help
++Shows the help screen.
++.TP
++.B Filter options:
++.TP
++.I -d <dmac>
++MAC address of destination.
++.TP
++.I -s <smac>
++MAC address of source.
++.TP
++.I -m <len>
++Minimum packet length.
++.TP
++.I -n <len>
++Maximum packet length.
++.TP
++.I -t <tods>
++Frame control, "To" DS bit.
++.TP
++.I -f <fromds>
++Frame control, "From" DS bit.
++.TP
++.I -D 
++Disable AP Detection.
++.PP
++.TP
++.B Replay options:
++.TP
++.I -x <nbpps>
++Number of packets per second.
++.TP
++.I -p <fctrl>
++Set frame control word (hex).
++.TP
++.I -a <bssid>
++Set Access Point MAC address.
++.TP
++.I -c <dmac>
++Set destination MAC address.
++.TP
++.I -h <smac>
++Set source MAC address.
++.TP
++.I -F
++Choose first matching packet.
++.TP
++.I -e <essid>
++Set target SSID.
++.PP
++.TP
++.B Debug options:
++.TP
++.I -K <prga>
++Keystream for continuation.
++.TP
++.I -y <file>
++Keystream file for continuation.
++.TP
++.I -j
++Inject FromFS packets.
++.TP
++.I -P <PMK>
++Pairwise Master key (PMK) for verification or vulnerability testing.
++.TP
++.I -p <PSK>
++Preshared key (PSK) to calculate PMK with essid.
++.PP
++.TP
++.B Source options:
++.TP
++.I -i <iface>
++Capture packets from this interface.
++.TP
++.I -r <file>
++Extract packets from this pcap file.
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B wesside-ng(8)
+--- a/manpages/wesside-ng.1
++++ /dev/null
+@@ -1,83 +0,0 @@
+-.TH WESSIDE-NG 1 "April 2010" "Version 1.1"
+-
+-.SH NAME
+-wesside-ng - crack a WEP key of an open network without user intervention
+-.SH SYNOPSIS
+-.B wesside-ng
+-<options>
+-.SH DESCRIPTION
+-.BI wesside-ng
+-is an auto-magic tool which incorporates a number of techniques to seamlessly obtain a WEP key in minutes. It first identifies a network, then proceeds to associate with it, obtain PRGA (pseudo random generation algorithm) xor data, determine the network IP scheme, reinject ARP requests and finally determine the WEP key. All this is done without your intervention.
+-.SH OPTIONS
+-.PP
+-.TP
+-.I -h
+-Shows the help screen.
+-.TP
+-.I -i <iface>
+-Wireless interface name. (Mandatory)
+-.TP
+-.I -n <network ip>
+-Network IP as in 'who has destination IP (netip) tell source IP (myip)'. Defaults to the source IP on the ARP request which is captured and decrypted. (Optional)
+-.TP
+-.I -m <my ip>
+-\'who has destination IP (netip) tell source IP (myip)\'. Defaults to the network.123 on the ARP request captured (Optional).
+-.TP
+-.I -a <source mac>
+-Source MAC address (Optional)
+-.TP
+-.I -c
+-Do not crack the key. Simply capture the packets until control-C is hit to stop the program! (Optional)
+-.TP
+-.I -p <min PRGA>
+-Determines the minimum number of bytes of PRGA which is gathered. Defaults to 128 bytes. (Optional).
+-.TP
+-.I -v <victim MAC>
+-Wireless access point MAC address (Optional).
+-.TP
+-.I -t <threshold>
+-For each number of IVs specified, restart the airecrack-ng PTW engine (Optional). It will restart PTW every <threshold> IVs.
+-.TP
+-.I -f <channel>
+-Allows the highest channel for scanning to be defined. Defaults to channel 11 (Optional).
+-.SH AUTHOR
+-This manual page was written by Thomas d'Otreppe.
+-Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+-On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+-.SH SEE ALSO
+-.br
+-.B airbase-ng(1)
+-.br
+-.B aircrack-ng(1)
+-.br
+-.B airdecap-ng(1)
+-.br
+-.B airdecloak-ng(1)
+-.br
+-.B airdriver-ng(1)
+-.br
+-.B aireplay-ng(1)
+-.br
+-.B airmon-ng(1)
+-.br
+-.B airodump-ng(1)
+-.br
+-.B airolib-ng(1)
+-.br
+-.B airserv-ng(1)
+-.br
+-.B airtun-ng(1)
+-.br
+-.B buddy-ng(1)
+-.br
+-.B easside-ng(1)
+-.br
+-.B ivstools(1)
+-.br
+-.B kstats(1)
+-.br
+-.B makeivs-ng(1)
+-.br
+-.B packetforge-ng(1)
+-.br
+-.B tkiptun-ng(1)
+--- /dev/null
++++ b/manpages/wesside-ng.8
+@@ -0,0 +1,83 @@
++.TH WESSIDE-NG 8 "April 2010" "Version 1.1"
++
++.SH NAME
++wesside-ng - crack a WEP key of an open network without user intervention
++.SH SYNOPSIS
++.B wesside-ng
++<options>
++.SH DESCRIPTION
++.BI wesside-ng
++is an auto-magic tool which incorporates a number of techniques to seamlessly obtain a WEP key in minutes. It first identifies a network, then proceeds to associate with it, obtain PRGA (pseudo random generation algorithm) xor data, determine the network IP scheme, reinject ARP requests and finally determine the WEP key. All this is done without your intervention.
++.SH OPTIONS
++.PP
++.TP
++.I -h
++Shows the help screen.
++.TP
++.I -i <iface>
++Wireless interface name. (Mandatory)
++.TP
++.I -n <network ip>
++Network IP as in 'who has destination IP (netip) tell source IP (myip)'. Defaults to the source IP on the ARP request which is captured and decrypted. (Optional)
++.TP
++.I -m <my ip>
++\'who has destination IP (netip) tell source IP (myip)\'. Defaults to the network.123 on the ARP request captured (Optional).
++.TP
++.I -a <source mac>
++Source MAC address (Optional)
++.TP
++.I -c
++Do not crack the key. Simply capture the packets until control-C is hit to stop the program! (Optional)
++.TP
++.I -p <min PRGA>
++Determines the minimum number of bytes of PRGA which is gathered. Defaults to 128 bytes. (Optional).
++.TP
++.I -v <victim MAC>
++Wireless access point MAC address (Optional).
++.TP
++.I -t <threshold>
++For each number of IVs specified, restart the airecrack-ng PTW engine (Optional). It will restart PTW every <threshold> IVs.
++.TP
++.I -f <channel>
++Allows the highest channel for scanning to be defined. Defaults to channel 11 (Optional).
++.SH AUTHOR
++This manual page was written by Thomas d'Otreppe.
++Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
++On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
++.SH SEE ALSO
++.br
++.B airbase-ng(8)
++.br
++.B aircrack-ng(1)
++.br
++.B airdecap-ng(1)
++.br
++.B airdecloak-ng(1)
++.br
++.B airdriver-ng(8)
++.br
++.B aireplay-ng(8)
++.br
++.B airmon-ng(8)
++.br
++.B airodump-ng(8)
++.br
++.B airolib-ng(1)
++.br
++.B airserv-ng(8)
++.br
++.B airtun-ng(8)
++.br
++.B buddy-ng(1)
++.br
++.B easside-ng(8)
++.br
++.B ivstools(1)
++.br
++.B kstats(1)
++.br
++.B makeivs-ng(1)
++.br
++.B packetforge-ng(1)
++.br
++.B tkiptun-ng(8)
+--- a/manpages/aircrack-ng.1
++++ b/manpages/aircrack-ng.1
+@@ -121,29 +121,29 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B airdecap-ng(1)
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -153,6 +153,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/airdecap-ng.1
++++ b/manpages/airdecap-ng.1
+@@ -43,29 +43,29 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -75,6 +75,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/airdecloak-ng.1
++++ b/manpages/airdecloak-ng.1
+@@ -69,29 +69,29 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+ .B airdecap-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -101,6 +101,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/airolib-ng.1
++++ b/manpages/airolib-ng.1
+@@ -43,7 +43,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -51,21 +51,21 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -75,6 +75,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/buddy-ng.1
++++ b/manpages/buddy-ng.1
+@@ -22,7 +22,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -30,21 +30,21 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -54,6 +54,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/ivstools.1
++++ b/manpages/ivstools.1
+@@ -21,7 +21,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -29,23 +29,23 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B kstats(1)
+ .br
+@@ -53,6 +53,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/kstats.1
++++ b/manpages/kstats.1
+@@ -17,7 +17,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -25,23 +25,23 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -49,6 +49,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/makeivs-ng.1
++++ b/manpages/makeivs-ng.1
+@@ -18,7 +18,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -26,23 +26,23 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -50,6 +50,6 @@
+ .br
+ .B packetforge-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)
+--- a/manpages/packetforge-ng.1
++++ b/manpages/packetforge-ng.1
+@@ -81,7 +81,7 @@
+ On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.
+ .SH SEE ALSO
+ .br
+-.B airbase-ng(1)
++.B airbase-ng(8)
+ .br
+ .B aircrack-ng(1)
+ .br
+@@ -89,23 +89,23 @@
+ .br
+ .B airdecloak-ng(1)
+ .br
+-.B airdriver-ng(1)
++.B airdriver-ng(8)
+ .br
+-.B aireplay-ng(1)
++.B aireplay-ng(8)
+ .br
+-.B airmon-ng(1)
++.B airmon-ng(8)
+ .br
+-.B airodump-ng(1)
++.B airodump-ng(8)
+ .br
+ .B airolib-ng(1)
+ .br
+-.B airserv-ng(1)
++.B airserv-ng(8)
+ .br
+-.B airtun-ng(1)
++.B airtun-ng(8)
+ .br
+ .B buddy-ng(1)
+ .br
+-.B easside-ng(1)
++.B easside-ng(8)
+ .br
+ .B ivstools(1)
+ .br
+@@ -113,6 +113,6 @@
+ .br
+ .B makeivs-ng(1)
+ .br
+-.B tkiptun-ng(1)
++.B tkiptun-ng(8)
+ .br
+-.B wesside-ng(1)
++.B wesside-ng(8)

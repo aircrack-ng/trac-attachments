@@ -1,0 +1,81 @@
+Index: airmon-ng
+===================================================================
+--- airmon-ng	(revision 2942)
++++ airmon-ng	(working copy)
+@@ -461,9 +461,6 @@
+ 	fi
+ }
+ 
+-NEXMON_FIRMWARE_DIR=/opt
+-NEXMON_DRIVER_DIR=/opt
+-
+ isRpi3() {
+ 	local HW_REV=$(grep Revision /proc/cpuinfo | awk '{print $3}')
+ 	[ -z "${HW_REV}" ] && return 0
+@@ -474,11 +471,8 @@
+ 	return 0
+ }
+ 
+-isNexutilPresent() {
+-	type nexutil >/dev/null 2>/dev/null
+-	if [ $? -eq 0 ]; then
+-		return 1
+-	fi
++isNexmonPresent() {
++	[ -f /lib/modules/$(uname -r)/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko ] && return 1
+ 	return 0
+ }
+ 
+@@ -488,10 +482,14 @@
+ 	if [ -n "$(iwconfig $1 | grep 'Mode:Monitor')" ]; then
+ 		printf "\n\tInterface $1 is already in monitor mode"
+ 	else
+-		ifconfig $1 down
+-		nexutil -m2
+-		ifconfig $1 up 2>/dev/null
+-		iwconfig $1 channel ${CH}
++		rmmod brcmfmac 2> /dev/null
++		sleep 1
++		modprobe brcmutil
++		sleep 3
++		insmod /lib/modules/$(uname -r)/kernel/drivers/net/wireless/broadcom/brcm80211/brcmfmac/brcmfmac.ko
++		sleep 2
++		local iface=$(dmesg | grep NEXMON -A 3 | grep -E NETDEV_UP.*wlan[0-9] | head -n 1)
++		startMac80211Iface ${iface}
+ 		printf "\n\t\t(monitor mode enabled for [${PHYDEV}]${1})\n"
+ 	fi
+ }
+@@ -663,14 +661,6 @@
+ 	fi
+ }
+ 
+-stopNexmonIface() {
+-	[ -z $1 ] && return
+-	ifconfig $1 down
+-	nexutil -m0
+-	ifconfig $1 up 2> /dev/null
+-	printf "\n\t\t(monitor mode disabled for [${PHYDEV}]${1})\n"
+-}
+-
+ stopwlIface() {
+ 	if [ -f "/proc/brcm_monitor0" ]; then
+ 		if [ -r "/proc/brcm_monitor0" ]; then
+@@ -1492,15 +1482,15 @@
+ 		if [ $? -eq 0 ]; then
+ 			printf "\n\tNot a Raspberry Pi 3 or Zero Wireless, cannot put in monitor mode.\n"
+ 		else
+-			isNexutilPresent
++			isNexmonPresent
+ 			if [ $? -eq 0 ]; then
+-				printf "\n\tMissing nexutil, cannot switch to monitor mode.\n"
++				printf "\n\tMissing Nexmon module, cannot switch to monitor mode.\n"
+ 			else
+ 				if [ "$1" = "start" ] && [ "$2" = "$iface" ]; then
+ 					startNexmonIface $iface
+ 				fi
+ 				if [ "$1" = "stop" ] && [ "$2" = "$iface" ]; then
+-					stopNexmonIface $iface
++					stopMac80211Iface $iface
+ 				fi
+ 			fi
+ 		fi

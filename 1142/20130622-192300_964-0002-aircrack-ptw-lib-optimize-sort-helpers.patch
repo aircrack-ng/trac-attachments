@@ -1,0 +1,60 @@
+From ce56d9698ee524d9362582b8fedeaea73a5c97c4 Mon Sep 17 00:00:00 2001
+From: Ramiro Polla <ramiro.polla@gmail.com>
+Date: Sat, 22 Jun 2013 13:21:17 -0300
+Subject: [PATCH 2/2] aircrack-ptw-lib: optimize sort helpers
+
+---
+ src/aircrack-ptw-lib.c |   24 +++---------------------
+ 1 file changed, 3 insertions(+), 21 deletions(-)
+
+diff --git a/src/aircrack-ptw-lib.c b/src/aircrack-ptw-lib.c
+index 55af552..e7fedb2 100644
+--- a/src/aircrack-ptw-lib.c
++++ b/src/aircrack-ptw-lib.c
+@@ -119,26 +119,14 @@ PTW_tableentry keytable[KEYHSBYTES][n];
+ static int compare(const void * ina, const void * inb) {
+ 	PTW_tableentry * a = (PTW_tableentry * )ina;
+ 	PTW_tableentry * b = (PTW_tableentry * )inb;
+-	if (a->votes > b->votes) {
+-		return -1;
+-	} else if (a->votes == b->votes) {
+-		return 0;
+-	} else {
+-		return 1;
+-	}
++	return b->votes - a->votes;
+ }
+ 
+ // For sorting
+ static int comparedoublesorthelper(const void * ina, const void * inb) {
+ 	doublesorthelper * a = (doublesorthelper * )ina;
+ 	doublesorthelper * b = (doublesorthelper * )inb;
+-	if (a->difference > b->difference) {
+-		return 1;
+-	} else if (a->difference == b->difference) {
+-		return 0;
+-	} else {
+-		return -1;
+-	}
++	return a->difference - b->difference;
+ }
+ 
+ 
+@@ -182,13 +170,7 @@ static uint8_t rc4update(rc4state * state) {
+ static int comparesorthelper(const void * ina, const void * inb) {
+ 	sorthelper * a = (sorthelper * ) ina;
+ 	sorthelper * b = (sorthelper * ) inb;
+-	if (a->distance > b->distance) {
+-		return 1;
+-	} else if (a->distance == b->distance) {
+-		return 0;
+-	} else {
+-		return -1;
+-	}
++	return a->distance - b->distance;
+ }
+ 
+ /*
+-- 
+1.7.9.5
+

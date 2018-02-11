@@ -1,0 +1,14 @@
+--- a/src/aircrack-ng.c	2013-03-30 23:00:30.049335930 +0100
++++ b/src/aircrack-ng.c	2013-03-30 23:01:54.114551517 +0100
+@@ -4938,6 +4938,11 @@
+ 	ret = FAILURE;
+ 	showhelp = 0;
+ 
++	if(!isatty(STDIN_FILENO)) {
++		fprintf(stderr, "Piped input to aircrack-ng is not allowed.\n");
++		exit(1);
++	}
++
+ 	// Start a new process group, we are perhaps going to call kill(0, ...) later
+ 	setsid();
+ 

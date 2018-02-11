@@ -1,0 +1,118 @@
+Index: aireplay-ng.c
+===================================================================
+--- aireplay-ng.c	(revision 2312)
++++ aireplay-ng.c	(working copy)
+@@ -3208,12 +3208,15 @@
+     opt.f_iswep   = 1;
+     opt.f_fromds  = 1;
+ 
+-    if(getnet(NULL, 1, 1) != 0)
++    if(getnet(NULL, 1, 1) != 0){
++        free(arp);
+         return 1;
++    }
+ 
+     if( memcmp( opt.f_bssid, NULL_MAC, 6 ) == 0 )
+     {
+         printf( "Please specify a BSSID (-b).\n" );
++        free(arp);
+         return( 1 );
+     }
+     /* create and write the output pcap header */
+@@ -3241,6 +3244,7 @@
+     if( ( f_cap_out = fopen( strbuf, "wb+" ) ) == NULL )
+     {
+         perror( "fopen failed" );
++        free(arp);
+         return( 1 );
+     }
+ 
+@@ -3249,6 +3253,7 @@
+     if( fwrite( &pfh_out, n, 1, f_cap_out ) != 1 )
+     {
+         perror( "fwrite failed\n" );
++        free(arp);
+         return( 1 );
+     }
+ 
+@@ -3265,6 +3270,7 @@
+         if( fcntl( dev.fd_in, F_SETFL, O_NONBLOCK ) < 0 )
+         {
+             perror( "fcntl(O_NONBLOCK) failed" );
++            free(arp);
+             return( 1 );
+         }
+     }
+@@ -3290,6 +3296,7 @@
+             if( read( dev.fd_rtc, &n, sizeof( n ) ) < 0 )
+             {
+                 perror( "read(/dev/rtc) failed" );
++                free(arp);
+                 return( 1 );
+             }
+ 
+@@ -3332,14 +3339,18 @@
+                     ticks[0] = 0;
+ 
+                 if( send_packet( arp[arp_off1].buf,
+-                                 arp[arp_off1].len ) < 0 )
++                                 arp[arp_off1].len ) < 0 ){
++                    free(arp);
+                     return( 1 );
++                }
+ 
+                 if( ((double)ticks[0]/(double)RTC_RESOLUTION)*(double)opt.r_nbpps > (double)nb_pkt_sent  )
+                 {
+                     if( send_packet( arp[arp_off1].buf,
+-                                    arp[arp_off1].len ) < 0 )
++                                    arp[arp_off1].len ) < 0 ){
++                        free(arp);
+                         return( 1 );
++                    }
+                 }
+ 
+                 if( ++arp_off1 >= nb_arp )
+@@ -3355,7 +3366,10 @@
+ 
+             caplen = read_packet( h80211, sizeof( h80211 ), NULL );
+ 
+-            if( caplen  < 0 ) return( 1 );
++            if( caplen  < 0 ){ 
++                free(arp);
++                return( 1 );
++            }
+             if( caplen == 0 ) continue;
+         }
+         else
+@@ -3543,6 +3557,7 @@
+ 
+                 if( ( arp[nb_arp].buf = malloc( 128 ) ) == NULL ) {
+                     perror( "malloc failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -3577,6 +3592,7 @@
+ 
+                 if( fwrite( &pkh, n, 1, f_cap_out ) != 1 ) {
+                     perror( "fwrite failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -3584,6 +3600,7 @@
+ 
+                 if( fwrite( h80211, n, 1, f_cap_out ) != 1 ) {
+                     perror( "fwrite failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -3592,6 +3609,7 @@
+         }
+     }
+ 
++    free(arp);
+     return( 0 );
+ }
+ 

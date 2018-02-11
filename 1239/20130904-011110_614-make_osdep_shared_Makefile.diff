@@ -1,0 +1,15 @@
+Index: src/osdep/Makefile
+===================================================================
+--- src/osdep/Makefile	(revision 2325)
++++ src/osdep/Makefile	(working copy)
+@@ -3,8 +3,8 @@
+ 
+ RTAP		= radiotap
+ 
+-LIB		= libosdep.a 
+-CFLAGS		+= $(PIC) -I.. $(LIBAIRPCAP)
++LIB		= libosdep.so
++CFLAGS		+= $(PIC) -I.. $(LIBAIRPCAP) -shared
+ 
+ OBJS_COMMON	= network.o file.o
+ OBJS		= osdep.o $(OBJS_COMMON)

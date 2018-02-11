@@ -1,0 +1,116 @@
+diff -aur a/airmon-zc b/airmon-zc
+--- a/airmon-zc	2014-07-05 19:27:18.512649697 -0400
++++ b/airmon-zc	2014-07-10 13:24:59.843016561 -0400
+@@ -6,6 +6,7 @@
+ IFACE=""
+ MADWIFI=0
+ MAC80211=0
++PREFER_IP=1
+ IW_SOURCE="https://www.kernel.org/pub/software/network/iw/iw-3.11.tar.bz2"
+ IW_ERROR=""
+ UDEV_ISSUE=0
+@@ -77,6 +78,12 @@
+ 	echo
+ 	#write something in here to test uname for Darwin/Linux and set a variable
+ fi
++if [ ! -x "$(command -v ip 2>&1)" ] && [ ! -x "$(command -v ifconfig 2>&1)" ]
++then
++	printf "You have neither ip nor ifconfig installed.\n"
++	printf "Please install one of them from your distro's package manager.\n"
++	exit 1
++fi
+ if [ ! -x "$(command -v iw 2>&1)" ]
+ then
+ 	printf "You don't have iw installed, please install it from your distro's package manager.\n"
+@@ -140,6 +147,37 @@
+ 	exit
+ }
+ 
++setLink() {
++	if [ -x "$(command -v ip 2>&1)" ] && [ x$PREFER_IP = "x1" ]
++	then
++		ip link set dev "$1" "$2"
++	elif [ -x "$(command -v ifconfig 2>&1)" ]
++	then
++		ifconfig "$1" "$2"
++	fi
++}
++
++ifaceIsUp() {
++	if [ -x "$(command -v ip 2>&1)" ] && [ x$PREFER_IP = "x1" ] && ip link show dev "$1" | grep -q UP
++	then
++		return
++	elif [ -x "$(command -v ifconfig 2>&1)" ] && ifconfig "$1" | grep -q UP
++	then
++		return
++	fi
++	return 1
++}
++
++listIfaceUnspec() {
++	if [ -x "$(command -v ip 2>&1)" ] && [ x$PREFER_IP = "x1" ]
++	then
++		ip link 2>/dev/null | awk -F"[: ]+" '/UNSPEC/ {print $2}'
++	elif [ -x "$(command -v ifconfig 2>&1)" ]
++	then
++		ifconfig -a 2>/dev/null | awk -F"[: ]+" '/UNSPEC/ {print $1}'
++	fi
++}
++
+ startDeprecatedIface() {
+ 	iwconfig $1 mode monitor > /dev/null 2>&1
+ 	if [ ! -z $2 ]
+@@ -180,12 +218,12 @@
+ 		exit 1
+ 	fi
+ 	#we didn't bail means our target interface is available
+-	ifconfig ${1} down
++	setLink ${1} down
+ 	IW_ERROR=$(iw phy ${PHYDEV} interface add ${1}mon type monitor 2>&1 | grep "nl80211 not found")
+ 	if [ x${IW_ERROR} = "x" ]
+ 	then
+ 		sleep 1s
+-		ifconfig ${1}mon up
++		setLink ${1}mon up
+ 		if [ ! -z ${3} ]
+ 		then
+ 			if [ ${3} -lt 1000 ]
+@@ -204,7 +242,7 @@
+ 	if [ ${ELITE} = "1" ]
+ 	then
+ 		#check if $1 is still down, warn if not
+-		if $(ifconfig ${1} | grep -q UP)
++		if ifaceIsUp "$1"
+ 		then
+ 			printf "\nInterface ${1} is up, but it should be down. Something is interferring."
+ 			printf "\nPlease run \"airmon-zc check kill\" and/or kill your network manager."
+@@ -887,25 +925,25 @@
+ 	printf "PHY\tInterface\tDriver\t\tChipset\n\n"
+ fi
+ 
+-for iface in $(ifconfig -a 2> /dev/null | egrep UNSPEC | sed 's/^\([a-zA-Z0-9_]*\) .*/\1/')
++for iface in listIfaceUnspec
+ do
+ 
+ 	if [ -e "/proc/sys/dev/$iface/fftxqmin" ]
+ 	then
+ 		MADWIFI=1
+-		ifconfig $iface up
++		setLink $iface up
+ 		printf "$iface\t\tAtheros\t\tmadwifi-ng"
+ 		if [ x$1 = "xstart" ] && [ x$2 = x$iface ]
+ 		then
+ 			IFACE=$(wlanconfig ath create wlandev $iface wlanmode monitor -bssid | grep ath)
+-			ifconfig $iface up 2> /dev/null > /dev/null
++			setLink $iface up 2> /dev/null > /dev/null
+ 			if [ $CH -lt 1000 ]
+ 			then
+ 				iwconfig $IFACE channel $CH 2> /dev/null > /dev/null
+ 			else
+ 				iwconfig $IFACE freq "$CH"000000 2> /dev/null > /dev/null
+ 			fi
+-		ifconfig $IFACE up 2> /dev/null > /dev/null
++		setLink $IFACE up 2> /dev/null > /dev/null
+ 		UDEV_ISSUE=$?
+ 		fi
+ 

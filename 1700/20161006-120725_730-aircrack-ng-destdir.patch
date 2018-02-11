@@ -1,0 +1,164 @@
+diff -ru aircrack-ng-1.2-rc4.orig/scripts/airdrop-ng/Makefile aircrack-ng-1.2-rc4.new/scripts/airdrop-ng/Makefile
+--- aircrack-ng-1.2-rc4.orig/scripts/airdrop-ng/Makefile	2014-11-24 18:50:07.000000000 +0100
++++ aircrack-ng-1.2-rc4.new/scripts/airdrop-ng/Makefile	2016-06-21 05:14:24.644035142 +0200
+@@ -8,10 +8,10 @@
+ 	@echo "Nothing to do. Run make install"
+ 
+ install: doc
+-	python setup.py install --prefix="$(prefix)" --record files.txt
++	python setup.py install --prefix="$(DESTDIR)$(prefix)" --record files.txt
+ 
+ doc:
+-	$(MAKE) -C doc install 
++	$(MAKE) -C doc install
+ 
+ uninstall:
+ 	$(MAKE) -C doc $(@)
+diff -ru aircrack-ng-1.2-rc4.orig/scripts/airgraph-ng/Makefile aircrack-ng-1.2-rc4.new/scripts/airgraph-ng/Makefile
+--- aircrack-ng-1.2-rc4.orig/scripts/airgraph-ng/Makefile	2015-09-20 00:50:34.000000000 +0200
++++ aircrack-ng-1.2-rc4.new/scripts/airgraph-ng/Makefile	2016-06-21 05:14:49.718666532 +0200
+@@ -8,7 +8,7 @@
+ 	@echo "Nothing to do. Run make install"
+ 
+ install: doc
+-	python setup.py install --prefix="$(prefix)" --record files.txt
++	python setup.py install --prefix="$(DESTDIR)$(prefix)" --record files.txt
+ 
+ doc:
+ 	$(MAKE) -C man install 
+diff -ru aircrack-ng-1.2-rc4.orig/scripts/airoscript-ng/Makefile aircrack-ng-1.2-rc4.new/scripts/airoscript-ng/Makefile
+--- aircrack-ng-1.2-rc4.orig/scripts/airoscript-ng/Makefile	2014-11-24 18:45:41.000000000 +0100
++++ aircrack-ng-1.2-rc4.new/scripts/airoscript-ng/Makefile	2016-06-21 05:24:33.050094387 +0200
+@@ -1,13 +1,13 @@
+ #!/usr/bin/make
+ # Configure prefix here:
+-prefix=$(DESTDIR)/usr/local/
+-etcdir=$(DESTDIR)/usr/local/etc/
++prefix=/usr/local/
+ name="airoscript-ng"
+ 
+ INSTALL = install -c
+ INSTALLDATA = install -c -m 644
+ INSTALLBIN = install -c -m 755
+ 
++etcdir=$(prefix)/etc/
+ data=$(prefix)/share
+ bindir=$(prefix)/sbin/
+ picdir=$(data)/pixmaps/
+@@ -27,52 +27,57 @@
+ 
+ 
+ installdirs:
+-	@$(SHELL) ./.mkinstalldirs $(bindir) $(datadir) \
+-        			$(docdir)/html/images $(etcdir) \
+-        			$(docdir)/html/css \
+-                    $(mandir)/man1 $(locale) \
+-					$(datadir)/themes $(picdir) $(appdir) \
+-					$(datadir)/plugins \
+-					$(datadir)/extras \
+-					$(datadir)/templates
++	@$(SHELL) ./.mkinstalldirs $(DESTDIR)$(bindir) \
++				$(DESTDIR)$(datadir) \
++				$(DESTDIR)$(docdir)/html/images \
++				$(DESTDIR)$(etcdir) \
++				$(DESTDIR)$(docdir)/html/css \
++				$(DESTDIR)$(mandir)/man1 \
++				$(DESTDIR)$(locale) \
++				$(DESTDIR)$(datadir)/themes \
++				$(DESTDIR)$(picdir) \
++				$(DESTDIR)$(appdir) \
++				$(DESTDIR)$(datadir)/plugins \
++				$(DESTDIR)$(datadir)/extras \
++				$(DESTDIR)$(datadir)/templates
+ 
+ install-config:
+-	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng.conf $(etcdir)
+-	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_debug.conf $(etcdir)
+-	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_advanced.conf $(etcdir)
++	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng.conf $(DESTDIR)$(etcdir)
++	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_debug.conf $(DESTDIR)$(etcdir)
++	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_advanced.conf $(DESTDIR)$(etcdir)
+ ifeq ($(package),yes)
+-	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_packaged.conf $(etcdir)
++	@$(INSTALLDATA) $(srcdir)/conf/airoscript-ng_packaged.conf $(DESTDIR)$(etcdir)
+ endif
+ 
+ install-binary:
+ 	@echo "Installing airoscript"
+-	@$(INSTALLBIN) $(srcdir)/airoscript-ng $(bindir)/$(name)
+-	@cp -r $(srcdir)/functions/* $(datadir)
++	@$(INSTALLBIN) $(srcdir)/airoscript-ng $(DESTDIR)$(bindir)/$(name)
++	@cp -r $(srcdir)/functions/* $(DESTDIR)$(datadir)
+ 	@echo "Installing themes"
+-	@cp -r $(srcdir)/templates/* $(datadir)/templates
+-	@$(INSTALLDATA) $(srcdir)/themes/*.theme $(datadir)/themes
++	@cp -r $(srcdir)/templates/* $(DESTDIR)$(datadir)/templates
++	@$(INSTALLDATA) $(srcdir)/themes/*.theme $(DESTDIR)$(datadir)/themes
+ 	@echo "Installing plugins"
+-	@$(INSTALLDATA) $(srcdir)/plugins/* $(datadir)/plugins
++	@$(INSTALLDATA) $(srcdir)/plugins/* $(DESTDIR)$(datadir)/plugins
+ 	@echo "Installing extras"
+-	@cp -r $(srcdir)/extras/* $(datadir)/extras
+-	@cp -r $(srcdir)/extras/completions/* $(datadir)/extras/completions
++	@cp -r $(srcdir)/extras/* $(DESTDIR)$(datadir)/extras
++	@cp -r $(srcdir)/extras/completions/* $(DESTDIR)$(datadir)/extras/completions
+ 
+ install-docs:
+ 	@echo "Installing documentation"
+ 	@echo "\t Installing standard documentation"
+-	@for i in doc/* ; do if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then make -s -C $$i docdir="$(docdir)" INSTALLDATA="$(INSTALLDATA)" ; else $(INSTALLDATA) $$i $(docdir) ;fi ; done
++	@for i in doc/* ; do if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then make -s -C $$i docdir="$(docdir)" INSTALLDATA="$(INSTALLDATA)" DESTDIR="$(DESTDIR)" ; else $(INSTALLDATA) $$i $(DESTDIR)$(docdir) ;fi ; done
+ 	@# This will install any manpage on manpages dir. (Just man1 manpages)
+ 	@echo  "\t Installing manpages"
+-	@for i in $(docdir)/*.1 ; do $(INSTALLDATA) $$i $(mandir)/man1/ ; done
++	@for i in $(docdir)/*.1 ; do $(INSTALLDATA) $$i $(DESTDIR)$(mandir)/man1/ ; done
+ 	@echo "\t Installing artwork"
+-	@$(INSTALLDATA) $(srcdir)/goodies/airoscriptlogo.png $(docdir)/airoscript-ng.png
++	@$(INSTALLDATA) $(srcdir)/goodies/airoscriptlogo.png $(DESTDIR)$(docdir)/airoscript-ng.png
+ 
+ install-desktop:
+-	@install $(srcdir)/goodies/airoscript-ng.desktop $(appdir)/
+-	@install $(srcdir)/goodies/airoscript-ng_gtk.desktop $(appdir)/
+-	@$(INSTALLDATA) src/goodies/airoscriptlogo.png $(picdir)/airoscript-ng.png
+-	@xdg-desktop-menu install $(appdir)/airoscript-ng.desktop
+-	@xdg-desktop-menu install $(appdir)/airoscript-ng_gtk.desktop
++	@install $(srcdir)/goodies/airoscript-ng.desktop $(DESTDIR)$(appdir)/
++	@install $(srcdir)/goodies/airoscript-ng_gtk.desktop $(DESTDIR)$(appdir)/
++	@$(INSTALLDATA) src/goodies/airoscriptlogo.png $(DESTDIR)$(picdir)/airoscript-ng.png
++	@xdg-desktop-menu install $(DESTDIR)$(appdir)/airoscript-ng.desktop
++	@xdg-desktop-menu install $(DESTDIR)$(appdir)/airoscript-ng_gtk.desktop
+ 
+ generate-locale:
+ 	@for i in $(srcdir)/locale/* ; do \
+@@ -85,21 +90,21 @@
+ 	@echo "Installing locales"
+ 	@for i in $(srcdir)/locale/* ; do \
+ 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
+-			make -s -C $$i install localedir="$(locale)" INSTALLDATA="$(INSTALLDATA)" ; \
++			make -s -C $$i install localedir="$(locale)" INSTALLDATA="$(INSTALLDATA)" DESTDIR="$(DESTDIR)" ; \
+ 		fi ; \
+ 	done
+ 
+ uninstall:
+-	@rm -f $(bindir)/$(name)
+-	@rm -f $(etcdir)/airoscript-ng*.conf
+-	@rm -rf $(datadir)
+-	@rm -rf $(docdir)
+-	@rm -f $(mandir)/man1/airoscript-ng.1
+-	@rm -f $(picdir)/airoscript-ng.png $(picdir)/airoscript-ng.desktop $(picdir)/airoscript-ng_gtk.desktop
+-	@for i in $(docdir)/*.1 ; do rm -rf $(mandir)/man1/$$i ; done
+-	@for i in $(srcdir)/locale/* ; do \
++	@rm -f $(DESTDIR)$(bindir)/$(name)
++	@rm -f $(DESTDIR)$(etcdir)/airoscript-ng*.conf
++	@rm -rf $(DESTDIR)$(datadir)
++	@rm -rf $(DESTDIR)$(docdir)
++	@rm -f $(DESTDIR)$(mandir)/man1/airoscript-ng.1
++	@rm -f $(DESTDIR)$(picdir)/airoscript-ng.png $(DESTDIR)$(picdir)/airoscript-ng.desktop $(DESTDIR)$(picdir)/airoscript-ng_gtk.desktop
++	@for i in $(DESTDIR)$(docdir)/*.1 ; do rm -rf $(DESTDIR)$(mandir)/man1/$$i ; done
++	@for i in $(DESTDIR)$(srcdir)/locale/* ; do \
+ 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
+-			make -s -C $$i uninstall localedir="$(locale)" ; \
++			make -s -C $$i uninstall localedir="$(locale)" DESTDIR="$(DESTDIR)" ; \
+ 		fi ; \
+ 	done
+ 	@echo "Uninstalled succesfully"

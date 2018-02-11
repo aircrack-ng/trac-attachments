@@ -1,0 +1,68 @@
+jano:~/aircrack-ng$ make sqlite=true libnl=true unstable=true
+--print-provides: unknown option
+make -C src all
+--print-provides: unknown option
+make[1]: ingresso nella directory "/home/jano/aircrack-ng/src"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o aircrack-ng.o aircrack-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o crypto.o crypto.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o common.o common.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o uniqueiv.o uniqueiv.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o aircrack-ptw-lib.o aircrack-ptw-lib.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  aircrack-ng.o crypto.o common.o uniqueiv.o aircrack-ptw-lib.o sha1-sse2.S -o aircrack-ng -lpthread -lssl -lcrypto  -L/usr/local/lib -lsqlite3
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airdecap-ng.o airdecap-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airdecap-ng.o crypto.o common.o -o airdecap-ng -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o packetforge-ng.o packetforge-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  packetforge-ng.o common.o crypto.o -o packetforge-ng -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o ivstools.o ivstools.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  ivstools.o common.o crypto.o uniqueiv.o -o ivstools -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o kstats.o kstats.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  kstats.o -o kstats
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o makeivs-ng.o makeivs-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  makeivs-ng.o common.o uniqueiv.o -o makeivs-ng
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airdecloak-ng.o airdecloak-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o osdep/radiotap/radiotap-parser.o osdep/radiotap/radiotap-parser.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airdecloak-ng.o common.o osdep/radiotap/radiotap-parser.o -o airdecloak-ng
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o wpaclean.o wpaclean.c
+make -C osdep
+--print-provides: unknown option
+make[2]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+Building for Linux
+--print-provides: unknown option
+make[3]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o osdep.o osdep.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o network.o network.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o file.o file.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o linux.o linux.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o linux_tap.o linux_tap.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -fPIC -I..    -c -o common.o common.c
+ar cru libosdep.a  osdep.o network.o file.o linux.o linux_tap.o radiotap/radiotap-parser.o common.o
+ranlib libosdep.a 
+touch .os.Linux
+make[3]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+make[2]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  wpaclean.o -o wpaclean -lnl   -Losdep -losdep 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o besside-ng-crawler.o besside-ng-crawler.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  besside-ng-crawler.o -o besside-ng-crawler -lpcap
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airolib-ng.o airolib-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airolib-ng.o crypto.c common.o -o airolib-ng -lssl -lcrypto  -DHAVE_REGEXP -L/usr/local/lib -lsqlite3
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o buddy-ng.o buddy-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  buddy-ng.o common.o -o buddy-ng
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o aireplay-ng.o aireplay-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  aireplay-ng.o common.o crypto.o -o aireplay-ng -lnl   -Losdep -losdep  -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airodump-ng.o airodump-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airodump-ng.o common.o crypto.o uniqueiv.o -o airodump-ng -lnl   -Losdep -losdep  -lssl -lcrypto  -lpthread
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airserv-ng.o airserv-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airserv-ng.o common.o -o airserv-ng -lnl   -Losdep -losdep  
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airtun-ng.o airtun-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airtun-ng.o common.o crypto.o -o airtun-ng -lnl   -Losdep -losdep  -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o airbase-ng.o airbase-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  airbase-ng.o common.o crypto.o -o airbase-ng -lnl   -Losdep -losdep  -lssl -lcrypto  -lpthread
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o besside-ng.o besside-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  besside-ng.o crypto.c common.o aircrack-ptw-lib.o -o besside-ng -lnl   -Losdep -losdep  -lssl -lcrypto  -lz
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o wesside-ng.o wesside-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  wesside-ng.o crypto.c common.o aircrack-ptw-lib.o -o wesside-ng -lnl   -Losdep -losdep  -lssl -lcrypto  -lz
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o tkiptun-ng.o tkiptun-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  tkiptun-ng.o common.o crypto.o -o tkiptun-ng -lnl   -Losdep -losdep  -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude   -c -o easside-ng.o easside-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Iinclude  easside-ng.o common.o -o easside-ng -lnl   -Losdep -losdep  -lz
+make[1]: uscita dalla directory "/home/jano/aircrack-ng/src"

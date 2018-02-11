@@ -1,0 +1,13 @@
+Index: src/airodump-ng.c
+===================================================================
+--- src/airodump-ng.c	(revisione 2271)
++++ src/airodump-ng.c	(copia locale)
+@@ -2870,7 +2870,7 @@
+     int num_sta;
+ 
+     if(!G.singlechan) columns_ap -= 4; //no RXQ in scan mode
+-    if(G.show_uptime) columns_ap += 14; //show uptime needs more space
++    if(G.show_uptime) columns_ap += 15; //show uptime needs more space
+ 
+     nlines = 2;
+ 

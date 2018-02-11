@@ -1,0 +1,85 @@
+From 17b84378e330255af010e20fb9b0e6f2a2aa5b95 Mon Sep 17 00:00:00 2001
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Wed, 8 Aug 2012 03:33:05 +0200
+Subject: [PATCH 1/2] Show manufacturer column after the ESSID one if the
+ terminal has enough space
+
+ * The position of the MANUFACTURER column changes depending of the longest
+   ESSID we have scanned. Basically it does this:
+
+     longest{strlen(ESSID)}+2SPACES+MANUFACTURER
+---
+ src/airodump-ng.c |   25 +++++++++++++++++++++++--
+ src/airodump-ng.h |    1 +
+ 2 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index 72bad64..39d4c2e 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -2971,6 +2971,12 @@ void dump_print( int ws_row, int ws_col, int if_num )
+ 			    "    #Data, #/s  CH  MB   ENC  CIPHER AUTH ESSID", columns_ap );
+ 	}
+ 
++	if( ws_col > (columns_ap - 4) ) {
++		// write spaces (32).
++		memset(strbuf+columns_ap, 32, G.max_essid_size - 5 ); // 5 is the len of "ESSID"
++		snprintf(strbuf+columns_ap+G.max_essid_size-5, 15,"%s","  MANUFACTURER");
++	}
++
+ 	strbuf[ws_col - 1] = '\0';
+ 	fprintf( stderr, "%s\n", strbuf );
+ 
+@@ -3133,13 +3139,27 @@ void dump_print( int ws_row, int ws_col, int if_num )
+ 		if(ap_cur->essid[0] != 0x00)
+ 		{
+ 		    snprintf( strbuf,  sizeof( strbuf ) - 1,
+-			    "%-256s", ap_cur->essid );
++			    "%s", ap_cur->essid );
+ 		}
+ 		else
+ 		{
+ 		    snprintf( strbuf,  sizeof( strbuf ) - 1,
+-			    "<length:%3d>%-256s", ap_cur->ssid_length, "\x00" );
++			    "<length:%3d>%s", ap_cur->ssid_length, "\x00" );
+ 		}
++
++		if (G.max_essid_size <= strlen(strbuf))
++			G.max_essid_size = strlen(strbuf);
++		else // write spaces (32)
++			memset( strbuf+strlen(strbuf), 32,  (G.max_essid_size - strlen(strbuf))  );
++
++		if (ap_cur->manuf == NULL)
++			ap_cur->manuf = get_manufacturer(ap_cur->bssid[0], ap_cur->bssid[1], ap_cur->bssid[2]);
++
++
++		snprintf( strbuf + G.max_essid_size , sizeof(strbuf)-G.max_essid_size, "  %s", ap_cur->manuf );
++		// write spaces (32) until the end of column
++		memset( strbuf+strlen(strbuf), 32, ws_col - (columns_ap - 4 ) );
++		// end the string at the end of the column
+ 		strbuf[ws_col - (columns_ap - 4)] = '\0';
+ 		fprintf( stderr, "  %s", strbuf );
+ 	    }
+@@ -5330,6 +5350,7 @@ int main( int argc, char *argv[] )
+     G.show_sta     =  1;
+     G.show_ack     =  0;
+     G.hide_known   =  0;
++    G.max_essid_size  =  5; // ESSID
+     G.hopfreq      =  DEFAULT_HOPFREQ;
+     G.s_file       =  NULL;
+     G.s_iface      =  NULL;
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index 0280501..b87b0d4 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -452,6 +452,7 @@ struct globals
+     uchar selected_bssid[6];	/* bssid that is selected */
+ 
+     int ignore_negative_one;
++    u_int max_essid_size;
+ }
+ G;
+ 
+-- 
+1.7.10.4
+

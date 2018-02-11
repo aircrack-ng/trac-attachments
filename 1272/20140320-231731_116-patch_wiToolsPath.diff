@@ -1,0 +1,51 @@
+diff --git a/aircrack-ng/src/osdep/linux.c b/aircrack-ng/src/osdep/linux.c
+index 2b5117e..5df490c 100644
+--- a/aircrack-ng/src/osdep/linux.c
++++ b/aircrack-ng/src/osdep/linux.c
+@@ -250,31 +250,22 @@ static char * searchInside(const char * dir, const char * filename)
+ /* Search a wireless tool and return its path */
+ static char * wiToolsPath(const char * tool)
+ {
+-        char * path;
+-        int i, nbelems;
+-        static const char * paths [] = {
+-                "/sbin",
+-                "/usr/sbin",
+-                "/usr/local/sbin",
+-                "/bin",
+-                "/usr/bin",
+-                "/usr/local/bin",
+-                "/tmp"
+-        };
+-
+-        nbelems = sizeof(paths) / sizeof(char *);
+-
+-        for (i = 0; i < nbelems; i++)
+-        {
+-                path = searchInside(paths[i], tool);
+-                if (path != NULL)
+-                        return path;
+-        }
+-
+-        return NULL;
++#define SEPARATOR ":"
++	char *env, *found, *path;
++
++	env = getenv("PATH");
++	if (env) {
++		path = strtok(env, SEPARATOR);
++		while (path) {
++			found = searchInside(path, tool);
++	                if (found != NULL)
++	                        return found;
++			path = strtok(NULL, SEPARATOR);
++		}
++	}
++	return NULL;
+ }
+ 
+-
+ /* nl80211 */
+ #ifdef CONFIG_LIBNL
+ struct nl80211_state {
+

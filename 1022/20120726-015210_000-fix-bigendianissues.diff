@@ -1,0 +1,26 @@
+diff --git a/src/aircrack-ng.c b/src/aircrack-ng.c
+index af5439e..251bb0f 100644
+--- a/src/aircrack-ng.c
++++ b/src/aircrack-ng.c
+@@ -911,7 +911,10 @@ void read_thread( void *arg )
+ 				break;
+ 
+ 			if( pfh.magic == TCPDUMP_CIGAM )
++			{
+ 				SWAP32( pkh.caplen );
++				SWAP32( pkh.len );
++			}
+ 
+ 			if( pkh.caplen <= 0 || pkh.caplen > 65535 )
+ 			{
+@@ -1838,7 +1841,10 @@ void check_thread( void *arg )
+ 				goto read_fail;
+ 
+ 			if( pfh.magic == TCPDUMP_CIGAM )
++			{
+ 				SWAP32( pkh.caplen );
++				SWAP32( pkh.len );
++			}
+ 
+ 			if( pkh.caplen <= 0 || pkh.caplen > 65535 )
+ 			{

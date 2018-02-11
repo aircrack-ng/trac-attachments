@@ -1,0 +1,17 @@
+--- airodump-ng.c	2007-02-18 19:34:27.000000000 +0100
++++ airodump-ng.c	2007-02-18 19:38:00.000000000 +0100
+@@ -1996,7 +1996,13 @@
+ 
+         if( (ap_cur->security & (AUTH_OPN|AUTH_PSK|AUTH_MGT)) == 0 ) fprintf( stderr, "   ");
+         else if( ap_cur->security & AUTH_MGT   ) fprintf( stderr, "MGT");
+-        else if( ap_cur->security & AUTH_PSK   ) fprintf( stderr, "PSK");
++        else if( ap_cur->security & AUTH_PSK   )
++        {
++            if( ap_cur->security & STD_WEP )
++                fprintf( stderr, "SKA");
++            else
++                fprintf( stderr, "PSK");
++        }
+         else if( ap_cur->security & AUTH_OPN   ) fprintf( stderr, "OPN");
+ 
+         if( ws_col > (columns_ap - 4) )

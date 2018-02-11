@@ -1,0 +1,1458 @@
+diff -ur linux-src/aireplay-ng.c BSD-src/aireplay-ng.c
+--- linux-src/aireplay-ng.c	2007-03-02 23:03:00.796875000 +0100
++++ BSD-src/aireplay-ng.c	2007-02-25 22:38:50.093750000 +0100
+@@ -21,8 +21,9 @@
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
+-#ifndef linux
+-    #warning Aireplay-ng could fail on this OS
++#if defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)
++    #define HAVE_RADIOTAP  1
++    #define HAVE_PCAP_NONBLOCK 1
+ #endif
+ 
+ #ifdef linux
+@@ -42,9 +43,10 @@
+     #include <linux/wireless.h>
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
+     #include <net/bpf.h>
+     #include <net/if.h>
++    #include "pcapbsd.c"
+ #endif
+ 
+ #include <arpa/inet.h>
+@@ -59,7 +61,9 @@
+ #include <getopt.h>
+ 
+ #include <fcntl.h>
+-#include <ctype.h>
++//#include <errno.h>
++//#include <time.h>
++//#include <getopt.h>
+ 
+ #include "version.h"
+ #include "pcap.h"
+@@ -251,8 +255,9 @@
+ 
+ int ctrl_c, alarmed;
+ 
++#ifdef linux
+ char * iwpriv;
+-
++#endif
+ 
+ void sighandler( int signum )
+ {
+@@ -263,6 +268,7 @@
+         alarmed++;
+ }
+ 
++#ifdef linux
+ /* wlanng-aware frame sending routing */
+ 
+ int send_packet( void *buf, size_t count )
+@@ -330,7 +336,26 @@
+     nb_pkt_sent++;
+     return( 0 );
+ }
++#endif
++
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++int send_packet( void *buf, size_t count )
++{
++//    memcmp(buf+64, buf, count);
++//    memset(buf, 0, 64);
++
++    if(!pcap_inject(pd, buf, count))
++//    if(!pcap_sendpacket(pd, buf, count+64))
++    {
++	perror( "write failed" );
++	return -1;
++    }
++    nb_pkt_sent++;
++    return 0;
++}
++#endif
+ 
++#ifdef linux
+ /* madwifi-aware frame reading routing */
+ 
+ int read_packet( void *buf, size_t count )
+@@ -380,6 +405,27 @@
+ 
+     return( caplen );
+ }
++#endif
++
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++int read_packet( void *buf, size_t count )
++{
++    int caplen;
++    caplen = pcap_read_packet(count);
++    if(caplen < 0)
++    {
++        perror( "read failed" );
++	return -1;
++    }
++    memcpy(buf, callback_data, MAX_PACKET_LEN);
++    if(caplen > 0)
++    {
++	caplen = callback_header.caplen-64;
++	memcpy( h80211, callback_data+64, caplen );
++    }    
++    return caplen;
++}
++#endif
+ 
+ void read_sleep( int usec )
+ {
+@@ -395,6 +441,7 @@
+ 
+     while( ((tv2.tv_sec*1000000 - tv.tv_sec*1000000) + (tv2.tv_usec - tv.tv_usec)) < (usec) )
+     {
++#ifdef linux
+         FD_ZERO( &rfds );
+         FD_SET( dev.fd_in, &rfds );
+ 
+@@ -405,7 +452,11 @@
+ 
+         if( FD_ISSET( dev.fd_in, &rfds ) )
+             caplen = read_packet( h80211, sizeof( h80211 ) );
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset( h80211, 0, sizeof( h80211) );
++	caplen = read_packet( h80211, 1);
++#endif
+         gettimeofday(&tv2, NULL);
+     }
+ }
+@@ -601,7 +652,15 @@
+ 
+     while (1) {
+ 	len = 0;
++#ifdef linux
+ 	while (len < 22) len = read_packet(pkt_sniff, 4096);
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	while (len < 22) {
++	    memset(pkt_sniff, 0, sizeof(pkt_sniff));
++	    len = read_packet(pkt_sniff, 1);
++	}
++#endif
+ 	if (! memcmp(pkt_sniff, "\x80", 1)) {
+ 	    if (! memcmp(bssid, pkt_sniff+10, 6)) break;
+ 	}
+@@ -707,12 +766,10 @@
+ int fake_ska_auth_2(uchar *ph80211, int caplen, uchar *prga, uchar *iv)
+ {
+     struct timeval tv, tv2;
+-    int ret;
+-    uchar packet[4096];
+-    uchar ack[14] = "\xd4";
+-
+-    ret = 0;
++    int ret=0;
++    uchar ack[14] = 	"\xd4";
+     memset(ack+1, 0, 13);
++    uchar packet[4096];
+ 
+     //Increasing SEQ number
+     ph80211[26]++;
+@@ -772,21 +829,18 @@
+ int fake_asso()
+ {
+     struct timeval tv, tv2;
+-    int caplen, slen, assoclen;
+-
+-    uchar packet[4096];
+-
+-    uchar *capa;	//Capability Field from beacon
++    int caplen = 0;
++    int slen;
++    uchar ack[14] = 	"\xd4";
++    memset(ack+1, 0, 13);
+ 
+     uchar assoc[4096] = "\x00\x00\x3a\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+                         "\x00\x00\x00\x00\x00\x00\xd0\x01\x15\x00\x0a\x00\x00";
+ 
+     uchar rates[16] =   "\x01\x04\x02\x04\x0B\x16\x32\x08\x0C\x12\x18\x24\x30\x48\x60\x6C";
++    uchar packet[4096];
+ 
+-    uchar ack[14] = 	"\xd4";
+-
+-    memset(ack+1, 0, 13);
+-	caplen = 0;
++    uchar *capa;	//Capability Field from beacon
+ 
+     printf("Part2: Association\n");
+ 
+@@ -811,7 +865,7 @@
+     memcpy(assoc+30+slen, rates, 16);
+ 
+     //Calculating total packet size
+-    assoclen = 30 + slen + 16;
++    int assoclen = 30 + slen + 16;
+ 
+     wait_for_beacon(opt.r_bssid, capa);
+     memcpy(assoc+24, capa, 2);
+@@ -823,14 +877,19 @@
+     gettimeofday(&tv2, NULL);
+     while (1)
+     {
++#ifdef linux
+         caplen = read_packet(packet, 4096);
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset(packet, 0, sizeof(packet));
++	caplen = read_packet(packet, 1);
++#endif
+         if (packet[0] == 0x10) break;
+ 
+         gettimeofday(&tv2, NULL);
+         if (((tv2.tv_sec-tv.tv_sec)*1000000) + (tv2.tv_usec-tv.tv_usec) > 500*1000)
+         {
+-            printf ("\nNot answering...(Step 3)\n\n");
++            printf ("\nNot answering...(Step3)\n\n");
+             return -1;
+         }
+     }
+@@ -852,10 +911,10 @@
+ {
+     uchar *iv;
+ 
+-    int caplen, prgalen, ret, i;
+-
+-	caplen = i = 0;
+-	ret = -1;
++    int caplen=0;
++    int prgalen;
++    int ret=-1;
++    int i=0;
+ 
+     while(caplen <= 0)
+     {
+@@ -906,8 +965,6 @@
+     int tries;
+     int abort;
+ 
+-    uchar capa[2];
+-
+     unsigned char ackbuf[14];
+ 
+     if( opt.r_essid[0] == '\0' )
+@@ -940,8 +997,6 @@
+     tt = time( NULL );
+     tr = time( NULL );
+ 
+-    wait_for_beacon(opt.r_bssid, capa);
+-
+     while( 1 )
+     {
+         switch( state )
+@@ -1042,8 +1097,6 @@
+ 
+                 memcpy( h80211 + 30, opt.r_essid,  n );
+                 memcpy( h80211 + 30 + n, RATES, 16 );
+-                memcpy( h80211 + 24, capa, 2);
+-
+ 
+                 PCT; printf( "Sending Association Request\n" );
+ 
+@@ -1110,11 +1163,13 @@
+ 
+         /* read one frame */
+ 
++        tv.tv_sec  = 1;
++        tv.tv_usec = 0;
++
++#ifdef linux
+         FD_ZERO( &rfds );
+         FD_SET( dev.fd_in, &rfds );
+ 
+-        tv.tv_sec  = 1;
+-        tv.tv_usec = 0;
+ 
+         if( select( dev.fd_in + 1, &rfds, NULL, NULL, &tv ) < 0 )
+         {
+@@ -1127,7 +1182,11 @@
+             continue;
+ 
+         caplen = read_packet( h80211, sizeof( h80211 ) );
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset(h80211, 0, sizeof(h80211));
++	caplen = read_packet(h80211, 1);
++#endif
+         if( caplen  < 0 ) return( 1 );
+         if( caplen == 0 ) continue;
+ 
+@@ -1369,11 +1428,11 @@
+ 
+         if( opt.s_file == NULL )
+         {
+-            FD_ZERO( &rfds );
+-            FD_SET( dev.fd_in, &rfds );
+-
+             tv.tv_sec  = 1;
+             tv.tv_usec = 0;
++#ifdef linux
++            FD_ZERO( &rfds );
++            FD_SET( dev.fd_in, &rfds );
+ 
+             if( select( dev.fd_in + 1, &rfds, NULL, NULL, &tv ) < 0 )
+             {
+@@ -1384,18 +1443,21 @@
+ 
+             if( ! FD_ISSET( dev.fd_in, &rfds ) )
+                 continue;
+-
++#endif
+             gettimeofday( &tv, NULL );
+-
+-            *caplen = read_packet( h80211, sizeof( h80211 ) );
+-
++#ifdef linux
++	    *caplen = read_packet( h80211, sizeof( h80211 ) );
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	    memset( h80211, 0, sizeof( h80211) );
++	    *caplen = read_packet( h80211, 1);
++#endif
+             if( *caplen  < 0 ) return( 1 );
+             if( *caplen == 0 ) continue;
+         }
+         else
+         {
+             /* there are no hidden backdoors in this source code */
+-
+             n = sizeof( pkh );
+ 
+             if( fread( &pkh, n, 1, dev.f_cap_in ) != 1 )
+@@ -1406,10 +1468,14 @@
+ 
+             if( dev.pfh_in.magic == TCPDUMP_CIGAM )
+                 SWAP32( pkh.caplen );
+-
++#ifdef linux
+             tv.tv_sec  = pkh.tv_sec;
+             tv.tv_usec = pkh.tv_usec;
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++            tv.tv_sec  = pkh.ts.tv_sec;
++            tv.tv_usec = pkh.ts.tv_usec;
++#endif
+             n = *caplen = pkh.caplen;
+ 
+             if( n <= 0 || n > (int) sizeof( h80211 ) )
+@@ -1424,6 +1490,7 @@
+                 return( 1 );
+             }
+ 
++#ifdef linux
+             if( dev.pfh_in.linktype == LINKTYPE_PRISM_HEADER )
+             {
+                 if( h80211[7] == 0x40 )
+@@ -1438,6 +1505,7 @@
+                 *caplen -= n;
+                 memcpy( h80211, tmpbuf + n, *caplen );
+             }
++#endif
+         }
+ 
+         nb_pkt_read++;
+@@ -1570,8 +1638,14 @@
+         return( 1 );
+     }
+ 
++#ifdef linux
+     pkh.tv_sec  = tv.tv_sec;
+     pkh.tv_usec = tv.tv_usec;
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++    pkh.ts.tv_sec  = tv.tv_sec;
++    pkh.ts.tv_usec = tv.tv_usec;
++#endif
+     pkh.caplen  = *caplen;
+     pkh.len     = *caplen;
+ 
+@@ -1888,9 +1962,13 @@
+         if( opt.s_file == NULL )
+         {
+             gettimeofday( &tv, NULL );
+-
++#ifdef linux
+             caplen = read_packet( h80211, sizeof( h80211 ) );
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	    memset(h80211, 0, sizeof(h80211));
++	    caplen = read_packet(h80211, 1);
++#endif
+             if( caplen  < 0 ) return( 1 );
+             if( caplen == 0 ) continue;
+         }
+@@ -1907,9 +1985,14 @@
+             if( dev.pfh_in.magic == TCPDUMP_CIGAM )
+                 SWAP32( pkh.caplen );
+ 
++#ifdef linux
+             tv.tv_sec  = pkh.tv_sec;
+             tv.tv_usec = pkh.tv_usec;
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++            tv.tv_sec  = pkh.ts.tv_sec;
++            tv.tv_usec = pkh.ts.tv_usec;
++#endif
+             n = caplen = pkh.caplen;
+ 
+             if( n <= 0 || n > (int) sizeof( h80211 ) )
+@@ -2048,8 +2131,14 @@
+                 arp[nb_arp].len = caplen;
+                 nb_arp++;
+ 
++#ifdef linux
+                 pkh.tv_sec  = tv.tv_sec;
+                 pkh.tv_usec = tv.tv_usec;
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++                pkh.ts.tv_sec  = tv.tv_sec;
++                pkh.ts.tv_usec = tv.tv_usec;
++#endif
+                 pkh.caplen  = caplen;
+                 pkh.len     = caplen;
+ 
+@@ -2427,8 +2516,13 @@
+ 
+         /* watch for a response from the AP */
+ 
++#ifdef linux
+         n = read_packet( h80211, sizeof( h80211 ) );
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset( h80211, 0, sizeof( h80211) );
++	n = read_packet( h80211, 1);
++#endif
+         if( n  < 0 ) return( 1 );
+         if( n == 0 ) continue;
+ 
+@@ -2591,8 +2685,14 @@
+     pfh_out.snaplen       = 65535;
+     pfh_out.linktype      = LINKTYPE_IEEE802_11;
+ 
++#ifdef linux
+     pkh.tv_sec  = tv.tv_sec;
+     pkh.tv_usec = tv.tv_usec;
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++    pkh.ts.tv_sec  = tv.tv_sec;
++    pkh.ts.tv_usec = tv.tv_usec;
++#endif
+     pkh.caplen  = caplen;
+     pkh.len     = caplen;
+ 
+@@ -2674,10 +2774,8 @@
+ 
+ int make_arp_request(uchar *h80211, uchar *bssid, uchar *src_mac, uchar *dst_mac, uchar *src_ip, uchar *dst_ip, int size)
+ {
+-	uchar *arp_header = (unsigned char*)"\xaa\xaa\x03\x00\x00\x00\x08\x06\x00\x01\x08\x00\x06\x04\x00\x01";
+-	uchar *header80211 = (unsigned char*)"\x08\x41\x95\x00";
+-
+     // 802.11 part
++    uchar *header80211 = (unsigned char*)"\x08\x41\x95\x00";
+     memcpy(h80211,    header80211, 4);
+     memcpy(h80211+4,  bssid,       6);
+     memcpy(h80211+10, src_mac,     6);
+@@ -2686,6 +2784,7 @@
+     h80211[23] = '\x00';
+ 
+     // ARP part
++    uchar *arp_header = (unsigned char*)"\xaa\xaa\x03\x00\x00\x00\x08\x06\x00\x01\x08\x00\x06\x04\x00\x01";
+     memcpy(h80211+24, arp_header, 16);
+     memcpy(h80211+40, src_mac,     6);
+     memcpy(h80211+46, src_ip,      4);
+@@ -2701,12 +2800,10 @@
+ void send_fragments(uchar *packet, int packet_len, uchar *iv, uchar *keystream, int fragsize)
+ {
+     int t, u;
+-    int data_size;
++    int data_size = packet_len - 24;
+     uchar frag[30+fragsize];
+     int pack_size;
+ 
+-    data_size = packet_len - 24;
+-
+     packet[23] = (rand() % 0xFF);
+ 
+     for (t=0; t+=fragsize;)
+@@ -2770,8 +2867,8 @@
+     uchar packet[4096];
+     uchar packet2[4096];
+     uchar prga[4096];
++    uchar *snap_header = (unsigned char*)"\xAA\xAA\x03\x00\x00\x00\x08\x00";
+     uchar iv[4];
+-
+ //    uchar ack[14] = "\xd4";
+ 
+     char strbuf[256];
+@@ -2779,21 +2876,17 @@
+     struct tm *lt;
+     struct timeval tv, tv2;
+ 
+-    int done;
+-    int caplen;
+-    int caplen2;
+-    int arplen;
+-    int round;
+-    int prga_len;
+-    int isrelay;
+-    int gotit;
+-    int again;
+-    int length;
+-
+-	uchar *snap_header = (unsigned char*)"\xAA\xAA\x03\x00\x00\x00\x08\x00";
++    int done     = 0;
++    int caplen   = 0;
++    int caplen2  = 0;
++    int arplen   = 0;
++    int round    = 0;
++    int prga_len = 0;
++    int isrelay  = 0;
++    int gotit    = 0;
++    int again    = 0;
++    int length   = 0;
+ 
+-	done = caplen = caplen2 = arplen = round = 0;
+-	prga_len = isrelay = gotit = again = length = 0;
+ 
+     if( memcmp( opt.f_bssid, NULL_MAC, 6 ) == 0 )
+     {
+@@ -2876,14 +2969,18 @@
+ 
+             gettimeofday( &tv, NULL );
+ 
+-
+             while (!gotit)  //waiting for relayed packet
+             {
++#ifdef linux
+                 caplen = read_packet(packet, 4096);
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset(packet, 0, sizeof(packet));
++	caplen = read_packet(packet, 1);
++#endif
+                 if (packet[0] == 0x08 && (( packet[1] & 0x40 ) == 0x40) ) //Is data frame && encrypted
+                 {
+-                    if ( (packet[1] & 2) )  //Is a FromDS packet
++                    if ( (packet[1] & 2) && (packet[27] <= 0x03) )  //Is a FromDS packet with valid IV
+                     {
+                         if (! memcmp(opt.r_dmac, packet+4, 6)) //To our MAC
+                         {
+@@ -3011,11 +3108,16 @@
+             gotit=0;
+             while (!gotit)  //waiting for relayed packet
+             {
++#ifdef linux
+                 caplen = read_packet(packet, 4096);
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++	memset(packet, 0, sizeof(packet));
++	caplen = read_packet(packet, 1);
++#endif
+                 if (packet[0] == 0x08 && (( packet[1] & 0x40 ) == 0x40) ) //Is data frame && encrypted
+                 {
+-                    if ( (packet[1] & 2) )  //Is a FromDS packet with valid IV
++                    if ( (packet[1] & 2) && (packet[27] <= 3) )  //Is a FromDS packet with valid IV
+                     {
+                         if (! memcmp(opt.r_dmac, packet+4, 6)) //To our MAC
+                         {
+@@ -3110,11 +3212,16 @@
+             gotit=0;
+             while (!gotit)  //waiting for relayed packet
+             {
++#ifdef linux
+                 caplen = read_packet(packet, 4096);
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++		memset(packet, 0, sizeof(packet));
++		caplen = read_packet(packet, 1);
++#endif
+                 if (packet[0] == 0x08 && (( packet[1] & 0x40 ) == 0x40) ) //Is data frame && encrypted
+                 {
+-                    if ( (packet[1] & 2) )  //Is a FromDS packet with valid IV
++                    if ( (packet[1] & 2) && (packet[27] <= 3) )  //Is a FromDS packet with valid IV
+                     {
+                         if (! memcmp(opt.r_dmac, packet+4, 6)) //To our MAC
+                         {
+@@ -3189,12 +3296,9 @@
+             memset(h80211+24, '\x00', length+8);
+         }
+ 
+-        if(again != ABORT)
+-        {
+-            memcpy(iv, packet+24, 4);
+-            memcpy(prga, packet+28, length);
+-            xor_keystream(prga, h80211+24, length);
+-        }
++        memcpy(iv, packet+24, 4);
++        memcpy(prga, packet+28, length);
++        xor_keystream(prga, h80211+24, length);
+ 
+ 
+         lt = localtime(&tv.tv_sec);
+@@ -3215,7 +3319,7 @@
+     return( 0 );
+ }
+ 
+-
++#ifdef linux
+ int sysfs_inject=0;
+ int opensysfs( char *iface, int fd) {
+     int fd2;
+@@ -3232,6 +3336,7 @@
+     sysfs_inject=1;
+     return 0;
+ }
++#endif
+ 
+ /* interface initialization routine */
+ #ifdef linux
+@@ -3321,63 +3426,31 @@
+ }
+ #endif
+ 
+-#ifdef __FreeBSD__
+-int openraw(char *name, int fd, int *arptype, uchar* mac) {
+-    int i;
+-//    int fd = -1;
+-    struct ifreq ifr;
+-
+-/*    for(i = 0;i < 10; i++) {
+-        sprintf(buf, "/dev/bpf%d", i);
+-
+-        fd = open(buf, O_RDWR);
+-
+-        if(fd < 0) {
+-            if(errno != EBUSY) {
+-                perror("can't open /dev/bpf");
+-                return(1);
+-            }
+-            continue;
+-        }
+-        else
+-            break;
+-    }
+-
+-    if(fd < 0) {
+-        perror("can't open /dev/bpf");
+-        return(1);
+-    }
+-*/
+-    strncpy(ifr.ifr_name, name, sizeof(ifr.ifr_name)-1);
+-    ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
+-
+-    if(ioctl(fd, BIOCSETIF, &ifr) < 0) {
+-        perror("ioctl(BIOCSETIF)");
+-        return(1);
+-    }
+-
+-    i = 1;
+-    if(ioctl(fd, BIOCIMMEDIATE, &i) < 0) {
+-        perror("ioctl(BIOCIMMEDIATE)");
+-        return(1);
+-    }
+-
+-    memcpy( mac, (unsigned char*)ifr.ifr_addr.sa_data, 6);
+-    *arptype = ifr.ifr_addr.sa_family;
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++int openraw(char *iface, int fd, int *arptype, uchar *mac) {
++    if(!open_source(iface)) return 1;
++    if(!pcap_datalink_type()) return 1;
++    if(!monitor_bsd()) return 1;
++
++    *arptype = ARPHRD_IEEE80211_FULL;
++    mac[0] = 0x01;	// :)
++    mac[1] = 0x02;
++    mac[2] = 0x03;
++    mac[3] = 0x04;
++    mac[4] = 0x05;
++    mac[5] = 0x06;
+ 
+     return 0;
+ }
+ #endif
+ 
++#ifdef linux
+ char athXraw[] = "athXraw";
++#endif
+ 
+ int main( int argc, char *argv[] )
+ {
+-    int n, i;
+-#ifdef __FreeBSD__
+-    int i;
+-    char buf[64];
+-#endif
++    int n;
+ #ifdef linux
+     FILE * f;
+ #endif
+@@ -3664,16 +3737,10 @@
+                 }
+                 opt.a_mode = 0;
+ 
+-				for (i=0; optarg[i] != 0; i++)
+-				{
+-					if (isdigit(optarg[i]) == 0)
+-						break;
+-				}
+-
+                 sscanf( optarg, "%d", &opt.a_count );
+-                if( opt.a_count < 0 || optarg[i] != 0)
++                if( opt.a_count < 0 )
+                 {
+-                    printf( "Invalid deauthentication count or missing value.\n" );
++                    printf( "Invalid deauthentication count.\n" );
+                     return( 1 );
+                 }
+                 break;
+@@ -3687,16 +3754,10 @@
+                 }
+                 opt.a_mode = 1;
+ 
+-				for (i=0; optarg[i] != 0; i++)
+-				{
+-					if (isdigit(optarg[i]) == 0)
+-						break;
+-				}
+-
+                 sscanf( optarg, "%d", &opt.a_delay );
+-                if( opt.a_delay < 0 || optarg[i] != 0)
++                if( opt.a_delay < 0 )
+                 {
+-                    printf( "Invalid reauthentication delay or missing value.\n" );
++                    printf( "Invalid reauthentication delay.\n" );
+                     return( 1 );
+                 }
+                 break;
+@@ -3950,27 +4011,8 @@
+     }
+ #endif
+ 
+-#ifdef __FreeBSD__
+-    for(i = 0;i < 10; i++) {
+-        sprintf(buf, "/dev/bpf%d", i);
+-
+-        dev.fd_in = open(buf, O_RDWR);
+-
+-        if(dev.fd_in < 0) {
+-            if(errno != EBUSY) {
+-                perror("can't open /dev/bpf");
+-                exit(1);
+-            }
+-            continue;
+-        }
+-        else
+-            break;
+-    }
+-
+-    if(dev.fd_in < 0) {
+-        perror("can't open /dev/bpf");
+-        exit(1);
+-    }
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) ||  defined(__FreeBSD__)))
++    dev.fd_in = ps;
+     dev.fd_out = dev.fd_in;
+ #endif
+ 
+@@ -3978,6 +4020,7 @@
+ 
+     setuid( getuid() );
+ 
++#ifdef linux
+     if( opt.r_nbpps == 0 )
+     {
+         if( dev.is_wlanng || dev.is_hostap )
+@@ -4016,6 +4059,17 @@
+            return( 1 );
+     }
+ 
++#endif
++
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
++    if( opt.r_nbpps == 0 )
++    {
++            opt.r_nbpps = 500;
++    }
++    if( openraw( argv[optind], dev.fd_out, &dev.arptype_out, dev.mac_out ) != 0 )
++	return 1;
++#endif
++
+     if( opt.s_file != NULL )
+     {
+         if( ! ( dev.f_cap_in = fopen( opt.s_file, "rb" ) ) )
+@@ -4056,12 +4110,20 @@
+ 
+     if( memcmp( opt.r_smac, dev.mac_out, 6) != 0 && memcmp( opt.r_smac, NULL_MAC, 6 ) != 0)
+     {
++#ifdef linux
+         if( dev.is_madwifi && opt.a_mode == 5 ) printf("For --fragment to work on madwifi[-ng], set the interface MAC according to (-h)!\n");
+         fprintf( stderr, "The interface MAC (%02X:%02X:%02X:%02X:%02X:%02X)"
+                  " doesn't match the specified MAC (-h).\n"
+                  "\tifconfig %s hw ether %02X:%02X:%02X:%02X:%02X:%02X\n",
+                  dev.mac_out[0], dev.mac_out[1], dev.mac_out[2], dev.mac_out[3], dev.mac_out[4], dev.mac_out[5],
+                  argv[optind], opt.r_smac[0], opt.r_smac[1], opt.r_smac[2], opt.r_smac[3], opt.r_smac[4], opt.r_smac[5] );
++#endif
++
++        fprintf( stderr, "MAC (%02X:%02X:%02X:%02X:%02X:%02X)"
++                 " %s : %02X:%02X:%02X:%02X:%02X:%02X\n",
++                 dev.mac_out[0], dev.mac_out[1], dev.mac_out[2], dev.mac_out[3], dev.mac_out[4], dev.mac_out[5],
++                 argv[optind], opt.r_smac[0], opt.r_smac[1], opt.r_smac[2], opt.r_smac[3], opt.r_smac[4], opt.r_smac[5] );
++
+     }
+ 
+     switch( opt.a_mode )
+diff -ur linux-src/airodump-ng.c BSD-src/airodump-ng.c
+--- linux-src/airodump-ng.c	2007-02-25 22:48:36.468750000 +0100
++++ BSD-src/airodump-ng.c	2007-02-25 22:38:50.125000000 +0100
+@@ -19,8 +19,9 @@
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
+-#ifndef linux
+-    #warning Airodump-ng could fail on this OS
++#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
++    #define HAVE_RADIOTAP  1
++    #define HAVE_PCAP_NONBLOCK 1
+ #endif
+ 
+ #include <sys/socket.h>
+@@ -36,10 +37,11 @@
+     #include <linux/wireless.h>
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+     #include <net/bpf.h>
+     #include <net/if.h>
+     #include <netinet/in.h>
++    #include "pcapbsd.c"
+ #endif
+ 
+ #include <arpa/inet.h>
+@@ -268,7 +270,6 @@
+     int * own_channels;	    /* custom channel list  */
+ 
+     int record_data;		/* do we record data?   */
+-    int asso_client;        /* only show associated clients */
+ 
+     char * iwpriv;
+     char * wlanctlng;
+@@ -280,16 +281,12 @@
+ 
+ int check_shared_key(unsigned char *h80211, int caplen)
+ {
+-    int m_bmac, m_smac, m_dmac, n, textlen;
++    int m_bmac = 16, m_smac = 10, m_dmac = 4, n, textlen;
+     char ofn[1024];
+     char text[256];
+     char prga[512];
+     unsigned int long crc;
+ 
+-	m_bmac = 16;
+-	m_smac = 10;
+-	m_dmac = 4;
+-
+     if( time(NULL) - G.sk_start > 5)
+     {
+         /* timeout(5sec) - remove all packets, restart timer */
+@@ -427,12 +424,10 @@
+ "      --write    <prefix> : Dump file prefix\n"
+ "      -w                  : same as --write \n"
+ "      --beacons           : Record all beacons in dump file\n"
+-"\n"
+ "  Filter options:\n"
+ "      --encrypt   <suite> : Filter APs by cypher suite\n"
+ "      --netmask <netmask> : Filter APs by mask\n"
+ "      --bssid     <bssid> : Filter APs by BSSID\n"
+-"      -a                  : Filter unassociated clients\n"
+ "\n"
+ "  By default, airodump-ng hop on 2.4Ghz channels.\n"
+ "  You can make it capture on other/specific channel(s) by using:\n"
+@@ -1448,9 +1443,14 @@
+ 
+         gettimeofday( &tv, NULL );
+ 
++#ifdef linux
+         pkh.tv_sec  =   tv.tv_sec;
+         pkh.tv_usec = ( tv.tv_usec & ~0x1ff ) + power + 64;
+-
++#endif
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
++        pkh.ts.tv_sec  =   tv.tv_sec;
++        pkh.ts.tv_usec = ( tv.tv_usec & ~0x1ff ) + power + 64;
++#endif
+         n = sizeof( pkh );
+ 
+         if( fwrite( &pkh, 1, n, G.f_cap ) != (size_t) n )
+@@ -2076,12 +2076,6 @@
+                 continue;
+             }
+ 
+-            if( ! memcmp( ap_cur->bssid, BROADCAST_ADDR, 6 ) && G.asso_client )
+-            {
+-                st_cur = st_cur->prev;
+-                continue;
+-            }
+-
+             nlines++;
+ 
+             if( ws_row != 0 && nlines >= ws_row )
+@@ -2626,7 +2620,7 @@
+     return i;
+ }
+ 
+-#ifdef linux
++//#ifdef linux
+ void channel_hopper( char *interface[], int fd_raw[], int if_num, int chan_count )
+ {
+ 
+@@ -2677,7 +2671,11 @@
+             ch = G.channels[ch_idx];
+ 
+ 
++#ifdef linux
+             if( set_channel( interface[card], fd_raw[card], ch, card ) == 0 )
++#else
++            if( set_channel( ch ) )
++#endif
+             {
+                 G.channel[card] = ch;
+                 write( G.cd_pipe[1], &card, sizeof(int) );
+@@ -2706,7 +2704,7 @@
+ 
+     exit( 0 );
+ }
+-#endif
++//#endif
+ 
+ int invalid_channel(int chan)
+ {
+@@ -3119,10 +3117,6 @@
+     int valid_channel, chanoption;
+     int freq [2];
+     time_t tt1, tt2, tt3, start_time;
+-#ifdef __FreeBSD_
+-    int j;
+-    char buf[64];
+-#endif
+ 
+     unsigned char      *buffer;
+     unsigned char      *h80211;
+@@ -3180,7 +3174,6 @@
+     G.sk_start     =  0;
+     G.prefix       =  NULL;
+     G.f_encrypt    =  0;
+-    G.asso_client  =  0;
+     memset(G.sharedkey, '\x00', 512*3);
+ 
+     gettimeofday( &tv0, NULL );
+@@ -3240,7 +3233,7 @@
+         };
+ 
+         int option = getopt_long( argc, argv,
+-                        "b:c:egiw:st:m:d:a",
++                        "b:c:egiw:st:m:d:",
+                         long_options, &option_index );
+ 
+         if( option < 0 ) break;
+@@ -3255,10 +3248,6 @@
+                 G.one_beacon = 0;
+                 break;
+ 
+-            case 'a':
+-                G.asso_client = 1;
+-                break;
+-
+             case 'c' :
+ 
+                 if (G.channel[0] > 0 || chanoption == 1) {
+@@ -3414,16 +3403,17 @@
+         printf( "This program requires root privileges.\n" );
+         return( 1 );
+     }
+-
++    
++#ifdef linux
+     /* Check iwpriv existence */
+ 
+ 	G.iwpriv = wiToolsPath("iwpriv");
+-
+     if (! G.iwpriv )
+     {
+         fprintf(stderr, "Can't find wireless tools, exiting.\n");
+         return (1);
+     }
++#endif
+ 
+     cards = get_if_num(argv[argc-1]);
+ 
+@@ -3446,30 +3436,11 @@
+     }
+ #endif
+ 
+-#ifdef __FreeBSD__
+-    for(i=0; i<cards; i++)
+-    {
+-        for(j = 0;j < 10; j++) {
+-            sprintf(buf, "/dev/bpf%d", j);
+-
+-             fd_raw[i]= open(buf, O_RDWR);
+-
+-            if(fd_raw[i] < 0) {
+-                if(errno != EBUSY) {
+-                    perror("can't open /dev/bpf");
+-                    exit(1);
+-                }
+-                continue;
+-            }
+-            else
+-                break;
+-        }
+-
+-        if(fd_raw[i] < 0) {
+-            perror("can't open /dev/bpf");
+-            exit(1);
+-        }
+-    }
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
++    if(!open_source(argc[argv-1])) return -1;
++    if(!pcap_datalink_type()) return -1;
++    if(!monitor_bsd()) return -1;
++//    pcap_setdirection(pd, PCAP_D_INOUT);
+ #endif
+ 
+     setuid( getuid() );
+@@ -3506,9 +3477,7 @@
+ 
+         if( ! fork() )
+         {
+-#ifdef linux
+             channel_hopper( iface, fd_raw, cards, chan_count );
+-#endif
+             exit( 1 );
+         }
+     }
+@@ -3518,6 +3487,8 @@
+ 	{
+ #ifdef linux
+             set_channel( iface[i], fd_raw[i], G.channel[0], i );
++#else
++	    set_channel( G.channel[0] );
+ #endif
+ 	    G.channel[i] = G.channel[0];
+ 	}
+@@ -3619,29 +3590,38 @@
+         }
+ 
+         /* capture one packet */
+-
++#ifdef linux
+         FD_ZERO( &rfds );
+ 		for(i=0; i<cards; i++)
+ 	    {
+             FD_SET( fd_raw[i], &rfds );
+ 	    }
++#endif
+ 
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
++	if(pcap_read_packet(1) > 0) caplen = callback_header.caplen; //else caplen = 0;
++	memset( buffer, 0, MAX_PACKET_LEN );
++	memcpy( buffer, callback_data, MAX_PACKET_LEN );
++	arptype[0] = ARPHRD_IEEE80211_FULL;
++#endif
+         tv0.tv_sec  = 0;
+         tv0.tv_usec = REFRESH_RATE;
+ 
+         gettimeofday( &tv1, NULL );
+ 
++#ifdef linux
+         if( select( fdh + 1, &rfds, NULL, NULL, &tv0 ) < 0 )
+         {
+             if( errno == EINTR ) continue;
+             perror( "select failed" );
+             return( 1 );
+         }
++#endif
+ 
+         gettimeofday( &tv2, NULL );
+ 
+         time_slept += 1000000 * ( tv2.tv_sec  - tv1.tv_sec  )
+-                              + ( tv2.tv_usec - tv1.tv_usec );
++	                      + ( tv2.tv_usec - tv1.tv_usec );
+ 
+         if( time_slept > REFRESH_RATE )
+         {
+@@ -3669,14 +3649,15 @@
+             continue;
+         }
+ 
++
+ 	fd_is_set = 0;
+ 
+ 	for(i=0; i<cards; i++)
+ 	{
+-            if( FD_ISSET( fd_raw[i], &rfds ) )
++#ifdef linux
++	    if( FD_ISSET( fd_raw[i], &rfds ) )
+ 	    {
+-                memset( buffer, 0, 4096 );
+-
++		memset( buffer, 0, 4096 );
+                 if( ( caplen = read( fd_raw[i], buffer, 65535 ) ) < 0 )
+                 {
+                     perror( "read failed" );
+@@ -3687,7 +3668,7 @@
+ 
+                 if( ! memcmp( iface[i], "ath", 3 ) && (! G.is_madwifing[i]) )
+                     caplen -= 4;
+-
++#endif
+                 /* prism (wlan-ng) header parsing */
+ 
+                 h80211 = buffer;
+@@ -3730,9 +3711,13 @@
+                     }
+ 
+                     n = *(unsigned short *)( buffer + 2 );
+-
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
++		    power = buffer[23];
++#endif
++#ifdef linux
+                     if( *(int *)( buffer + 4 ) == 0x0000082E )
+                         power = buffer[14];     /* ipw2200 1.0.7 */
++#endif
+ 
+                     if( n <= 0 || n >= caplen )
+                         continue;
+@@ -3742,7 +3727,9 @@
+                 }
+ 
+                 dump_add_packet( h80211, caplen, power, i );
++#ifdef linux
+ 	    }
++#endif
+ 	}
+     }
+ 
+@@ -3766,3 +3753,4 @@
+ 
+     return( 0 );
+ }
++
+diff -ur linux-src/airtun-ng.c BSD-src/airtun-ng.c
+--- linux-src/airtun-ng.c	2007-02-12 21:32:04.359375000 +0100
++++ BSD-src/airtun-ng.c	2007-02-25 22:38:50.093750000 +0100
+@@ -19,8 +19,9 @@
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
+-#ifndef linux
+-    #warning Airtun-ng could fail on this OS
++#if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
++    #define HAVE_RADIOTAP  1
++    #define HAVE_PCAP_NONBLOCK 1
+ #endif
+ 
+ #ifdef linux
+@@ -40,7 +41,7 @@
+     #include <linux/wireless.h>
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+     #include <net/bpf.h>
+     #include <net/if.h>
+ #endif
+@@ -64,7 +65,7 @@
+     #include <linux/if_tun.h>
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+     #include <net/if_tun.h>
+ #endif
+ 
+@@ -898,7 +899,7 @@
+ }
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+ int openraw(char *name, int fd, int *arptype) {
+     int i;
+ //    int fd = -1;
+@@ -1323,7 +1324,7 @@
+     }
+ #endif
+ 
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+     for(i = 0;i < 10; i++) {
+         sprintf(buf, "/dev/bpf%d", i);
+ 
+@@ -1438,7 +1439,7 @@
+         return -1;
+     }
+ #endif
+-#ifdef __FreeBSD__
++#if (defined(HAVE_RADIOTAP) && (defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)))
+     if( ioctl( dev.fd_tap, SIOCGIFFLAGS, (void *)&if_request ) < 0 )
+     {
+         printf( "error creating tap interface: %s\n", strerror( errno ) );
+diff -ur linux-src/common.c BSD-src/common.c
+--- linux-src/common.c	2007-02-12 21:32:04.781250000 +0100
++++ BSD-src/common.c	2007-02-25 22:38:50.125000000 +0100
+@@ -30,6 +30,7 @@
+ #include <unistd.h>
+ #include <ctype.h>
+ 
++#ifdef linux
+ //Check if the driver is ndiswrapper */
+ int is_ndiswrapper(const char * iface, const char * path)
+ {
+@@ -44,6 +45,7 @@
+ 	waitpid( pid, &n, 0 );
+ 	return ( ( WIFEXITED(n) && WEXITSTATUS(n) == 0 ));
+ }
++#endif
+ 
+ /* Return the version number */
+ char * getVersion(char * progname, int maj, int min, int submin, int svnrev)
+@@ -117,6 +119,7 @@
+ 	return NULL;
+ }
+ 
++#ifdef linux
+ /* Search a wireless tool and return its path */
+ char * wiToolsPath(const char * tool)
+ {
+@@ -143,6 +146,7 @@
+ 
+ 	return NULL;
+ }
++#endif
+ 
+ //Return the mac address bytes (or null if it's not a mac address)
+ int getmac(char * macAddress, int strict, unsigned char * mac)
+diff -ur linux-src/packetforge-ng.c BSD-src/packetforge-ng.c
+--- linux-src/packetforge-ng.c	2007-03-02 22:54:19.515625000 +0100
++++ BSD-src/packetforge-ng.c	2007-02-19 14:15:24.000000000 +0100
+@@ -51,9 +51,6 @@
+     "\x45\x00\x00\x1C\x00\x00\x40\x00\x40\x01\x00\x00\xC3\xBE\x8E\x74"  \
+     "\xC1\x16\x02\x01\x08\x00\x83\xDC\x74\x22\x00\x01"
+ 
+-#define NULL_PACKET      \
+-    "\x08\x00\x00\x00\xDD\xDD\xDD\xDD\xDD\xDD\xBB\xBB\xBB\xBB\xBB\xBB"  \
+-    "\xCC\xCC\xCC\xCC\xCC\xCC\xE0\x32"
+ 
+ extern char * getVersion(char * progname, int maj, int min, int submin, int svnrev);
+ extern int getmac(char * macAddress, int strict, unsigned char * mac);
+@@ -81,7 +78,6 @@
+ "      -l <ip[:port]> : set Source      IP [Port]\n"
+ "      -t ttl         : set Time To Live\n"
+ "      -w <file>      : write packet to this pcap file\n"
+-"      -s <size>      : specify size of null packet\n"
+ "\n"
+ "  Source options:\n"
+ "\n"
+@@ -93,7 +89,6 @@
+ "      --arp          : forge an ARP packet    (-0)\n"
+ "      --udp          : forge an UDP packet    (-1)\n"
+ "      --icmp         : forge an ICMP packet   (-2)\n"
+-"      --null         : build a null packet    (-3)\n"
+ "      --custom       : build a custom packet  (-9)\n"
+ "\n";
+ 
+@@ -114,7 +109,6 @@
+     int pktlen;
+     int prgalen;
+     int ttl;
+-    int size;
+ 
+     unsigned short sport;
+     unsigned short dport;
+@@ -523,8 +517,8 @@
+ 
+     gettimeofday( &tv, NULL );
+ 
+-    pkh.tv_sec  = tv.tv_sec;
+-    pkh.tv_usec = tv.tv_usec;
++    pkh.ts.tv_sec  = tv.tv_sec;
++    pkh.ts.tv_usec = tv.tv_usec;
+     pkh.len     = length;
+     pkh.caplen  = length;
+ 
+@@ -674,28 +668,6 @@
+     return 0;
+ }
+ 
+-int forge_null()
+-{
+-    opt.pktlen = opt.size;
+-    memcpy(h80211, NULL_PACKET, 24);
+-    memset(h80211+24, '\0', (opt.pktlen - 24));
+-
+-    if(memcmp(opt.dmac, NULL_MAC, 6) == 0)
+-    {
+-        memcpy( opt.dmac, "\xFF\xFF\xFF\xFF\xFF\xFF", 6 );
+-    }
+-
+-    if( set_tofromds(h80211) != 0 ) return 1;
+-    if( set_bssid(h80211)    != 0 ) return 1;
+-    if( set_smac(h80211)     != 0 ) return 1;
+-    if( set_dmac(h80211)     != 0 ) return 1;
+-
+-    if( opt.pktlen > 26 )
+-        h80211[26]=0x03;
+-
+-    return 0;
+-}
+-
+ int forge_custom()
+ {
+     if(read_raw_packet(h80211, opt.raw_file, opt.pktlen) != 0) return 1;
+@@ -754,15 +726,12 @@
+     opt.fromds  =  0;
+     opt.encrypt =  1;
+ 
+-    opt.size    = 30;
+-
+     while( 1 )
+     {
+         static struct option long_options[] = {
+             {"arp",      0, 0, '0'},
+             {"udp",      0, 0, '1'},
+             {"icmp",     0, 0, '2'},
+-            {"null",     0, 0, '3'},
+             {"custom",   1, 0, '9'},
+             {0,          0, 0,  0 }
+         };
+@@ -770,7 +739,7 @@
+         int option;
+ 	option_index = 0;
+ 	option = getopt_long( argc, argv,
+-                        "p:a:c:h:jok:l:j:r:y:01239:w:et:s:",
++                        "p:a:c:h:jok:l:j:r:y:0129:w:et:",
+                         long_options, &option_index );
+ 
+         if( option < 0 ) break;
+@@ -897,17 +866,6 @@
+                 }
+                 break;
+ 
+-            case 's' :
+-
+-                sscanf( optarg, "%i", &arg );
+-                if( arg < 26 || arg > 1520 )
+-                {
+-                    printf( "Invalid packet size.\n" );
+-                    return( 1 );
+-                }
+-                opt.size = arg;
+-                break;
+-
+             case '0' :
+ 
+                 if( opt.mode != -1 )
+@@ -939,16 +897,6 @@
+                 opt.mode = 2;
+                 break;
+ 
+-            case '3' :
+-
+-                if( opt.mode != -1 )
+-                {
+-                    printf( "Mode already specified.\n" );
+-                    return( 1 );
+-                }
+-                opt.mode = 3;
+-                break;
+-
+             case '9' :
+ 
+                 if( opt.mode != -1 )
+@@ -997,15 +945,6 @@
+ 					return 1;
+ 				}
+ 				break;
+-
+-        case 3:
+-                if( forge_null() != 0 )
+-				{
+-					printf("Error building a NULL packet.\n");
+-					return 1;
+-				}
+-				break;
+-
+ 		case 9:
+ 		        if( forge_custom() != 0 )
+ 		        {
+diff -ur linux-src/pcap.h BSD-src/pcap.h
+--- linux-src/pcap.h	2007-02-12 21:32:04.671875000 +0100
++++ BSD-src/pcap.h	2007-02-25 22:38:50.125000000 +0100
+@@ -1,6 +1,8 @@
+ #ifndef _COMMON_H
+ #define _COMMON_H
+ 
++#include <pcap.h>
++
+ #define FORMAT_CAP      1
+ #define FORMAT_IVS      2
+ 
+@@ -27,6 +29,8 @@
+           ( ( x <<  8 ) & 0x00FF0000 ) | \
+           ( ( x << 24 ) & 0xFF000000 ) );
+ 
++#ifdef linux
++
+ struct pcap_file_header
+ {
+     uint magic;
+@@ -38,12 +42,21 @@
+     uint linktype;
+ };
+ 
++//struct ts
++//{
++//    int tv_sec;
++//    int tv_usec;    
++//};
++
+ struct pcap_pkthdr
+ {
+     int tv_sec;
+     int tv_usec;
++//    struct ts;
+     uint caplen;
+     uint len;
+ };
+ 
++#endif
++
+ #endif /* common.h */
+Only in BSD-src: pcapbsd.c
+Only in BSD-src: pcapbsd.h

@@ -1,0 +1,52 @@
+diff -aur a/airmon-zc b/airmon-zc
+--- a/airmon-zc	2014-04-02 13:49:30.000000000 -0400
++++ b/airmon-zc	2014-07-05 16:30:00.452326665 -0400
+@@ -180,12 +180,12 @@
+ 		exit 1
+ 	fi
+ 	#we didn't bail means our target interface is available
+-	ifconfig ${1} down
++	ip link set ${1} down
+ 	IW_ERROR=$(iw phy ${PHYDEV} interface add ${1}mon type monitor 2>&1 | grep "nl80211 not found")
+ 	if [ x${IW_ERROR} = "x" ]
+ 	then
+ 		sleep 1s
+-		ifconfig ${1}mon up
++		ip link set ${1}mon up
+ 		if [ ! -z ${3} ]
+ 		then
+ 			if [ ${3} -lt 1000 ]
+@@ -204,7 +204,7 @@
+ 	if [ ${ELITE} = "1" ]
+ 	then
+ 		#check if $1 is still down, warn if not
+-		if $(ifconfig ${1} | grep -q UP)
++		if $(ip -oneline link show ${1} | grep -q UP)
+ 		then
+ 			printf "\nInterface ${1} is up, but it should be down. Something is interferring."
+ 			printf "\nPlease run \"airmon-zc check kill\" and/or kill your network manager."
+@@ -893,19 +893,19 @@
+ 	if [ -e "/proc/sys/dev/$iface/fftxqmin" ]
+ 	then
+ 		MADWIFI=1
+-		ifconfig $iface up
++		ip link set $iface up
+ 		printf "$iface\t\tAtheros\t\tmadwifi-ng"
+ 		if [ x$1 = "xstart" ] && [ x$2 = x$iface ]
+ 		then
+ 			IFACE=$(wlanconfig ath create wlandev $iface wlanmode monitor -bssid | grep ath)
+-			ifconfig $iface up 2> /dev/null > /dev/null
++			ip link set $iface up 2> /dev/null > /dev/null
+ 			if [ $CH -lt 1000 ]
+ 			then
+-				iwconfig $IFACE channel $CH 2> /dev/null > /dev/null
++				iw dev $IFACE set channel $CH 2> /dev/null > /dev/null
+ 			else
+-				iwconfig $IFACE freq "$CH"000000 2> /dev/null > /dev/null
++				iw dev $IFACE set freq "$CH" 2> /dev/null > /dev/null
+ 			fi
+-		ifconfig $IFACE up 2> /dev/null > /dev/null
++		ip link set $IFACE up 2> /dev/null > /dev/null
+ 		UDEV_ISSUE=$?
+ 		fi
+ 

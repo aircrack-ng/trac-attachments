@@ -1,0 +1,427 @@
+--- ../original/aircrack-ng/src/airbase-ng.c	2015-07-29 10:58:35.602868073 +0200
++++ src/airbase-ng.c	2015-07-31 15:04:55.248378544 +0200
+@@ -180,6 +180,7 @@
+ "      -Y in|out|both   : external packet processing\n"
+ "      -c channel       : sets the channel the AP is running on\n"
+ "      -X               : hidden ESSID\n"
++"      -n               : don't send default beacons\n"
+ "      -s               : force shared key authentication (default: auto)\n"
+ "      -S               : set shared key challenge length (default: 128)\n"
+ "      -L               : Caffe-Latte WEP attack (use if driver can't send frags)\n"
+@@ -192,6 +193,7 @@
+ "      -V type          : fake EAPOL 1=MD5 2=SHA1 3=auto\n"
+ "      -F prefix        : write all sent and received frames into pcap file\n"
+ "      -P               : respond to all probes, even when specifying ESSIDs\n"
++"      -p               : create individual bssid per client and essid (requires -P)\n"
+ "      -I interval      : sets the beacon interval value in ms\n"
+ "      -C seconds       : enables beaconing of probed ESSID values (requires -P)\n"
+ "\n"
+@@ -268,6 +270,8 @@
+     int cf_count;
+     int cf_attack;
+     int record_data;
++    int no_defbeacon;       //no default beacons
++    int ind_bssids;         //individual bssids
+ 
+     int ti_mtu;         //MTU of tun/tap interface
+     int wif_mtu;        //MTU of wireless interface
+@@ -314,6 +318,7 @@
+ {
+     char            *essid;
+     unsigned char   len;
++    unsigned char    bssid[6]; // individual bssid per client and essid
+     pESSID_t        next;
+ 	time_t          expire;
+ };
+@@ -413,7 +418,7 @@
+         alarmed++;
+ }
+ 
+-int addESSID(char* essid, int len, int expiration)
++int addESSID(char* essid, int len, unsigned char* bssid, int expiration)
+ {
+     pESSID_t tmp;
+ 	pESSID_t cur = rESSID;
+@@ -430,7 +435,7 @@
+ 
+     while(cur->next != NULL) {
+         // if it already exists, just update the expiration time
+-        if(cur->len == len && ! memcmp(cur->essid, essid, len)) {
++        if(cur->len == len && ! memcmp(cur->essid, essid, len) && ! memcmp(cur->bssid, bssid, 6)) {
+             if(cur->expire && expiration) {
+                 time(&now);
+                 cur->expire = now + expiration;
+@@ -448,6 +453,7 @@
+     memcpy(tmp->essid, essid, len);
+     tmp->essid[len] = 0x00;
+     tmp->len = len;
++    memcpy(tmp->bssid, bssid, 6);
+ 
+     // set expiration date
+     if(expiration) {
+@@ -894,7 +900,10 @@
+     return 0;
+ }
+ 
+-int delESSID(char* essid, int len)
++int gotMAC(pMAC_t pMAC, unsigned char* mac);
++int delMAC(pMAC_t pMAC, unsigned char* mac);
++
++int delESSID(char* essid, int len, unsigned char* bssid)
+ {
+     pESSID_t old, cur = rESSID;
+ 
+@@ -904,6 +913,9 @@
+     if(len <= 0 || len > 255)
+         return -1;
+ 
++    if(bssid == NULL)
++        return -1;
++
+     if(rESSID == NULL)
+         return -1;
+ 
+@@ -912,13 +924,17 @@
+         old = cur->next;
+         if(old->len == len)
+         {
+-            if(memcmp(old->essid, essid, len) == 0)
++            if(memcmp(old->essid, essid, len) == 0 && memcmp(old->bssid, bssid, len) == 0)
+             {
+                 //got it
+                 cur->next = old->next;
+ 
+                 free(old->essid);
+                 old->essid = NULL;
++                //remove inidividual bssid
++                if(gotMAC(rBSSID,old->bssid))
++                    delMAC(rBSSID,old->bssid);
++                memset(old->bssid,0,6);
+                 old->next = NULL;
+                 old->len = 0;
+                 free(old);
+@@ -954,6 +970,10 @@
+ 
+                 free(old->essid);
+                 old->essid = NULL;
++                //remove inidividual bssid
++                if(gotMAC(rBSSID,old->bssid))
++                    delMAC(rBSSID,old->bssid);
++                memset(old->bssid,0,6);
+                 old->next = NULL;
+                 old->len = 0;
+                 free(old);
+@@ -965,7 +985,7 @@
+ }
+ 
+ 
+-int delMAC(pMAC_t pMAC, char* mac)
++int delMAC(pMAC_t pMAC, unsigned char* mac)
+ {
+     pMAC_t old, cur = pMAC;
+ 
+@@ -993,13 +1013,16 @@
+     return -1;
+ }
+ 
+-int gotESSID(char* essid, int len)
++int gotESSID(char* essid, int len, unsigned char* bssid)
+ {
+     pESSID_t old, cur = rESSID;
+ 
+     if(essid == NULL)
+         return -1;
+ 
++    if(bssid == NULL)
++        return -1;
++
+     if(len <= 0 || len > 255)
+         return -1;
+ 
+@@ -1011,7 +1034,7 @@
+         old = cur->next;
+         if(old->len == len)
+         {
+-            if(memcmp(old->essid, essid, len) == 0)
++            if(memcmp(old->essid, essid, len) == 0 && memcmp(old->bssid, bssid, len) == 0)
+             {
+                 return 1;
+             }
+@@ -1126,7 +1149,7 @@
+             essid[x--] = 0;
+ 
+         if(strlen(essid))
+-            addESSID(essid, strlen(essid), 0);
++            addESSID(essid, strlen(essid), NULL_MAC, 0);
+     }
+ 
+     fclose(list);
+@@ -2465,6 +2488,22 @@
+     return 0;
+ }
+ 
++void create_ind_bssid(char* essid, int length, unsigned char* smac, unsigned char* bssid)
++{
++    /* Create an individual bssid based on the sha1 hash of source mac and essid */
++    unsigned char digest[20];
++    unsigned char* buf;
++
++    buf=malloc(length+6);
++    memcpy(buf, essid, length);
++    memcpy(buf+length, smac, 6);
++    SHA1(buf,length+6,digest);
++    memcpy(bssid, digest, 6);
++    bssid[0] &= 0xFC; // valid unicast mac
++    memset(buf,0,length+6);
++    free(buf);
++}
++
+ int packet_recv(unsigned char* packet, int length, struct AP_conf *apc, int external)
+ {
+     unsigned char K[64];
+@@ -2484,7 +2523,7 @@
+     int remaining, bytes2use;
+     int reasso, fixed, temp_channel;
+     unsigned z;
+-
++    int replaycount; // dynamic replay counter 
+     struct ST_info *st_cur = NULL;
+     struct ST_info *st_prv = NULL;
+ 
+@@ -2628,7 +2667,7 @@
+ 
+ 
+     /* Got a data packet with our bssid set and ToDS==1*/
+-    if( memcmp( bssid, opt.r_bssid, 6) == 0 && ( packet[0] & 0x08 ) == 0x08 && (packet[1] & 0x03) == 0x01 )
++    if( gotMAC(rBSSID, bssid) && ( packet[0] & 0x08 ) == 0x08 && (packet[1] & 0x03) == 0x01 )
+     {
+ //         printf("to me with len: %d\n", length);
+         fragnum = packet[22] & 0x0F;
+@@ -2663,7 +2702,7 @@
+         }
+ 
+         /* To our mac? */
+-        if( (memcmp( dmac, opt.r_bssid, 6) == 0 && !opt.adhoc ) ||
++        if( (gotMAC(rBSSID, dmac) && !opt.adhoc) ||
+             (memcmp( dmac, opt.r_smac, 6) == 0 && opt.adhoc ) )
+         {
+             /* Is encrypted */
+@@ -2791,7 +2830,9 @@
+                     h80211[len+7] = 0x00;
+                     h80211[len+8] = 0x20; //keylen
+ 
++                    replaycount = rand();
+                     memset(h80211+len+9, 0, 90);
++                    memcpy(h80211+len+13, &replaycount, 4); // replay counter
+                     memcpy(h80211+len+17, st_cur->wpa.anonce, 32);
+ 
+                     len+=99;
+@@ -2940,7 +2981,7 @@
+             tag = parse_tags(packet+z, 0, length-z, &len);
+             if(tag != NULL && tag[0] >= 32 && len <= 255) //directed probe
+             {
+-                if( opt.promiscuous || !opt.f_essid || gotESSID((char*)tag, len) == 1)
++                if( opt.promiscuous || !opt.f_essid || gotESSID((char*)tag, len, bssid) )
+                 {
+                     memset(essid, 0, 256);
+                     memcpy(essid, tag, len);
+@@ -2953,8 +2994,16 @@
+ 
+                     /* add this to the beacon queue */
+                     if(opt.beacon_cache)
+-                        addESSID(essid, len, opt.beacon_cache);
+-
++                    {
++                        if(opt.ind_bssids)
++                            // create individual bssid for client/essid combination
++                            create_ind_bssid(essid,len,smac,bssid);
++                        else
++                            memcpy( bssid, opt.r_bssid, 6);
++                        if(!gotMAC(rBSSID,bssid))
++                            addMAC(rBSSID,bssid);
++                        addESSID(essid, len, bssid, opt.beacon_cache);
++                    }
+                     /* check if it's already in the ring buffer */
+                     for( i = 0; i < NB_PRB; i++ )
+                         if( memcmp( st_cur->probes[i], essid, len ) == 0 )
+@@ -3027,8 +3076,13 @@
+                     length += 3;
+ 
+                     memcpy(packet +  4, smac, 6);
+-                    memcpy(packet + 10, opt.r_bssid, 6);
+-                    memcpy(packet + 16, opt.r_bssid, 6);
++                    if(opt.ind_bssids)
++                        // Send probe responses with individual mac
++                        create_ind_bssid(essid, len, smac, bssid);
++                    else
++                        memcpy( bssid, opt.r_bssid, 6);
++                    memcpy(packet + 10, bssid, 6);
++                    memcpy(packet + 16, bssid, 6);
+ 
+                     // TODO: See also about 100 lines below
+                     if( opt.allwpa )
+@@ -3101,9 +3155,17 @@
+                     fessid = getESSID(&len);
+                     if(fessid == NULL)
+                     {
++                        if(opt.no_defbeacon)
++                            return 0;
+                         fessid = "default";
+                         len = strlen(fessid);
++                        memcpy(bssid,opt.r_bssid,6);
+                     }
++                    else
++                        if(opt.ind_bssids)
++                            create_ind_bssid(essid, len, smac, bssid);
++                        else
++                            memcpy( bssid, opt.r_bssid, 6 );
+                     packet[z+12] = 0x00;
+                     packet[z+13] = len;
+                     memcpy(packet+z+14, fessid, len);
+@@ -3135,8 +3197,8 @@
+                     length += 3;
+ 
+                     memcpy(packet +  4, smac, 6);
+-                    memcpy(packet + 10, opt.r_bssid, 6);
+-                    memcpy(packet + 16, opt.r_bssid, 6);
++                    memcpy(packet + 10, bssid, 6);
++                    memcpy(packet + 16, bssid, 6);
+ 
+                     // TODO: See also around ~3500
+                     if( opt.allwpa )
+@@ -3176,7 +3238,7 @@
+         }
+ 
+         //auth req
+-        if(packet[0] == 0xB0 && memcmp( bssid, opt.r_bssid, 6) == 0 )
++        if(packet[0] == 0xB0 && gotMAC(rBSSID,bssid))
+         {
+             if(packet[z] == 0x00) //open system auth
+             {
+@@ -3265,7 +3327,7 @@
+         }
+ 
+         //asso req or reasso
+-        if((packet[0] == 0x00 || packet[0] == 0x20) && memcmp( bssid, opt.r_bssid, 6) == 0 )
++        if((packet[0] == 0x00 || packet[0] == 0x20) && gotMAC(rBSSID, bssid) )
+         {
+             if(packet[0] == 0x00) //asso req
+             {
+@@ -3285,7 +3347,7 @@
+             {
+                 memcpy(essid, tag, len);
+                 essid[len] = 0x00;
+-                if(opt.f_essid && !gotESSID(essid, len))
++                if(opt.f_essid && !gotESSID(essid, len, bssid))
+                     return 0;
+             }
+ 
+@@ -3452,7 +3514,9 @@
+                 h80211[len+7] = 0x00;
+                 h80211[len+8] = 0x20; //keylen
+ 
++                replaycount = rand();
+                 memset(h80211+len+9, 0, 90);
++                memcpy(h80211+len+13, &replaycount, 4); // replay counter
+                 memcpy(h80211+len+17, st_cur->wpa.anonce, 32);
+ 
+                 len+=99;
+@@ -3479,8 +3543,9 @@
+     int seq=0, i=0, n=0;
+     int essid_len, temp_channel;
+     char *essid = "";
+-    pESSID_t cur_essid = rESSID;
++    pESSID_t cur_essid = rESSID->next;
+     float f, ticks[3];
++    unsigned char* bssid;
+ 
+     memcpy(&apc, arg, sizeof(struct AP_conf));
+ 
+@@ -3526,22 +3591,27 @@
+             timestamp=tv1.tv_sec*1000000UL + tv1.tv_usec;
+             fflush(stdout);
+ 
++            /* flush expired ESSID entries */
++            flushESSID();
++            bssid = opt.r_bssid;
+ 
+             if(cur_essid == NULL) {
+             	cur_essid = rESSID;
+             	cur_essid = cur_essid->next;
+             }
+             if(cur_essid == NULL) {
+-	            essid = "default";
+-	            essid_len = strlen(essid);
++                if(opt.no_defbeacon)
++                    continue;
++                else {
++	                essid = "default";
++	                essid_len = strlen(essid);
++                }
+             } else {
+-
+-                /* flush expired ESSID entries */
+-                flushESSID();
+-
+-	            essid     = cur_essid->essid;
+-	            essid_len = cur_essid->len;
+-	            cur_essid = cur_essid->next;
++                if(memcmp(cur_essid->bssid, NULL_MAC, 6) != 0)
++                    bssid = cur_essid->bssid;
++                essid     = cur_essid->essid;
++                essid_len = cur_essid->len;
++                cur_essid = cur_essid->next;
+             }
+ 
+             beacon_len = 0;
+@@ -3551,11 +3621,11 @@
+             memcpy(beacon+beacon_len , BROADCAST, 6);        //destination
+             beacon_len+=6;
+             if(!opt.adhoc)
+-                memcpy(beacon+beacon_len, apc.bssid, 6);        //source
++                memcpy(beacon+beacon_len, bssid, 6);        //source
+             else
+                 memcpy(beacon+beacon_len, opt.r_smac, 6);        //source
+             beacon_len+=6;
+-            memcpy(beacon+beacon_len, apc.bssid, 6);        //bssid
++            memcpy(beacon+beacon_len, bssid, 6);        //bssid
+             beacon_len+=6;
+             memcpy(beacon+beacon_len, "\x00\x00", 2);       //seq+frag
+             beacon_len+=2;
+@@ -3987,7 +4057,7 @@
+         };
+ 
+         int option = getopt_long( argc, argv,
+-                        "a:h:i:C:I:r:w:HPe:E:c:d:D:f:W:qMY:b:B:XsS:Lx:vAz:Z:yV:0NF:",
++                        "a:h:i:C:I:r:w:HPe:E:c:d:D:f:W:qMY:b:B:XsS:Lx:vAz:Z:yV:0pnNF:",
+                         long_options, &option_index );
+ 
+         if( option < 0 ) break;
+@@ -4089,7 +4159,7 @@
+ 
+             case 'e' :
+ 
+-                if( addESSID(optarg, strlen(optarg), 0) != 0 )
++                if( addESSID(optarg, strlen(optarg), NULL_MAC, 0) != 0 )
+                 {
+                     printf( "Invalid ESSID, too long\n" );
+                     printf("\"%s --help\" for help.\n", argv[0]);
+@@ -4133,6 +4203,18 @@
+ 
+                 break;
+ 
++            case 'p' :
++
++                opt.ind_bssids = 1;
++
++                break;
++
++            case 'n' :
++
++                opt.no_defbeacon = 1;
++
++                break;
++
+             case 'N' :
+ 
+                 opt.cf_attack = 1;

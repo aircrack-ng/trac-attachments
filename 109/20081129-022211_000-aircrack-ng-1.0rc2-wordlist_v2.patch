@@ -1,0 +1,136 @@
+Index: src/aircrack-ng.c
+===================================================================
+--- src/aircrack-ng.c	(revision 1233)
++++ src/aircrack-ng.c	(working copy)
+@@ -223,6 +223,7 @@
+ int intr_read = 0;
+ 
+ int safe_write( int fd, void *buf, size_t len );
++extern int isASCII(unsigned char c);
+ 
+ void clean_exit(int ret)
+ {
+@@ -3771,6 +3772,10 @@
+ 
+ int next_dict(int nb)
+ {
++	char c[10];
++	int i, invalid_char, unused;
++	long file_length;
++
+ 	if(opt.dict != NULL)
+ 	{
+ 		if(!opt.stdin_dict) fclose(opt.dict);
+@@ -3805,9 +3810,10 @@
+ 				continue;
+ 			}
+ 
+-			fseek(opt.dict, 0L, SEEK_END);
++			unused = (int)fseek(opt.dict, 0L, SEEK_END);
+ 
+-			if ( ftell( opt.dict ) <= 0L )
++			file_length = ftell( opt.dict );
++			if ( file_length <= 0L )
+ 			{
+ 				fclose( opt.dict );
+ 				opt.dict = NULL;
+@@ -3817,6 +3823,35 @@
+ 			}
+ 
+ 			rewind( opt.dict );
++
++			// Make sure it only contains ASCII characters
++			invalid_char = 0;
++
++			for (i = 0; i < 20 && ftell( opt.dict ) <= file_length; i++)
++			{
++
++				unused = (int)fread(&c[i], 1, 1, opt.dict);
++				unused = (int)fseek(opt.dict, 1, SEEK_CUR);
++
++				//if ( ( c[i] < 32 || c[i] > 126 ) && c[i] != 9 && c[i] != 10 && c[i] != 13 )
++				if (!isASCII(c[i]))
++				{
++					invalid_char = 1;
++					break;
++				}
++
++			}
++
++			if ( invalid_char == 1 )
++			{
++				fclose( opt.dict );
++				opt.dict = NULL;
++				printf( "\n\n\"%s\" is not a wordlist\n", opt.dicts[opt.nbdict] );
++				opt.nbdict++;
++				continue;
++			}
++
++			rewind( opt.dict );
+ 		}
+ 		break;
+ 	}
+@@ -4273,7 +4308,7 @@
+ 		opt.nbdict++;
+ 	}
+ 
+-	next_dict(0);
++	//next_dict(0);
+ 
+ 	while(next_dict(opt.nbdict+1) == 0) {}
+ 
+Index: src/common.c
+===================================================================
+--- src/common.c	(revision 1233)
++++ src/common.c	(working copy)
+@@ -144,6 +144,50 @@
+ 	return mac_string;
+ }
+ 
++// Return 1 if it's an ASCII characters, 0 if it's not
++int isASCII(unsigned char c)
++{
++	#define VALID_ASCII_CHARS_LENTGH 98
++	static char valid_chars[VALID_ASCII_CHARS_LENTGH] =
++		" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
++	static int table_created = 0;
++	static int table[256];
++
++	int i, j;
++
++	/*
++	 * It may seem a bit long to calculate the table
++	 * but character position depend on the charset used
++	 * Example: EBCDIC
++	 * but it's only done once and then conversion will be really fast
++	 */
++	if (table_created == 0)
++	{
++		// Initialize the table
++		for (i=0; i < 256; ++i)
++		{
++			table[i] = 0;
++		}
++
++		// Check put 1 in the table if a character is valid
++		for (i=0; i < 256; ++i)
++		{
++			for (j = 0; j < VALID_ASCII_CHARS_LENTGH; ++j)
++			{
++				if (valid_chars[j] == (char)i)
++				{
++					table[i] = 1;
++					break;
++				}
++			}
++		}
++
++		table_created = 1;
++	}
++
++	return table[c] == 1;
++}
++
+ /* Return -1 if it's not an hex value and return its value when it's a hex value */
+ int hexCharToInt(unsigned char c)
+ {

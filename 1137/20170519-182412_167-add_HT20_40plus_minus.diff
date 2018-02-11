@@ -1,0 +1,117 @@
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index 0ce2131..f166a3f 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -65,6 +65,10 @@
+ #include <pcre.h>
+ #endif
+ 
++#ifdef CONFIG_LIBNL
++#include <linux/nl80211.h>
++#endif //CONFIG_LIBNL
++
+ #include "version.h"
+ #include "pcap.h"
+ #include "uniqueiv.h"
+@@ -5415,7 +5419,11 @@ void channel_hopper(struct wif *wi[], int if_num, int chan_count, pid_t parent)
+ 
+             ch = G.channels[ch_idx];
+ 
++#ifdef CONFIG_LIBNL
++            if(wi_set_channel(wi[card], ch | G.htval_mask ) == 0 )
++#else
+             if(wi_set_channel(wi[card], ch ) == 0 )
++#endif
+             {
+                 G.channel[card] = ch;
+                 unused = write( G.cd_pipe[1], &card, sizeof(int) );
+@@ -5966,7 +5974,11 @@ int check_channel(struct wif *wi[], int cards)
+         {
+             memset(G.message, '\x00', sizeof(G.message));
+             snprintf(G.message, sizeof(G.message), "][ fixed channel %s: %d ", wi_get_ifname(wi[i]), chan);
++#ifdef CONFIG_LIBNL
++            wi_set_channel(wi[i], G.channel[i] | G.htval_mask);
++#else
+             wi_set_channel(wi[i], G.channel[i]);
++#endif
+         }
+     }
+     return 0;
+@@ -6148,6 +6160,9 @@ int main( int argc, char *argv[] )
+     fd_set             rfds;
+ 
+     static struct option long_options[] = {
++        {"ht20",     0, 0, '2'},
++        {"ht40-",    0, 0, '3'},
++        {"ht40+",    0, 0, '5'},
+         {"band",     1, 0, 'b'},
+         {"beacon",   0, 0, 'e'},
+         {"beacons",  0, 0, 'e'},
+@@ -6263,6 +6278,7 @@ int main( int argc, char *argv[] )
+     G.file_write_interval = 5; // Write file every 5 seconds by default
+     G.maxsize_wps_seen  =  6;
+     G.show_wps     = 0;
++    G.htval_mask   = 0;
+ #ifdef HAVE_PCRE
+     G.f_essid_regex = NULL;
+ #endif
+@@ -6744,6 +6760,18 @@ int main( int argc, char *argv[] )
+                     G.active_scan_sim = 0;
+                 break;
+ 
++#ifdef CONFIG_LIBNL
++            case '2':
++                G.htval_mask = NL80211_CHAN_HT20 << 10;
++                break;
++            case '3':
++                G.htval_mask = NL80211_CHAN_HT40MINUS << 10;
++                break;
++            case '5':
++                G.htval_mask = NL80211_CHAN_HT40PLUS << 10;
++                break;
++#endif //CONFIG_LIBNL
++
+             default : goto usage;
+         }
+     } while ( 1 );
+@@ -6901,7 +6929,11 @@ usage:
+             {
+                 for( i=0; i<G.num_cards; i++ )
+                 {
++#ifdef CONFIG_LIBNL
++                    wi_set_channel(wi[i], G.channel[0] | G.htval_mask);
++#else
+                     wi_set_channel(wi[i], G.channel[0]);
++#endif
+                     G.channel[i] = G.channel[0];
+                 }
+                 G.singlechan = 1;
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index 8358cb3..0b7b1f4 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -476,6 +476,7 @@ struct globals
+     int file_write_interval;
+     u_int maxsize_wps_seen;
+     int show_wps;
++    int htval_mask;         /* bits representing HT mode, ORd with channel when seting  */
+ }
+ G;
+ 
+diff --git a/src/osdep/linux.c b/src/osdep/linux.c
+index 034c4a0..0362702 100644
+--- a/src/osdep/linux.c
++++ b/src/osdep/linux.c
+@@ -952,7 +952,12 @@ static int linux_set_channel_nl80211(struct wif *wi, int channel)
+     unsigned int devid;
+     struct nl_msg *msg;
+     unsigned int freq;
+-    unsigned int htval = NL80211_CHAN_NO_HT;
++    // NL802.11_CHAN_* can be OR'd into unused high bits of int channel.
++    // NL802.11_CHAN_NO_HT is first enum value (0), so any calls which don't
++    // explicitly add HT info will get the old NO_HT behavior.
++    // 10 bits should be enough for any channel :)
++    unsigned int htval = channel >> 10;
++    channel &= 0x03FF; // clear HT bits to get original channel value.
+ 
+     memset( s, 0, sizeof( s ) );

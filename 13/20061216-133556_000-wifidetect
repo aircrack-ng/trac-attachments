@@ -1,0 +1,578 @@
+#!/bin/sh
+# Original work by Thomas d'Otreppe : airmon-ng
+# Modded by Grimmlin for pentoo
+# Modded by Zero_Chaos due to morbid insanity
+# Zero_Chaos has added the functionality to put 
+#  ALL wireless cards that are capable into monitor mode
+#  and configure kismet to use them all. If this is not
+#  what you want, don't use this script
+
+# Known limitations:
+# 1.) if madwifi-ng detection fails it should use madwifi-old
+#     before continuing. It seems my bash-fu is too weak
+# 2.) if you have multiple madwifi-ng devices it may get ugly (not sure, and can't test)
+# 3.) if you have madwifi-ng and you run monitor twice it
+#     will loop creating monitor VAPs
+
+# VERSION=200611090053 GMT-5
+
+IFACE=""
+KISMET=/root/pentoo/kismet.conf
+
+echo -n "Wifi detection script running in mode "
+
+if [ "`basename $0`" = "kismetautoconf" ]
+then
+	echo "kismet auto configuration."
+	echo -n "Clearing kismet.conf..."
+	sed -e '/^source=/d' -e '/^enablesources=/d' -i $KISMET
+	echo "done"
+fi
+if [ "`basename $0`" = "monitor" ]
+then
+	echo "monitor."
+	echo "All detected devices will enter monitor mode."
+fi
+if [ "`basename $0`" = "unmonitor" ]
+then
+	echo "unmonitor."
+	echo "All detected devices will leave monitor mode."
+fi
+if [ "`basename $0`" = "wifidetect" ]
+then
+	echo "detect."
+	echo "Here is a list of information for detected devices:"
+fi
+
+CH=6 # default channel is 6 in USA
+
+which iwpriv > /dev/null 2> /dev/null || # checking for wireless-tools
+{ echo Wireless tools not found ; exit ; }
+
+
+echo -e "Interface\tChipset\t\tDriver\n"
+
+
+function startStdIface() {
+	ifconfig $1 down
+	iwconfig $1 key off 2> /dev/null >/dev/null
+	iwconfig $1 mode monitor 2> /dev/null >/dev/null
+	ifconfig $1 up # it appears most (all) interfaces don't accept channel when down!
+	sleep 1.5 # it also appears that is takes more than 1s to accept the channel command
+	iwconfig $1 channel $CH 2> /dev/null >/dev/null
+	echo -n " (monitor mode enabled)"
+}
+
+
+function stopStdIface() {
+	ifconfig $1 down 2> /dev/null >/dev/null
+	iwconfig $1 mode Managed 2> /dev/null >/dev/null
+	ifconfig $1 down 2> /dev/null >/dev/null
+	echo -n " (monitor mode disabled)"
+}
+
+for iface in `ifconfig -a 2>/dev/null | egrep HWaddr | cut -b 1-7`
+do
+	if [ -e "/proc/sys/dev/$iface/fftxqmin" ] # tests for madwifi-ng master interface
+	then
+		echo -e "$iface\t\tAtheros\t\tmadwifi-ng (master interface)"
+	fi
+	continue
+done
+
+for iface in `iwconfig 2>/dev/null | egrep '(IEEE|ESSID)' | cut -b 1-7`
+do
+
+if [ x"`iwpriv $iface 2>/dev/null | grep inact_auth`" != "x" ] # testing for madwifi
+then
+	if [ -e "/proc/sys/net/$iface/%parent" ] # makes sure it is really madwifi VAP
+	then
+		echo -e -n "$iface\t\tAtheros\t\tmadwifi-ng VAP (parent:`cat /proc/sys/net/$iface/%parent`)"
+		if [ "`cat /proc/sys/net/$iface/dev_type`" != "1" ]
+		then
+			echo -e -n "(Monitor w/ "
+			if [ "801" == $"`cat /proc/sys/net/$iface/dev_type`" ]
+			then
+				echo -e -n "802.11 headers)"
+			fi
+			if [ "802" == $"`cat /proc/sys/net/$iface/dev_type`" ]
+			then
+				echo -e -n "Prism headers)"
+			fi
+			if [ "803" == $"`cat /proc/sys/net/$iface/dev_type`" ]
+			then
+				echo -e -n "Radiotap headers)"
+			fi
+			if [ "803" == $"`cat /proc/sys/net/$iface/dev_type`" ]
+			then
+				echo -e -n "Atheros Descriptors)"
+			fi
+		fi
+	fi
+	if [ "`basename $0`" = "unmonitor" ]  
+	then
+		if [ "1" == `cat /proc/sys/net/$iface/dev_type` ]
+		then
+			echo "(non-monitor vap left alone)"
+		fi
+#		if [ "801" == `cat /proc/sys/net/$iface/dev_type` ] || [ "802" == `cat /proc/sys/net/$iface/dev_type` ] || [ "803" == `cat /proc/sys/net/$iface/dev_type` ] || [ "804" == `cat /proc/sys/net/$iface/dev_type` ]
+		if [ "1" != "`cat /proc/sys/net/$iface/dev_type`" ] # is this a safe substiution for the above?
+		then
+			wlanconfig $iface destroy
+			echo "(monitor vap destroyed)"
+		fi
+	fi
+	if [ "`basename $0`" = "monitor" ] # && [ $iface = "$IFACE" ]
+	then
+		if [ "1" == `cat /proc/sys/net/$iface/dev_type` ]
+		then
+			ifconfig $iface down
+			echo " (non-monitor interface downed, WARNING: you should destroy it)"
+		else
+			wlanconfig $iface destroy
+			echo " (monitor interface $iface destroyed)"
+		fi
+		for master in `ifconfig -a 2>/dev/null | egrep HWaddr | cut -b 1-7` # pulls all interface names
+     		do
+ 			if [ -e "/proc/sys/dev/$master/fftxqmin" ] # tests for madwifi-ng master interface
+ 			then
+					MONITORIFACE=`wlanconfig ath create wlandev $master wlanmode monitor`
+					sleep 1s
+					ifconfig $MONITORIFACE up
+					echo -e -n "$MONITORIFACE\t\tAtheros\t\tmadwifi-ng VAP (parent:`cat /proc/sys/net/$iface/%parent`)(Monitor w/ Prism Headers)"
+			fi
+			continue
+			echo
+		done
+	fi
+	if [ "`basename $0`" = "kismetautoconf" ]
+	then
+		if [ "1" = `cat /proc/sys/net/$iface/dev_type` ]
+		then
+			ifconfig $iface down
+			echo "(non-monitor interface downed, WARNING: you should destroy it)"
+		fi
+		for master in `ifconfig -a 2>/dev/null | egrep HWaddr | cut -b 1-7` # pulls all interface names
+     		do
+ 			if [ -e "/proc/sys/dev/$master/fftxqmin" ] # tests for madwifi-ng master interface
+ 			then
+				echo "source=madwifi_g,$master,Atheros" >> $KISMET
+				echo -e -n "$master\t\tAtheros\t\tmadwifi-ng (added to kismet.conf)"
+			fi
+			continue
+			echo
+		done
+	fi
+#failing madwifi-ng should default back to madwifi-old, but is the code right? no, it isn't)
+#fix madwifi-old handling
+#     echo -e -n "$iface\t\tAtheros\t\tmadwifi"
+#     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+#     then
+#         startStdIface $iface $CH
+#     fi
+#     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+#     then
+#         stopStdIface $iface
+#     fi
+#     if [ "`basename $0`" = "kismetautoconf" ]
+#     then
+#	echo "source=madwifi_g,$iface,Atheros" >>$KISMET
+#	echo -e -n " (added to kismet.conf)"
+#     fi
+#     echo
+ continue
+fi
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep force_reset`" != "x" ]
+ then
+    echo -e -n "$iface\t\tHermesI\t\torinoco"
+    if [ "`basename $0`"  = "monitor" ] # && [ x$2 = x$iface ]
+    then
+        iwconfig $iface mode Monitor channel $CH &>/dev/null
+        iwpriv $iface monitor 1 $CH &>/dev/null
+        ifconfig $iface up
+        echo -n " (monitor mode enabled)"
+    fi
+    if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+    then
+        ifconfig $iface down
+        iwpriv $iface monitor 0 &>/dev/null
+        iwconfig $iface mode Managed &>/dev/null
+        echo -n " (monitor mode disabled)"
+    fi
+    if [ "`basename $0`" = "kismetautoconf" ]
+    then
+        echo "source=orinoco,$iface,HermesI" >>$KISMET
+	echo -n " (added to kismet.conf)"
+    fi
+    echo
+    continue
+ fi
+
+
+ if [ `iwpriv $iface 2>/dev/null | grep -v $iface | md5sum | awk '{print $1}'` == "2310629be8b9051238cde37520d97755" ]
+ then
+    echo -e -n "$iface\t\tCentrino b\tipw2100"
+    if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+    then
+        startStdIface $iface $CH
+    fi
+    if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+    then
+        stopStdIface $iface
+    fi
+    if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+    then
+        echo "source=ipw2100,$iface,Centrino_b" >>$KISMET
+	echo -n " (added to kismet.conf)"
+    fi
+    echo
+    continue
+ fi
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep sw_reset`" != "x" ]
+ then
+    MODINFO=`modinfo ipw2200 | awk '/^version/ {print $2}'`
+#    if { echo "$MODINFO" | grep -E -v '^1\.0\.[0123]|^1\.[1-9]' ; } # once we are on version 2.x this won't work
+#    then
+#    	echo "Monitor mode not supported, please upgrade"
+#    else
+	echo -e -n "$iface\t\tCentrino b/g\tipw2200"
+	if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+	then
+	    startStdIface $iface $CH
+	fi
+	if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+	then
+	    stopStdIface $iface
+	fi
+	if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+	then
+	    echo "source=ipw2200,$iface,Centrino_g" >>$KISMET
+   	    echo -n " (added to kismet.conf)"
+	fi
+
+#    	if { echo "$MODINFO" | grep -E '^1\.0\.(5|7|8|11)$|^1\.[1-9]' ; }
+#	then
+#		echo -e -n " (Warning: bad module version, you should upgrade)"
+#	fi
+#     fi
+     echo
+     continue
+ fi
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep set_preamble`" != "x" ]
+  then
+        echo -e -n "$iface\t\tCentrino b/g\tipw3945"
+        if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+         then
+                startStdIface $iface $CH
+        fi
+        if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+         then
+                stopStdIface $iface
+        fi
+        if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+         then
+                echo "source=ipw3945,$iface,Centrino_g" >>$KISMET
+	        echo -n " (added to kismet.conf)"
+        fi
+        echo
+        continue
+ fi
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep extrates`" != "x" ]
+ then
+     echo -e -n "$iface\t\tPrismGT\t\tprism54"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         ifconfig $iface up
+         iwconfig $iface mode Monitor channel $CH
+         iwpriv $iface set_prismhdr 1 &>/dev/null #check this shit out
+         echo -n " (monitor mode enabled)"
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=prism54g,$iface,Prism54" >>$KISMET
+	 echo -n " (added to kismet.conf)"
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep antsel_rx`" != "x" ]
+ then
+     if [ x"`iwconfig $iface 2>/dev/null | grep "Rx invalid nwid:"`" != "x" ] && [ x"`iwconfig $iface 2>/dev/null | grep "Invalid misc:"`" != "x" ]
+     then
+     	echo -e -n "$iface\t\tPrism2\t\tHostAP"
+     	if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     	then
+        	 iwconfig $iface mode Monitor channel $CH
+         	iwpriv $iface monitor_type 1 &>/dev/null #Check this shit out
+         	ifconfig $iface up
+         	echo -n " (monitor mode enabled)"
+     	fi
+     	if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     	then
+         	stopStdIface $iface
+     	fi
+     	if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     	then
+         	echo "source=hostap,$iface,Prism2" >>$KISMET
+	 	echo -n " (added to kismet.conf)"
+     	fi
+     else
+	echo -e -n "$iface\t\tPrism2\t\tHostAP (master interface)"
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`wlancfg show $iface 2>/dev/null | grep p2CnfWEPFlags`" != "x" ]
+ then
+     echo -e -n "$iface\t\tPrism2\t\twlan-ng"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         wlanctl-ng $iface lnxreq_ifstate ifstate=enable >/dev/null
+         wlanctl-ng $iface lnxreq_wlansniff enable=true channel=$CH \
+                           prismheader=true wlanheader=false \
+                           stripfcs=true keepwepflags=true >/dev/null
+         echo p2CnfWEPFlags=0,4,7 | wlancfg set $iface
+         ifconfig $iface up
+         echo -n " (monitor mode enabled)"
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         ifconfig $iface down
+         wlanctl-ng $iface lnxreq_wlansniff enable=false  >/dev/null
+         wlanctl-ng $iface lnxreq_ifstate ifstate=disable >/dev/null
+         echo -n " (monitor mode disabled)"
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+#	 We will assume the driver is recent until I put in a check, note the _avs header
+         echo "source=wlanng_avs,$iface,Prism2" >>$KISMET
+         echo -n " (added to kismet.conf)"
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep bbp`" != "x" ]
+ then
+     echo -e -n "$iface\t\tRalink b/g\trt2500"
+     if [ "`basename $1`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         iwconfig $iface mode ad-hoc 2> /dev/null >/dev/null
+         startStdIface $iface $CH
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $1`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=rt2500,$iface,Ralink_g" >>$KISMET
+	 echo -n " (added to kismet.conf)"
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep wpapsk`" != "x" ]
+ then
+     echo -e -n "$iface\t\tRalink USB\trt2570"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         iwconfig $iface mode ad-hoc 2> /dev/null >/dev/null
+         startStdIface $iface $CH
+#         iwpriv $iface forceprismheader 1 #check this out
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=rt2500,$iface,Ralink_g" >>$KISMET
+	 echo -n " (added to kismet.conf)"
+     fi
+     echo
+     continue
+ fi
+
+if [ x"`iwpriv $iface 2>/dev/null | grep airo`" != "x" ]
+then
+	echo -e -n "$iface\t\tCisco Aironet\taironet"
+	if [ -e /proc/driver/aironet/$iface/Config ]
+	then #ethX
+		ciscoeth=$iface
+		if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+		then
+			startStdIface $iface $CH
+			ifconfig $iface 0.0.0.0
+			ifconfig $iface promisc
+			iwconfig $iface essid ""
+			echo "Mode: r" > /proc/driver/aironet/$iface/Config
+			echo "Mode: y" > /proc/driver/aironet/$iface/Config
+			echo "XmitPower: 1" > /proc/driver/aironet/$iface/Config
+			echo -n " (don't use)"
+		fi
+		if [ "`basename $0`" = "unmonitor" ]
+		then
+			stopStdIface $iface
+			echo -n " (reset your card)"
+		fi
+	else #wifiX
+		ciscowifix=$iface
+		if [ "`basename $0`" = "monitor" ]
+		then
+			ifconfig $iface up
+			ifconfig $iface 0.0.0.0
+			ifconfig $iface promisc
+			iwconfig $iface essid ""
+			echo -n " (monitor mode enabled) (sniff here)"
+		fi
+		if [ "`basename $0`" = "unmonitor" ]
+		then
+			echo -n " (monitor mode disabled) (reset your card)"
+		fi
+	fi
+
+	if [ "`basename $0`" = "kismetautoconf" ] && [ x$ciscoeth != "x" ] && [ x$ciscowifix != "x" ]
+	then
+		echo "source=cisco_wifix,$ciscoeth:$ciscowifix,cisco" >>$KISMET
+		echo
+		echo -e -n "$ciscoeth:$ciscowifix\tCisco Aironet\taironet"
+		echo -n " (added to kismet.conf)"
+	fi
+
+	echo
+	continue
+fi
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep debugtx`" != "x" ]
+ then
+     echo -e -n "$iface\t\tRTL8180\t\tr8180"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         iwconfig $iface mode Monitor channel $CH
+         iwpriv $iface prismhdr 1 &>/dev/null
+         ifconfig $iface up
+         echo -n " (monitor mode enabled)"
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=rt8180,$iface,Realtek" >>$KISMET
+         echo -n " (added to kismet.conf)"
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep dbg_flag`" != "x" ]
+ then
+     echo -e -n "$iface\t\tZyDAS\t\tzd1211"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         startStdIface $iface $CH
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+#         echo "source=wlanng_legacy,$iface,ZyDAS" >>$KISMET # this isn't what kismet docs say...but what do I know?
+	  echo "source=zd1211,$iface,ZyDAS" >>$KISMET
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep GetAcx1`" != "x" ]
+ then
+     echo -e -n "$iface\t\tTI\t\tacx111"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         startStdIface $iface $CH
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=acx100,$iface,TI" >>$KISMET
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep write_sprom`" != "x" ]
+ then
+     echo -e -n "$iface\t\tBroadcom\tbcm43xx"
+     if [ "`basename $0`" = "monitor" ] # && [ x$2 = x$iface ]
+     then
+         startStdIface $iface $CH
+     fi
+     if [ "`basename $0`" = "unmonitor" ] # && [ x$2 = x$iface ]
+     then
+         stopStdIface $iface
+     fi
+     if [ "`basename $0`" = "kismetautoconf" ] # && [ x$2 = x$iface ]
+     then
+         echo "source=bcm43xx,$iface,broadcom" >>$KISMET
+     fi
+     echo
+     continue
+ fi
+
+
+ if [ x"`iwpriv $iface 2>/dev/null | grep ndis_reset`" != "x" ]
+ then
+     echo -e -n "$iface\t\tUnknown\t\tndiswrapper"
+#     if [ x$2 = x$iface ]
+#     then
+      echo -e " (MONITOR MODE NOT SUPPORTED)"
+#     fi
+     echo
+     continue
+ fi
+
+
+echo -e "$iface\t\tUnknown\t\tUnknown (MONITOR MODE NOT SUPPORTED)"
+
+
+done
+
+#todo: go through kismet docs and fill in the rest of the chipsets we are missing several
+#admtek
+#atmel_usb
+#cisco (legacy)
+#ipw2915 (uses the ipw2200 driver but adds .11a support)
+#ipwlivetap (detect the rtap interface for ipw2200 and ipw3945 drivers but leave disabled)
+#madwifi_a (can we detect if .11a is supported? if so add entry for madwifi_a; madwifi_ag; madwifi_ab disabled)
+#madwifi_b (does anyone REALLY want this? what advantage is there to not seeing g?)
+#rt2400 (using 1.2.2 beta 2 or newer)
+#better detection of different ralink drivers?
+#wlanng_legacy (do we really need something this ancient? I doubt it)
+#wlanng (even this is likely older than we need)
+#wlanng_avs (can we detect the difference between this and non-avs? maybe a version check?)
+
+echo

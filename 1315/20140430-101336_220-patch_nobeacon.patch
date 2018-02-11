@@ -1,0 +1,81 @@
+commit 66d074c30a0216722e01dbc687139fecc6c523b8
+Author: Célestin Matte <celestin.matte@gmail.com>
+Date:   Tue Apr 29 15:52:52 2014 +0200
+
+    Add option to stop sending beacons
+    
+    Add option -G, which will prevent our fake AP to ever send any beacon frame
+
+diff --git src/airbase-ng.c src/airbase-ng.c
+index 8997324..b2ab4f1 100644
+--- src/airbase-ng.c
++++ src/airbase-ng.c
+@@ -180,6 +180,7 @@ char usage[] =
+ "      -Y in|out|both   : external packet processing\n"
+ "      -c channel       : sets the channel the AP is running on\n"
+ "      -X               : hidden ESSID\n"
++"      -G               : do not send beacons\n"
+ "      -s               : force shared key authentication (default: auto)\n"
+ "      -S               : set shared key challenge length (default: 128)\n"
+ "      -L               : Caffe-Latte WEP attack (use if driver can't send frags)\n"
+@@ -251,6 +251,7 @@ struct options
+     int mitm;
+     int external;
+     int hidden;
++    int nobeacon;
+     int interval;
+     int forceska;
+     int skalen;
+@@ -3978,6 +3979,7 @@ int main( int argc, char *argv[] )
+             {"interval",    1, 0, 'I'},
+             {"mitm",        0, 0, 'M'},
+             {"hidden",      0, 0, 'X'},
++            {"nobeacon",    0, 0, 'G'},
+             {"caffe-latte", 0, 0, 'L'},
+             {"cfrag",       0, 0, 'N'},
+             {"verbose",     0, 0, 'v'},
+@@ -3987,7 +3989,7 @@ int main( int argc, char *argv[] )
+         };
+ 
+         int option = getopt_long( argc, argv,
+-                        "a:h:i:C:I:r:w:HPe:E:c:d:D:f:W:qMY:b:B:XsS:Lx:vAz:Z:yV:0NF:",
++                        "a:h:i:C:I:r:w:HPe:E:c:d:D:f:W:qMY:b:B:XsS:Lx:vAz:Z:yV:0NF:G",
+                         long_options, &option_index );
+ 
+         if( option < 0 ) break;
+@@ -4145,6 +4147,12 @@ int main( int argc, char *argv[] )
+ 
+                 break;
+ 
++            case 'G' :
++
++                opt.nobeacon = 1;
++
++                break;
++
+             case '0' :
+ 
+                 opt.allwpa = 1;
+@@ -4746,14 +4754,16 @@ usage:
+             printf("Couldn't set MAC on interface \"%s\".\n", ti_name(dev.dv_ti2));
+         }
+     }
+-    //start sending beacons
+-    if( pthread_create( &(beaconpid), NULL, (void *) beacon_thread,
+-            (void *) &apc ) != 0 )
++    if (!opt.nobeacon)
+     {
+-        perror("Beacons pthread_create");
+-        return( 1 );
++        //start sending beacons
++        if( pthread_create( &(beaconpid), NULL, (void *) beacon_thread,
++                (void *) &apc ) != 0 )
++        {
++            perror("Beacons pthread_create");
++            return( 1 );
++        }
+     }
+-
+     if( opt.caffelatte )
+     {
+         arp = (struct ARP_req*) malloc( opt.ringbuffer * sizeof( struct ARP_req ) );

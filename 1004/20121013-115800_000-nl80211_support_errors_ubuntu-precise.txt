@@ -1,0 +1,68 @@
+jano:~/aircrack-ng$ make sqlite=true libnl=true unstable=true
+make -C src all
+make[1]: ingresso nella directory /home/jano/aircrack-ng/src"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o aircrack-ng.o aircrack-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o crypto.o crypto.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o common.o common.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o uniqueiv.o uniqueiv.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o aircrack-ptw-lib.o aircrack-ptw-lib.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  aircrack-ng.o crypto.o common.o uniqueiv.o aircrack-ptw-lib.o sha1-sse2.S -o aircrack-ng -lpthread -lssl -lcrypto  -L/usr/local/lib -lsqlite3
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airdecap-ng.o airdecap-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airdecap-ng.o crypto.o common.o -o airdecap-ng -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o packetforge-ng.o packetforge-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  packetforge-ng.o common.o crypto.o -o packetforge-ng -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o ivstools.o ivstools.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  ivstools.o common.o crypto.o uniqueiv.o -o ivstools -lssl -lcrypto 
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o kstats.o kstats.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  kstats.o -o kstats
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o makeivs-ng.o makeivs-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  makeivs-ng.o common.o uniqueiv.o -o makeivs-ng
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airdecloak-ng.o airdecloak-ng.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o osdep/radiotap/radiotap-parser.o osdep/radiotap/radiotap-parser.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airdecloak-ng.o common.o osdep/radiotap/radiotap-parser.o -o airdecloak-ng
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o wpaclean.o wpaclean.c
+make -C osdep
+make[2]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+Building for Linux
+make[3]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o osdep.o osdep.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o network.o network.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o file.o file.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o linux.o linux.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o linux_tap.o linux_tap.c
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o common.o common.c
+ar cru libosdep.a  osdep.o network.o file.o linux.o linux_tap.o radiotap/radiotap-parser.o common.o
+ranlib libosdep.a 
+touch .os.Linux
+make[3]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+make[2]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+gcc   -D_FILE_OFFSET_BITS=64 -D_REVISION=2205  -I/usr/local/include -DHAVE_SQLITE -DCONFIG_LIBNL -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  wpaclean.o -o wpaclean -lnl   -Losdep -losdep 
+osdep/libosdep.a(linux.o): In function `nl_socket_alloc':
+linux.c:(.text+0x469): undefined reference to `nl_handle_alloc'
+osdep/libosdep.a(linux.o): In function `nl_socket_free':
+linux.c:(.text+0x48c): undefined reference to `nl_handle_destroy'
+osdep/libosdep.a(linux.o): In function `__genl_ctrl_alloc_cache':
+linux.c:(.text+0x4af): undefined reference to `genl_ctrl_alloc_cache'
+osdep/libosdep.a(linux.o): In function `linux_nl80211_init':
+linux.c:(.text+0x53a): undefined reference to `genl_connect'
+linux.c:(.text+0x5de): undefined reference to `genl_ctrl_search_by_name'
+linux.c:(.text+0x630): undefined reference to `nl_cache_free'
+osdep/libosdep.a(linux.o): In function `nl80211_cleanup':
+linux.c:(.text+0x66f): undefined reference to `genl_family_put'
+linux.c:(.text+0x67d): undefined reference to `nl_cache_free'
+osdep/libosdep.a(linux.o): In function `linux_set_channel_nl80211':
+linux.c:(.text+0x1f0c): undefined reference to `nlmsg_alloc'
+linux.c:(.text+0x1f57): undefined reference to `nl_cb_alloc'
+linux.c:(.text+0x1f66): undefined reference to `nl_cb_alloc'
+linux.c:(.text+0x1fb4): undefined reference to `nlmsg_free'
+linux.c:(.text+0x1fcd): undefined reference to `genl_family_get_id'
+linux.c:(.text+0x200c): undefined reference to `genlmsg_put'
+linux.c:(.text+0x2034): undefined reference to `nla_put'
+linux.c:(.text+0x2060): undefined reference to `nla_put'
+linux.c:(.text+0x208c): undefined reference to `nla_put'
+linux.c:(.text+0x20a7): undefined reference to `nl_send_auto_complete'
+collect2: ld returned 1 exit status
+make[1]: *** [wpaclean] Errore 1
+make[1]: uscita dalla directory ""/home/jano/aircrack-ng/src"
+make: *** [all] Errore 2
+jano:~/aircrack-ng$

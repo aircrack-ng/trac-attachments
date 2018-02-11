@@ -1,0 +1,55 @@
+Index: src/airserv-ng.c
+===================================================================
+--- src/airserv-ng.c	(revision 2855)
++++ src/airserv-ng.c	(working copy)
+@@ -63,6 +63,7 @@
+ 	struct wif	*ss_wi;
+ 	struct client	ss_clients;
+ 	int		ss_level;
++	int		write_only;
+ } _ss;
+ 
+ static struct sstate *get_ss()
+@@ -83,6 +84,7 @@
+ 		"  Options:\n"
+ 		"\n"
+ 		"       -h         : This help screen\n"
++		"       -w         : Write-only mode.  Only send, don't sniff packets."
+ 		"       -p  <port> : TCP port to listen on (default:666)\n"
+ 		"       -d <iface> : Wifi interface to use\n"
+ 		"       -c  <chan> : Channel to use\n"
+@@ -421,11 +423,13 @@
+ 		debug(ss, c, 3, "Sending result code %d to client\n", rd);
+ 
+ 		net_send_kill(c, NET_RC, &rc, sizeof(rc));
+-	} else {
++	}
++	else if (!ss->write_only) {
+ 		debug(ss, c, 3, "Sending %d bytes packet to client\n", rd);
+ 
+ 		net_send_kill(c, NET_PACKET, buf, rd);
+ 	}
++
+ }
+ 
+ static void handle_card(struct sstate *ss)
+@@ -521,7 +525,7 @@
+ 	memset(ss, 0, sizeof(*ss));
+ 	ss->ss_clients.c_next = ss->ss_clients.c_prev = &ss->ss_clients;
+ 
+-	while ((ch = getopt(argc, argv, "p:d:hc:v:")) != -1) {
++	while ((ch = getopt(argc, argv, "wp:d:hc:v:")) != -1) {
+ 		switch (ch) {
+ 		case 'p':
+ 			port = atoi(optarg);
+@@ -539,6 +543,10 @@
+ 			chan = atoi(optarg);
+ 			break;
+ 
++		case 'w':
++			ss->write_only = 1;
++			break;
++
+ 		case 'h':
+ 		default:
+ 			usage(argv[0]);

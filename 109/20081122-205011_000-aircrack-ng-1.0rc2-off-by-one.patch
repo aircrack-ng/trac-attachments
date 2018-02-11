@@ -1,0 +1,25 @@
+diff -uNr aircrack-ng-1.0rc2/src/aircrack-ng.c aircrack-ng-1.0rc2-off-by-one/src/aircrack-ng.c
+--- aircrack-ng-1.0rc2/src/aircrack-ng.c	2008-11-22 12:46:29.000000000 -0800
++++ aircrack-ng-1.0rc2-off-by-one/src/aircrack-ng.c	2008-11-22 12:47:37.000000000 -0800
+@@ -4060,6 +4060,10 @@
+ 			}
+ 			*/
+ 
++			// I think it just has to be incremented by 1 (see line 3708).
++			++nb_tried;
++			++nb_kprev;
++
+ 			//if( memcmp( mic2, ap->wpa.keymic, 16 ) == 0 )
+ 			if( memcmp( mic1, ap->wpa.keymic, 16 ) == 0 )
+ 			{
+@@ -4084,10 +4088,6 @@
+ 				return( SUCCESS );
+ 			}
+ 
+-			// I think it just has to be incremented by 1 (see line 3708).
+-			++nb_tried;
+-			++nb_kprev;
+-
+ 			if( ! opt.is_quiet )
+ 				show_wpa_stats( key1, len1, pmk1, ptk1, mic1, 0 );
+ 		}

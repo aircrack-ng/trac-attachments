@@ -1,0 +1,34 @@
+Index: osdep/linux.c
+===================================================================
+--- osdep/linux.c	(revision 2312)
++++ osdep/linux.c	(working copy)
+@@ -1615,6 +1615,7 @@
+     char r_file[128], buf[128];
+     struct ifreq ifr;
+     char * unused_str;
++    int iface_malloced = 0;
+ 
+     dev->inject_wlanng = 1;
+     dev->rate = 2; /* default to 1Mbps if nothing is set */
+@@ -1901,6 +1902,7 @@
+         strncpy(dev->main_if, iface, strlen(iface));
+ 
+         iface=(char*)malloc(strlen(buf)+1);
++        iface_malloced = 1;
+         memset(iface, 0, strlen(buf)+1);
+         strncpy(iface, buf, strlen(buf));
+     }
+@@ -2011,11 +2013,13 @@
+ 
+     dev->arptype_in = dev->arptype_out;
+ 
++    if(iface_malloced) free(iface);
+     return 0;
+ close_out:
+     close(dev->fd_out);
+ close_in:
+     close(dev->fd_in);
++    if(iface_malloced) free(iface);
+     return 1;
+ }
+ 

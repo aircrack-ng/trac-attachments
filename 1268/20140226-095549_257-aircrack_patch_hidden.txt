@@ -1,0 +1,26 @@
+Index: airbase-ng.c
+===================================================================
+--- airbase-ng.c	(révision 2371)
++++ airbase-ng.c	(copie de travail)
+
+@@ -4754,12 +4795,15 @@
+             printf("Couldn't set MAC on interface \"%s\".\n", ti_name(dev.dv_ti2));
+         }
+     }
+-    //start sending beacons
+-    if( pthread_create( &(beaconpid), NULL, (void *) beacon_thread,
+-            (void *) &apc ) != 0 )
++    if (!opt.hidden)
+     {
+-        perror("Beacons pthread_create");
+-        return( 1 );
++        //start sending beacons
++        if( pthread_create( &(beaconpid), NULL, (void *) beacon_thread,
++                            (void *) &apc ) != 0 )
++        {
++            perror("Beacons pthread_create");
++            return( 1 );
++        }
+     }
+ 
+     if( opt.caffelatte )

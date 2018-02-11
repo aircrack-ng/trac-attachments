@@ -1,0 +1,676 @@
+
+Cygwin Configuration Diagnostics
+Current System Time: Sat Nov 14 19:45:14 2015
+
+Windows 7 Professional Ver 6.1 Build 7601 Service Pack 1
+
+Running under WOW64 on AMD64
+
+Path:	C:\cygwin32\usr\local\bin
+	C:\cygwin32\bin
+	C:\Windows\system32
+	C:\Windows
+	C:\Windows\System32\Wbem
+	C:\Windows\System32\WindowsPowerShell\v1.0
+	C:\Program Files\Intel\WiFi\bin
+	C:\Program Files\Common Files\Intel\WirelessCommon
+	C:\Program Files (x86)\Microchip\xc32\v1.34\bin
+	C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common
+	C:\Program Files (x86)\Universal Extractor
+	C:\Program Files (x86)\Universal Extractor\bin
+	C:\Program Files (x86)\Skype\Phone
+	C:\Program Files\OpenVPN\bin
+	C:\Program Files\TortoiseSVN\bin
+	C:\Program Files\Intel\WiFi\bin
+	C:\Program Files\Common Files\Intel\WirelessCommon
+
+Output from C:\cygwin32\bin\id.exe
+UID: 197608(Thomas)            GID: 197121(None)
+197121(None)                   197609(HomeUsers)
+545(Users)                     4(INTERACTIVE)
+66049(CONSOLE LOGON)           11(Authenticated Users)
+15(This Organization)          113(Local account)
+4095(CurrentSession)           66048(LOCAL)
+262154(NTLM Authentication)    401408(Medium Mandatory Level)
+
+SysDir: C:\Windows\system32
+WinDir: C:\Windows
+
+USER = 'Thomas'
+PWD = '/home/Thomas/aircrack-ng-trunk'
+HOME = '/home/Thomas'
+
+HOMEPATH = '\Users\Thomas'
+APPDATA = 'C:\Users\Thomas\AppData\Roaming'
+ProgramW6432 = 'C:\Program Files'
+HOSTNAME = 'Thomas-PC'
+SHELL = '/bin/bash'
+TERM = 'xterm'
+PROCESSOR_IDENTIFIER = 'Intel64 Family 6 Model 42 Stepping 7, GenuineIntel'
+PROFILEREAD = 'true'
+WINDIR = 'C:\Windows'
+PUBLIC = 'C:\Users\Public'
+OLDPWD = '/home/Thomas'
+ORIGINAL_PATH = '/cygdrive/c/Windows/system32:/cygdrive/c/Windows:/cygdrive/c/Windows/System32/Wbem:/cygdrive/c/Windows/System32/WindowsPowerShell/v1.0:/cygdrive/c/Program Files/Intel/WiFi/bin:/cygdrive/c/Program Files/Common Files/Intel/WirelessCommon:/cygdrive/c/Program Files (x86)/Microchip/xc32/v1.34/bin:/cygdrive/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/cygdrive/c/Program Files (x86)/Universal Extractor:/cygdrive/c/Program Files (x86)/Universal Extractor/bin:/cygdrive/c/Program Files (x86)/Skype/Phone:/cygdrive/c/Program Files/OpenVPN/bin:/cygdrive/c/Program Files/TortoiseSVN/bin:/cygdrive/c/Program Files/Intel/WiFi/bin:/cygdrive/c/Program Files/Common Files/Intel/WirelessCommon'
+USERDOMAIN = 'Thomas-PC'
+CommonProgramFiles(x86) = 'C:\Program Files (x86)\Common Files'
+OS = 'Windows_NT'
+ALLUSERSPROFILE = 'C:\ProgramData'
+windows_tracing_flags = '3'
+windows_tracing_logfile = 'C:\BVTBin\Tests\installpackage\csilogfile.log'
+!:: = '::\'
+TEMP = '/tmp'
+COMMONPROGRAMFILES = 'C:\Program Files (x86)\Common Files'
+USERNAME = 'Thomas'
+MOZ_PLUGIN_PATH = 'C:\Program Files (x86)\Foxit Software\Foxit Reader\plugins\'
+PROCESSOR_LEVEL = '6'
+ProgramFiles(x86) = 'C:\Program Files (x86)'
+PSModulePath = 'C:\Windows\system32\WindowsPowerShell\v1.0\Modules\'
+FP_NO_HOST_CHECK = 'NO'
+SYSTEMDRIVE = 'C:'
+PROCESSOR_ARCHITEW6432 = 'AMD64'
+LANG = 'en_US.UTF-8'
+USERPROFILE = 'C:\Users\Thomas'
+TZ = 'America/Denver'
+PS1 = '\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\]\n\$ '
+LOGONSERVER = '\\THOMAS-PC'
+CommonProgramW6432 = 'C:\Program Files\Common Files'
+PROCESSOR_ARCHITECTURE = 'x86'
+LOCALAPPDATA = 'C:\Users\Thomas\AppData\Local'
+ProgramData = 'C:\ProgramData'
+EXECIGNORE = '*.dll'
+SHLVL = '1'
+PATHEXT = '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC'
+HOMEDRIVE = 'C:'
+COMSPEC = 'C:\Windows\system32\cmd.exe'
+TMP = '/tmp'
+SYSTEMROOT = 'C:\Windows'
+PRINTER = 'WorkForce 630(Network)'
+PROCESSOR_REVISION = '2a07'
+INFOPATH = '/usr/local/info:/usr/share/info:/usr/info'
+PROGRAMFILES = 'C:\Program Files (x86)'
+NUMBER_OF_PROCESSORS = '8'
+asl.log = 'Destination=file'
+SESSIONNAME = 'Console'
+COMPUTERNAME = 'THOMAS-PC'
+_ = '/usr/bin/cygcheck'
+
+HKEY_CURRENT_USER\Software\Cygwin
+HKEY_CURRENT_USER\Software\Cygwin\Installations
+  (default) = '\??\C:\cygwin32'
+  86aca7408e0979a4 = '\??\C:\cygwin32\home\Thomas\aircrack-ng-1.2-rc2-win'
+  2b300111dc54293d = '\??\C:\cygwin32\home\Thomas\aircrack-ng-trunk'
+  e022582115c10879 = '\??\C:\cygwin64'
+HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\Cygwin
+HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\Cygwin\Installations
+  (default) = '\??\C:\cygwin32'
+HKEY_CURRENT_USER\Software\Classes\VirtualStore\MACHINE\SOFTWARE\Cygwin\setup
+  (default) = 'C:\cygwin32'
+HKEY_LOCAL_MACHINE\SOFTWARE\Cygwin
+HKEY_LOCAL_MACHINE\SOFTWARE\Cygwin\Installations
+  (default) = '\??\C:\cygwin32'
+HKEY_LOCAL_MACHINE\SOFTWARE\Cygwin\setup
+  (default) = 'C:\cygwin32'
+
+obcaseinsensitive set to 1
+
+Cygwin installations found in the registry:
+  System: Key: 0b2e0ad1875883ba Path: C:\cygwin32
+  User:   Key: 0b2e0ad1875883ba Path: C:\cygwin32
+  User:   Key: 86aca7408e0979a4 Path: C:\cygwin32\home\Thomas\aircrack-ng-1.2-rc2-win (ORPHANED)
+  User:   Key: 2b300111dc54293d Path: C:\cygwin32\home\Thomas\aircrack-ng-trunk (ORPHANED)
+  User:   Key: e022582115c10879 Path: C:\cygwin64
+
+c:  hd  NTFS    953772Mb  96% CP CS UN PA FC     
+d:  cd             N/A    N/A                    
+e:  cd             N/A    N/A                    
+
+C:\cygwin32      /          system  binary,auto
+C:\cygwin32\bin  /usr/bin   system  binary,auto
+C:\cygwin32\lib  /usr/lib   system  binary,auto
+cygdrive prefix  /cygdrive  user    binary,posix=0,auto
+
+Found: C:\cygwin32\bin\awk
+ -> C:\cygwin32\bin\gawk.exe
+Found: C:\cygwin32\bin\bash.exe
+Found: C:\cygwin32\bin\cat.exe
+Found: C:\cygwin32\bin\cp.exe
+Found: C:\cygwin32\bin\cpp.exe
+Not Found: crontab
+Found: C:\cygwin32\bin\find.exe
+Found: C:\Windows\system32\find.exe
+Warning: C:\cygwin32\bin\find.exe hides C:\Windows\system32\find.exe
+Found: C:\cygwin32\bin\gcc.exe
+Not Found: gdb
+Found: C:\cygwin32\bin\grep.exe
+Found: C:\cygwin32\bin\kill.exe
+Found: C:\cygwin32\bin\ld.exe
+Found: C:\cygwin32\bin\ls.exe
+Found: C:\cygwin32\bin\make.exe
+Found: C:\cygwin32\bin\mv.exe
+Found: C:\cygwin32\bin\patch.exe
+Found: C:\cygwin32\bin\perl.exe
+Found: C:\cygwin32\bin\rm.exe
+Found: C:\cygwin32\bin\sed.exe
+Found: C:\cygwin32\bin\ssh.exe
+Found: C:\cygwin32\bin\sh.exe
+Found: C:\cygwin32\bin\tar.exe
+Found: C:\cygwin32\bin\test.exe
+Found: C:\cygwin32\bin\vi.exe
+Not Found: vim
+
+  170k 2015/05/25 C:\cygwin32\bin\cygapr-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygapr-1-0.dll" v0.0 ts=2015-05-25 03:12
+  135k 2015/05/25 C:\cygwin32\bin\cygaprutil-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygaprutil-1-0.dll" v0.0 ts=2015-05-25 03:35
+   38k 2013/07/23 C:\cygwin32\bin\cygargp-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygargp-0.dll" v0.0 ts=2013-07-23 15:35
+   87k 2015/07/02 C:\cygwin32\bin\cygatomic-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygatomic-1.dll" v0.0 ts=2015-07-02 21:51
+   14k 2012/05/04 C:\cygwin32\bin\cygattr-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygattr-1.dll" v0.0 ts=2012-05-04 12:35
+  203k 2015/03/23 C:\cygwin32\bin\cygblkid-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygblkid-1.dll" v0.0 ts=2015-03-23 09:55
+   62k 2011/05/21 C:\cygwin32\bin\cygbz2-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygbz2-1.dll" v0.0 ts=2011-05-21 20:16
+14958k 2015/05/27 C:\cygwin32\bin\cygclang.dll - os=4.0 img=1.0 sys=4.0
+                  "cygclang.dll" v0.0 ts=2015-05-27 00:10
+  125k 2013/05/09 C:\cygwin32\bin\cygcloog-isl-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygcloog-isl-4.dll" v0.0 ts=2013-05-09 08:37
+   13k 2015/03/19 C:\cygwin32\bin\cygcom_err-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygcom_err-2.dll" v0.0 ts=2015-03-19 02:45
+    7k 2012/05/07 C:\cygwin32\bin\cygcrypt-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygcrypt-0.dll" v0.0 ts=2012-05-07 12:18
+ 1980k 2015/07/09 C:\cygwin32\bin\cygcrypto-1.0.0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygcrypto-1.0.0.dll" v0.0 ts=2015-07-09 17:50
+  461k 2015/10/07 C:\cygwin32\bin\cygcurl-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygcurl-4.dll" v0.0 ts=2015-10-07 22:53
+ 1284k 2011/11/10 C:\cygwin32\bin\cygdb-4.8.dll - os=4.0 img=1.0 sys=4.0
+                  "cygdb-4.8.dll" v0.0 ts=2011-11-10 18:45
+  105k 2011/11/10 C:\cygwin32\bin\cygdb_cxx-4.8.dll - os=4.0 img=1.0 sys=4.0
+                  "cygdb_cxx-4.8.dll" v0.0 ts=2011-11-10 18:46
+  159k 2013/10/20 C:\cygwin32\bin\cygedit-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygedit-0.dll" v0.0 ts=2013-10-20 22:09
+  153k 2013/07/31 C:\cygwin32\bin\cygexpat-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygexpat-1.dll" v0.0 ts=2013-07-31 22:33
+   32k 2014/10/14 C:\cygwin32\bin\cygfam-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygfam-0.dll" v0.0 ts=2014-10-14 21:21
+   27k 2015/01/02 C:\cygwin32\bin\cygffi-6.dll - os=4.0 img=1.0 sys=4.0
+                  "cygffi-6.dll" v0.0 ts=2015-01-02 01:11
+   60k 2015/10/20 C:\cygwin32\bin\cygformw-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygformw-10.dll" v0.0 ts=2015-10-20 17:07
+  108k 2015/07/02 C:\cygwin32\bin\cyggcc_s-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggcc_s-1.dll" v0.0 ts=2015-07-02 18:59
+   19k 2009/02/26 C:\cygwin32\bin\cyggdbm-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggdbm-4.dll" v0.0 ts=2009-02-26 07:58
+    8k 2009/02/26 C:\cygwin32\bin\cyggdbm_compat-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggdbm_compat-4.dll" v0.0 ts=2009-02-26 07:58
+ 1407k 2015/03/12 C:\cygwin32\bin\cyggio-2.0-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggio-2.0-0.dll" v0.0 ts=2015-03-12 06:28
+ 1036k 2015/03/12 C:\cygwin32\bin\cygglib-2.0-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygglib-2.0-0.dll" v0.0 ts=2015-03-12 06:24
+   15k 2015/03/12 C:\cygwin32\bin\cyggmodule-2.0-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggmodule-2.0-0.dll" v0.0 ts=2015-03-12 06:24
+  507k 2015/11/07 C:\cygwin32\bin\cyggmp-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggmp-10.dll" v0.0 ts=2015-11-07 18:45
+ 1026k 2015/08/28 C:\cygwin32\bin\cyggnutls-28.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggnutls-28.dll" v0.0 ts=2015-08-28 15:23
+   26k 2015/08/28 C:\cygwin32\bin\cyggnutls-openssl-27.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggnutls-openssl-27.dll" v0.0 ts=2015-08-28 15:23
+   42k 2015/08/28 C:\cygwin32\bin\cyggnutlsxx-28.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggnutlsxx-28.dll" v0.0 ts=2015-08-28 15:23
+  316k 2015/03/12 C:\cygwin32\bin\cyggobject-2.0-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggobject-2.0-0.dll" v0.0 ts=2015-03-12 06:25
+   78k 2015/07/02 C:\cygwin32\bin\cyggomp-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggomp-1.dll" v0.0 ts=2015-07-02 19:15
+  277k 2015/11/09 C:\cygwin32\bin\cyggssapi_krb5-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggssapi_krb5-2.dll" v0.0 ts=2015-11-09 16:31
+    9k 2015/03/12 C:\cygwin32\bin\cyggthread-2.0-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cyggthread-2.0-0.dll" v0.0 ts=2015-03-12 06:24
+  812k 2015/02/20 C:\cygwin32\bin\cygguile-17.dll - os=4.0 img=1.0 sys=4.0
+                  "cygguile-17.dll" v0.0 ts=2015-02-20 16:34
+   31k 2015/01/27 C:\cygwin32\bin\cyghistory7.dll - os=4.0 img=1.0 sys=4.0
+                  "cyghistory7.dll" v0.0 ts=2015-01-27 23:43
+  173k 2015/02/11 C:\cygwin32\bin\cyghogweed-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cyghogweed-2.dll" v0.0 ts=2015-02-11 17:01
+ 1010k 2015/02/20 C:\cygwin32\bin\cygiconv-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygiconv-2.dll" v0.0 ts=2015-02-20 16:52
+  198k 2014/12/06 C:\cygwin32\bin\cygidn-11.dll - os=4.0 img=1.0 sys=4.0
+                  "cygidn-11.dll" v0.0 ts=2014-12-06 12:56
+   41k 2015/09/20 C:\cygwin32\bin\cygintl-8.dll - os=4.0 img=1.0 sys=4.0
+                  "cygintl-8.dll" v0.0 ts=2015-09-20 20:20
+  310k 2013/09/09 C:\cygwin32\bin\cygiodbc-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygiodbc-2.dll" v0.0 ts=2013-09-09 15:53
+   67k 2013/09/09 C:\cygwin32\bin\cygiodbcinst-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygiodbcinst-2.dll" v0.0 ts=2013-09-09 15:53
+  989k 2013/05/09 C:\cygwin32\bin\cygisl-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygisl-10.dll" v0.0 ts=2013-05-09 08:14
+ 1191k 2015/09/20 C:\cygwin32\bin\cygisl-13.dll - os=4.0 img=1.0 sys=4.0
+                  "cygisl-13.dll" v0.0 ts=2015-09-20 12:39
+  191k 2015/11/09 C:\cygwin32\bin\cygk5crypto-3.dll - os=4.0 img=1.0 sys=4.0
+                  "cygk5crypto-3.dll" v0.0 ts=2015-11-09 16:30
+  743k 2015/11/09 C:\cygwin32\bin\cygkrb5-3.dll - os=4.0 img=1.0 sys=4.0
+                  "cygkrb5-3.dll" v0.0 ts=2015-11-09 16:31
+   39k 2015/11/09 C:\cygwin32\bin\cygkrb5support-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygkrb5support-0.dll" v0.0 ts=2015-11-09 16:30
+   49k 2015/02/19 C:\cygwin32\bin\cyglber-2-4-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cyglber-2-4-2.dll" v0.0 ts=2015-02-19 13:10
+  270k 2015/02/19 C:\cygwin32\bin\cygldap-2-4-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygldap-2-4-2.dll" v0.0 ts=2015-02-19 13:10
+  286k 2015/02/19 C:\cygwin32\bin\cygldap_r-2-4-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygldap_r-2-4-2.dll" v0.0 ts=2015-02-19 13:12
+19312k 2015/05/27 C:\cygwin32\bin\cygLLVM-3.5.dll - os=4.0 img=1.0 sys=4.0
+                  "cygLLVM-3.5.dll" v0.0 ts=2015-05-26 23:43
+    5k 2015/11/14 C:\cygwin32\bin\cyglsa.dll - os=4.0 img=1.0 sys=4.0
+                  "cyglsa.dll" v0.0 ts=2015-11-14 11:42
+    6k 2015/11/14 C:\cygwin32\bin\cyglsa64.dll (not x86 dll)
+   38k 2015/10/20 C:\cygwin32\bin\cygltdl-7.dll - os=4.0 img=1.0 sys=4.0
+                  "cygltdl-7.dll" v0.0 ts=2015-10-20 02:27
+  159k 2015/11/09 C:\cygwin32\bin\cyglzma-5.dll - os=4.0 img=1.0 sys=4.0
+                  "cyglzma-5.dll" v0.0 ts=2015-11-09 06:13
+  123k 2015/08/12 C:\cygwin32\bin\cygmagic-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmagic-1.dll" v0.0 ts=2015-08-12 20:06
+  173k 2015/10/09 C:\cygwin32\bin\cygman-2-7-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygman-2-7-4.dll" v0.0 ts=2015-10-09 09:30
+   22k 2015/10/09 C:\cygwin32\bin\cygmandb-2-7-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmandb-2-7-4.dll" v0.0 ts=2015-10-09 09:30
+   30k 2015/10/20 C:\cygwin32\bin\cygmenuw-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmenuw-10.dll" v0.0 ts=2015-10-20 17:06
+   35k 2012/11/22 C:\cygwin32\bin\cygmetalink-3.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmetalink-3.dll" v0.0 ts=2012-11-22 04:34
+   98k 2015/03/01 C:\cygwin32\bin\cygmpc-3.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmpc-3.dll" v0.0 ts=2015-03-01 20:24
+  369k 2015/06/30 C:\cygwin32\bin\cygmpfr-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygmpfr-4.dll" v0.0 ts=2015-06-30 18:39
+ 2830k 2015/08/23 C:\cygwin32\bin\cygmysqlclient-18.dll - os=4.0 img=18.0 sys=4.0
+                  "cygmysqlclient-18.dll" v0.0 ts=2015-08-23 21:25
+   57k 2015/10/20 C:\cygwin32\bin\cygncurses++w-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygncurses++w-10.dll" v0.0 ts=2015-10-20 17:12
+  327k 2015/10/20 C:\cygwin32\bin\cygncursesw-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygncursesw-10.dll" v0.0 ts=2015-10-20 17:05
+  141k 2014/11/11 C:\cygwin32\bin\cygneon-27.dll - os=4.0 img=1.0 sys=4.0
+                  "cygneon-27.dll" v0.0 ts=2014-11-11 16:42
+  195k 2015/02/11 C:\cygwin32\bin\cygnettle-4.dll - os=4.0 img=1.0 sys=4.0
+                  "cygnettle-4.dll" v0.0 ts=2015-02-11 17:01
+  326k 2015/06/01 C:\cygwin32\bin\cygp11-kit-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygp11-kit-0.dll" v0.0 ts=2015-06-01 20:17
+   15k 2015/10/20 C:\cygwin32\bin\cygpanelw-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpanelw-10.dll" v0.0 ts=2015-10-20 17:06
+  458k 2015/08/11 C:\cygwin32\bin\cygpcre-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpcre-1.dll" v0.0 ts=2015-08-11 18:40
+  420k 2015/08/11 C:\cygwin32\bin\cygpcre16-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpcre16-0.dll" v0.0 ts=2015-08-11 18:40
+  405k 2015/08/11 C:\cygwin32\bin\cygpcre32-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpcre32-0.dll" v0.0 ts=2015-08-11 18:40
+   33k 2015/08/11 C:\cygwin32\bin\cygpcrecpp-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpcrecpp-0.dll" v0.0 ts=2015-08-11 18:40
+   11k 2015/08/11 C:\cygwin32\bin\cygpcreposix-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpcreposix-0.dll" v0.0 ts=2015-08-11 18:40
+ 2179k 2015/07/12 C:\cygwin32\bin\cygperl5_22.dll - os=4.0 img=1.0 sys=4.0
+                  "cygperl5_22.dll" v0.0 ts=2015-07-12 19:55
+   41k 2015/04/09 C:\cygwin32\bin\cygpipeline-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpipeline-1.dll" v0.0 ts=2015-04-09 20:58
+   41k 2013/10/21 C:\cygwin32\bin\cygpopt-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpopt-0.dll" v0.0 ts=2013-10-21 21:52
+  157k 2015/10/17 C:\cygwin32\bin\cygpq-5.dll - os=4.0 img=1.0 sys=4.0
+                  "cygpq-5.dll" v0.0 ts=2015-10-17 18:47
+  122k 2015/06/29 C:\cygwin32\bin\cygproxy-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygproxy-1.dll" v0.0 ts=2015-06-29 22:35
+  487k 2015/07/02 C:\cygwin32\bin\cygquadmath-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygquadmath-0.dll" v0.0 ts=2015-07-02 19:58
+  208k 2015/01/27 C:\cygwin32\bin\cygreadline7.dll - os=4.0 img=1.0 sys=4.0
+                  "cygreadline7.dll" v0.0 ts=2015-01-27 23:43
+  102k 2014/11/24 C:\cygwin32\bin\cygsasl2-3.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsasl2-3.dll" v0.0 ts=2014-11-24 18:35
+   92k 2014/12/20 C:\cygwin32\bin\cygserf-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygserf-1-0.dll" v0.0 ts=2014-12-20 16:56
+   11k 2015/07/17 C:\cygwin32\bin\cygsigsegv-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsigsegv-2.dll" v0.0 ts=2015-07-17 22:33
+   98k 2015/03/23 C:\cygwin32\bin\cygsmartcols-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsmartcols-1.dll" v0.0 ts=2015-03-23 09:55
+  938k 2015/11/04 C:\cygwin32\bin\cygsqlite3-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsqlite3-0.dll" v0.0 ts=2015-11-04 10:39
+  155k 2015/03/17 C:\cygwin32\bin\cygssh2-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygssh2-1.dll" v0.0 ts=2015-03-17 05:56
+  446k 2015/07/09 C:\cygwin32\bin\cygssl-1.0.0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygssl-1.0.0.dll" v0.0 ts=2015-07-09 17:50
+   13k 2015/07/02 C:\cygwin32\bin\cygssp-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygssp-0.dll" v0.0 ts=2015-07-02 19:53
+  944k 2015/07/02 C:\cygwin32\bin\cygstdc++-6.dll - os=4.0 img=1.0 sys=4.0
+                  "cygstdc++-6.dll" v0.0 ts=2015-07-02 19:14
+  405k 2015/09/26 C:\cygwin32\bin\cygsvn_client-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_client-1-0.dll" v0.0 ts=2015-09-26 16:49
+   67k 2015/09/26 C:\cygwin32\bin\cygsvn_delta-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_delta-1-0.dll" v0.0 ts=2015-09-26 16:47
+   85k 2015/09/26 C:\cygwin32\bin\cygsvn_diff-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_diff-1-0.dll" v0.0 ts=2015-09-26 16:47
+   39k 2015/09/26 C:\cygwin32\bin\cygsvn_fs-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_fs-1-0.dll" v0.0 ts=2015-09-26 16:47
+  174k 2015/09/26 C:\cygwin32\bin\cygsvn_fs_base-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_fs_base-1-0.dll" v0.0 ts=2015-09-26 16:47
+  297k 2015/09/26 C:\cygwin32\bin\cygsvn_fs_fs-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_fs_fs-1-0.dll" v0.0 ts=2015-09-26 16:47
+   11k 2015/09/26 C:\cygwin32\bin\cygsvn_fs_util-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_fs_util-1-0.dll" v0.0 ts=2015-09-26 16:47
+  309k 2015/09/26 C:\cygwin32\bin\cygsvn_fs_x-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_fs_x-1-0.dll" v0.0 ts=2015-09-26 16:47
+   47k 2015/09/26 C:\cygwin32\bin\cygsvn_ra-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_ra-1-0.dll" v0.0 ts=2015-09-26 16:49
+   32k 2015/09/26 C:\cygwin32\bin\cygsvn_ra_local-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_ra_local-1-0.dll" v0.0 ts=2015-09-26 16:48
+  170k 2015/09/26 C:\cygwin32\bin\cygsvn_ra_serf-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_ra_serf-1-0.dll" v0.0 ts=2015-09-26 16:47
+  109k 2015/09/26 C:\cygwin32\bin\cygsvn_ra_svn-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_ra_svn-1-0.dll" v0.0 ts=2015-09-26 16:47
+  201k 2015/09/26 C:\cygwin32\bin\cygsvn_repos-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_repos-1-0.dll" v0.0 ts=2015-09-26 16:48
+  921k 2015/09/26 C:\cygwin32\bin\cygsvn_subr-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_subr-1-0.dll" v0.0 ts=2015-09-26 16:46
+  691k 2015/09/26 C:\cygwin32\bin\cygsvn_wc-1-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygsvn_wc-1-0.dll" v0.0 ts=2015-09-26 16:47
+   69k 2015/08/28 C:\cygwin32\bin\cygtasn1-6.dll - os=4.0 img=1.0 sys=4.0
+                  "cygtasn1-6.dll" v0.0 ts=2015-08-28 09:48
+   55k 2015/10/20 C:\cygwin32\bin\cygticw-10.dll - os=4.0 img=1.0 sys=4.0
+                  "cygticw-10.dll" v0.0 ts=2015-10-20 17:05
+  139k 2015/11/04 C:\cygwin32\bin\cygusb-1.0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygusb-1.0.dll" v0.0 ts=2015-11-04 20:13
+   81k 2015/02/11 C:\cygwin32\bin\cygusb0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygusb0.dll" v0.0 ts=2015-02-11 01:42
+   16k 2015/03/23 C:\cygwin32\bin\cyguuid-1.dll - os=4.0 img=1.0 sys=4.0
+                  "cyguuid-1.dll" v0.0 ts=2015-03-23 09:55
+    8k 2015/09/28 C:\cygwin32\bin\cygvtv-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygvtv-0.dll" v0.0 ts=2015-09-27 23:13
+    8k 2015/09/28 C:\cygwin32\bin\cygvtv_stubs-0.dll - os=4.0 img=1.0 sys=4.0
+                  "cygvtv_stubs-0.dll" v0.0 ts=2015-09-27 23:13
+ 1242k 2014/10/19 C:\cygwin32\bin\cygxml2-2.dll - os=4.0 img=1.0 sys=4.0
+                  "cygxml2-2.dll" v0.0 ts=2014-10-19 09:00
+   83k 2014/11/19 C:\cygwin32\bin\cygz.dll - os=4.0 img=1.0 sys=4.0
+                  "cygz.dll" v0.0 ts=2014-11-19 22:57
+ 3407k 2015/11/14 C:\cygwin32\bin\cygwin1.dll - os=4.0 img=1.0 sys=4.0
+                  "cygwin1.dll" v0.0 ts=2015-11-14 11:42
+    Cygwin DLL version info:
+        DLL version: 2.3.1
+        DLL epoch: 19
+        DLL old termios: 5
+        DLL malloc env: 28
+        Cygwin conv: 181
+        API major: 0
+        API minor: 291
+        Shared data: 5
+        DLL identifier: cygwin1
+        Mount registry: 3
+        Cygwin registry name: Cygwin
+        Installations name: Installations
+        Cygdrive default prefix: 
+        Build date: 
+        Shared id: cygwin1S5
+
+
+No Cygwin services found.
+
+
+Cygwin Package Information
+Last downloaded files to: C:\Users\training\cygwin_repos\32bit
+Last downloaded files from: http://mirrors.kernel.org/sourceware/cygwin/
+
+Package                               Version            Status
+_autorebase                           001002-1           OK
+_update-info-dir                      01455-1            OK
+alternatives                          1.3.30c-10         OK
+autoconf                              13-1               OK
+autoconf2.1                           2.13-12            OK
+autoconf2.5                           2.69-3             OK
+automake                              9-1                OK
+automake1.10                          1.10.3-2           OK
+automake1.11                          1.11.6-2           OK
+automake1.12                          1.12.6-2           OK
+automake1.13                          1.13.4-1           OK
+automake1.14                          1.14.1-2           OK
+automake1.15                          1.15-1             OK
+automake1.4                           1.4p6-11           OK
+automake1.5                           1.5-11             OK
+automake1.6                           1.6.3-12           OK
+automake1.7                           1.7.9-11           OK
+automake1.8                           1.8.5-11           OK
+automake1.9                           1.9.6-11           OK
+base-cygwin                           3.8-1              OK
+base-files                            4.2-4              OK
+bash                                  4.3.42-4           OK
+binutils                              2.25-4             OK
+bzip2                                 1.0.6-2            OK
+ca-certificates                       2.5-1              OK
+clang                                 3.5.2-1            OK
+colorgcc                              1.3.2-2            OK
+coreutils                             8.24-3             OK
+crypt                                 1.2-1              OK
+csih                                  0.9.9-1            OK
+curl                                  7.45.0-1           OK
+cygrunsrv                             1.62-1             OK
+cygutils                              1.4.14-1           OK
+cygwin                                2.3.1-1            OK
+cygwin-debuginfo                      2.3.1-1            OK
+cygwin-devel                          2.3.1-1            OK
+dash                                  0.5.8-3            OK
+diffutils                             3.3-3              OK
+editrights                            1.03-1             OK
+file                                  5.24-1             OK
+findutils                             4.5.12-1           OK
+gamin                                 0.1.10-15          OK
+gawk                                  4.1.3-1            OK
+gcc-core                              5.2.0-1            OK
+gcc-g++                               5.2.0-1            OK
+getent                                2.18.90-4          OK
+grep                                  2.21-2             OK
+groff                                 1.22.3-1           OK
+gsettings-desktop-schemas             3.14.2-1           OK
+gzip                                  1.6-1              OK
+hostname                              3.13-1             OK
+info                                  6.0-1              OK
+ipc-utils                             1.0-1              OK
+less                                  481-1              OK
+libapr1                               1.5.2-2            OK
+libaprutil1                           1.5.4-2            OK
+libargp                               20110921-2         OK
+libatomic1                            4.9.3-1            OK
+libattr1                              2.4.46-1           OK
+libblkid1                             2.25.2-2           OK
+libbz2_1                              1.0.6-2            OK
+libclang                              3.5.2-1            OK
+libcloog-isl4                         0.18.0-2           OK
+libcom_err2                           1.42.12-2          OK
+libcurl4                              7.45.0-1           OK
+libdb4.8                              4.8.30-1           OK
+libedit0                              20130712-1         OK
+libexpat1                             2.1.0-3            OK
+libfam0                               0.1.10-15          OK
+libffi6                               3.2.1-1            OK
+libgcc1                               4.9.3-1            OK
+libgdbm4                              1.8.3-20           OK
+libglib2.0_0                          2.42.2-1           OK
+libgmp10                              6.1.0-1            OK
+libgnutls28                           3.3.17-1           OK
+libgomp1                              4.9.3-1            OK
+libgssapi_krb5_2                      1.13.2-3           OK
+libguile17                            1.8.8-1            OK
+libhogweed2                           2.7-2              OK
+libiconv                              1.14-3             OK
+libiconv2                             1.14-3             OK
+libidn11                              1.29-1             OK
+libintl8                              0.19.5.1-2         OK
+libiodbc2                             3.52.8-2           OK
+libisl10                              0.11.1-2           OK
+libisl13                              0.14.1-1           OK
+libk5crypto3                          1.13.2-3           OK
+libkrb5_3                             1.13.2-3           OK
+libkrb5support0                       1.13.2-3           OK
+libllvm3.5                            3.5.2-1            OK
+libltdl7                              2.4.6-2            OK
+liblzma5                              5.2.2-1            OK
+libmetalink3                          0.1.2-1            OK
+libmpc3                               1.0.3-1            OK
+libmpfr4                              3.1.3-1            OK
+libmysqlclient18                      5.5.45-1           OK
+libncursesw10                         6.0-1.20151017     OK
+libneon27                             0.30.1-1           OK
+libnettle4                            2.7-2              OK
+libopenldap2_4_2                      2.4.40-2           OK
+libopenssl100                         1.0.2d-1           OK
+libp11-kit0                           0.22.1-1           OK
+libpcre-devel                         8.37-2             OK
+libpcre1                              8.37-2             OK
+libpcre16_0                           8.37-2             OK
+libpcre32_0                           8.37-2             OK
+libpcrecpp0                           8.37-2             OK
+libpcreposix0                         8.37-2             OK
+libpipeline1                          1.4.0-1            OK
+Empty package libpopt0
+libpopt0                              1.16-1             OK
+libpq5                                9.4.5-1            OK
+libproxy1                             0.4.11-5           OK
+libquadmath0                          4.9.3-1            OK
+libreadline7                          6.3.8-1            OK
+libsasl2_3                            2.1.26-9           OK
+libserf1_0                            1.3.8-1            OK
+libsigsegv2                           2.10-2             OK
+libsmartcols1                         2.25.2-2           OK
+libsqlite3-devel                      3.9.2-1            OK
+libsqlite3_0                          3.9.2-1            OK
+libssh2_1                             1.5.0-1            OK
+libssp0                               4.9.3-1            OK
+libstdc++6                            4.9.3-1            OK
+libtasn1_6                            4.5-1              OK
+libusb-win32-debuginfo                1.2.6.0-2          OK
+libusb0                               1.2.6.0-2          OK
+libusb1.0                             1.0.20-1           OK
+libusb1.0-debuginfo                   1.0.20-1           OK
+libusb1.0-devel                       1.0.20-1           OK
+libuuid1                              2.25.2-2           OK
+libvtv0                               5.2.0-1            OK
+libxml2                               2.9.2-1            OK
+login                                 1.11-1             OK
+lynx                                  2.8.7-1            OK
+m4                                    1.4.17-2           OK
+make                                  4.1-1              OK
+man-db                                2.7.4-1            OK
+mingw-runtime                         4.0-1              OK
+mingw-w32api                          4.0-1              OK
+mintty                                2.2.2-0            OK
+nano                                  2.4.1-1            OK
+openssh                               7.1p1-1            OK
+openssl                               1.0.2d-1           OK
+openssl-devel                         1.0.2d-1           OK
+p11-kit                               0.22.1-1           OK
+p11-kit-trust                         0.22.1-1           OK
+patch                                 2.7.4-1            OK
+pcre                                  8.37-2             OK
+perl                                  5.22.0-1           OK
+perl-Archive-Zip                      1.53-1             OK
+perl-B-Generate                       1.53-2             OK
+perl-Capture-Tiny                     0.30-2             OK
+perl-Carp                             1.3301-2           OK
+perl-common-sense                     3.74-1             OK
+perl-Compress-Bzip2                   2.22-2             OK
+perl-Config-Perl-V                    0.24-2             OK
+perl-Config-Tiny                      2.23-1             OK
+perl-CPAN-DistnameInfo                0.12-5             OK
+perl-CPAN-Reporter                    1.2015-1           OK
+perl-CPAN-Testers-Report              1.999003-2         OK
+perl-Data-Alias                       1.20-1             OK
+perl-Data-GUID                        0.048-2            OK
+perl-Data-OptList                     0.109-2            OK
+perl-Data-UUID                        1.221-1            OK
+perl-Devel-Autoflush                  0.06-2             OK
+perl-Devel-Symdump                    2.15-1             OK
+perl-Digest-HMAC                      1.03-5             OK
+perl-Digest-SHA                       5.95-2             OK
+perl-Encode-Locale                    1.05-1             OK
+perl-File-Copy-Recursive              0.38-5             OK
+perl-File-HomeDir                     1.00-3             OK
+perl-File-Listing                     6.04-5             OK
+perl-File-pushd                       1.009-2            OK
+perl-File-Which                       1.19-1             OK
+perl-HTML-Parser                      3.71-3             OK
+perl-HTML-Tagset                      3.20-5             OK
+perl-HTTP-Cookies                     6.01-5             OK
+perl-HTTP-Daemon                      6.01-5             OK
+perl-HTTP-Date                        6.02-5             OK
+perl-HTTP-Message                     6.11-1             OK
+perl-HTTP-Negotiate                   6.01-5             OK
+perl-IO-CaptureOutput                 1.1104-2           OK
+perl-IO-HTML                          1.001-2            OK
+perl-IO-Prompt-Tiny                   0.003-2            OK
+perl-IO-Socket-INET6                  2.72-2             OK
+perl-IO-String                        1.08-5             OK
+perl-IO-Tty                           1.12-2             OK
+perl-IPC-Cmd                          0.92-2             OK
+perl-IPC-Run                          0.94-2             OK
+perl-JSON                             2.90-3             OK
+perl-JSON-XS                          3.01-3             OK
+perl-libwww-perl                      6.13-2             OK
+perl-LWP-MediaTypes                   6.02-5             OK
+perl-Metabase-Client-Simple           0.010-2            OK
+perl-Metabase-Fact                    0.024-2            OK
+perl-MIME-Base32                      1.02-1             OK
+perl-Module-ScanDeps                  1.20-1             OK
+perl-Module-Signature                 0.79-1             OK
+perl-Net-DNS                          1.03-1             OK
+perl-Net-HTTP                         6.09-1             OK
+perl-Net-IP                           1.26-3             OK
+perl-PadWalker                        2.2-1              OK
+perl-PAR-Dist                         0.49-3             OK
+perl-Params-Util                      1.07-5             OK
+perl-Pod-Coverage                     0.23-3             OK
+perl-Pod-Escapes                      1.07-2             OK
+perl-Pod-Simple                       3.32-1             OK
+perl-Probe-Perl                       0.03-3             OK
+perl-Proc-ProcessTable                0.53-1             OK
+perl-Socket6                          0.25-2             OK
+perl-Sub-Exporter                     0.987-3            OK
+perl-Sub-Install                      0.928-2            OK
+perl-Tee                              0.14-5             OK
+perl-Term-ReadLine-Gnu                1.28-1             OK
+perl-Term-ReadLine-Perl               1.0303-5           OK
+perl-TermReadKey                      2.33-1             OK
+perl-Test-NoWarnings                  1.04-4             OK
+perl-Test-Pod                         1.51-1             OK
+perl-Test-Pod-Coverage                1.10-2             OK
+perl-Test-Reporter                    1.62-2             OK
+perl-Test-Reporter-Transport-Metabase 1.999009-2         OK
+perl-Test-Simple                      1.001014-2         OK
+perl-Types-Serialiser                 1.0-3              OK
+perl-URI                              1.69-1             OK
+perl-WWW-RobotRules                   6.02-5             OK
+perl-XML-LibXML                       2.0122-2           OK
+perl-XML-NamespaceSupport             1.11-5             OK
+perl-XML-Parser                       2.44-2             OK
+perl-XML-SAX                          0.99-5             OK
+perl-XML-SAX-Base                     1.08-5             OK
+perl-YAML                             1.15-2             OK
+perl_autorebase                       5.22.0-1           OK
+perl_base                             5.22.0-1           OK
+perl_vendor                           5.14.4-1           OK
+pkg-config                            0.28-1             OK
+popt                                  1.16-1             OK
+rebase                                4.4.1-1            OK
+run                                   1.3.4-2            OK
+sed                                   4.2.2-3            OK
+shared-mime-info                      1.4-1              OK
+subversion                            1.9.2-1            OK
+tar                                   1.28-1             OK
+terminfo                              6.0-1.20151017     OK
+texinfo                               6.0-1              OK
+tzcode                                2015g-1            OK
+unzip                                 6.0-15             OK
+util-linux                            2.25.2-2           OK
+vim-minimal                           7.4.891-1          OK
+w32api-headers                        4.0.4-1            OK
+w32api-runtime                        4.0.4-1            OK
+wget                                  1.16.3-1           OK
+which                                 2.20-2             OK
+whois                                 5.2.10-1           OK
+windows-default-manifest              6.4-1              OK
+xz                                    5.2.2-1            OK
+zip                                   3.0-12             OK
+zlib-devel                            1.2.8-3            OK
+zlib0                                 1.2.8-3            OK
+Use -h to see help about each section

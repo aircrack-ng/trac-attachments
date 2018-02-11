@@ -1,0 +1,70 @@
+Author: Wouter van Kesteren <woutershep@gmail.com>
+Upstream: no
+Reason:
+
+==20448== Source and destination overlap in memcpy(0x61078c, 0x61079e, 133)
+==20448==    at 0x4C2C273: memcpy@@GLIBC_2.14 (in /usr/lib64/valgrind/vgpreload_memcheck-amd64-linux.so)
+==20448==    by 0x401D3E: write_packet (airdecap-ng.c:166)
+==20448==    by 0x403CFC: main (airdecap-ng.c:884)
+
+Breakpoint 1, write_packet (f_out=0x652c80, pkh=0x7fffffffe180, h80211=0x610780 <buffer> "\b\002:\001") at airdecap-ng.c:166
+166	            memcpy( buffer + 12, h80211 + qosh_offset + 30, pkh->caplen );
+(gdb) print buffer+12
+$1 = (unsigned char *) 0x61078c <buffer+12> "\206¤\205"
+(gdb) print h80211 + qosh_offset + 30
+$2 = (unsigned char *) 0x61079e <buffer+30> "\210\216\001\003"
+(gdb) print pkh->caplen
+$3 = 133
+(gdb) print 0x61079e-0x61078c
+$4 = 18
+
+//--
+
+==382== Source and destination overlap in memcpy(0x610828, 0x610830, 139)
+==382==    at 0x4C2C273: memcpy@@GLIBC_2.14 (in /usr/lib64/valgrind/vgpreload_memcheck-amd64-linux.so)
+==382==    by 0x403C64: main (airdecap-ng.c:878)
+
+Breakpoint 1, main (argc=6, argv=0x7fffffffe3c8) at airdecap-ng.c:878
+878	                memcpy( h80211 + z, h80211 + z + 8, pkh.caplen - z );
+(gdb) print pkh.caplen - z
+$1 = 139
+
+//--
+
+--- a/src/airdecap-ng.c~	2013-10-05 19:53:10.000000000 +0200
++++ b/src/airdecap-ng.c		2013-10-05 19:54:08.000000000 +0200
+@@ -163,14 +163,14 @@
+             pkh->len    -= 24 + qosh_offset + 6;
+             pkh->caplen -= 24 + qosh_offset + 6;
+ 
+-            memcpy( buffer + 12, h80211 + qosh_offset + 30, pkh->caplen );
++            memmove( buffer + 12, h80211 + qosh_offset + 30, pkh->caplen );
+         }
+         else
+         {
+             pkh->len    -= 30 + qosh_offset + 6;
+             pkh->caplen -= 30 + qosh_offset + 6;
+ 
+-            memcpy( buffer + 12, h80211 + qosh_offset + 36, pkh->caplen );
++            memmove( buffer + 12, h80211 + qosh_offset + 36, pkh->caplen );
+         }
+ 
+         memcpy( buffer, arphdr, 12 );
+@@ -832,7 +832,7 @@
+                 pkh.len    -= 8;
+                 pkh.caplen -= 8;
+ 
+-                memcpy( h80211 + z, h80211 + z + 4, pkh.caplen - z );
++                memmove( h80211 + z, h80211 + z + 4, pkh.caplen - z );
+ 
+                 stats.nb_unwep++;
+ 
+@@ -875,7 +875,7 @@
+                 /* WPA data packet was successfully decrypted, *
+                  * remove the WPA Ext.IV & MIC, write the data */
+ 
+-                memcpy( h80211 + z, h80211 + z + 8, pkh.caplen - z );
++                memmove( h80211 + z, h80211 + z + 8, pkh.caplen - z );
+ 
+                 stats.nb_unwpa++;
+ 

@@ -1,0 +1,783 @@
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Mon, 16 Jul 2012 03:17:36 +0200
+Subject: [PATCH 1/2] Add support for Libgcrypt
+
+It adds a wrapper that translates the OpenSSL functions used on aircrack-ng
+to the Libgcrypt counterparts.
+
+For the SHA1 functions instead of relying on Libgcrypt it uses an internal
+SHA1 Implementation that was borrowed from GIT. This is done because the
+SHA1 Libgcrypt implementation is slow and the GIT SHA1 Implementation is
+faster than any other.
+
+If you compare the speed cracking a wpa key with this patch (make gcrypt=true)
+and without it, you will find that it performs almost at the same speed.
+
+On SSE2 enabled CPUs aircrack-ng will perform like a ~4% faster with OpenSSL,
+and on the rest of CPUs (including non-x86 archs) aircrack-ng will perform
+like a ~3% faster with this patch.
+
+The explanation for this is:
+
+  * The sha1-git implementation (which is only used on non-SSE2 archs) is
+    faster than the OpenSSL one.
+  * OpenSSL is faster than Libgcrypt.
+  * The sha1-git code is only used on the function (crypto.c:calc_pmk).
+    However when running on a SSE2 CPU this code is not loaded, and instead
+    a SSE2 optimized version is prefered (sha1-sse2.h:calc_4pmk).
+
+All functions of aircrack-ng were OpenSSL code was used [1] were tested to
+perform exactly the same (same input=>same output) when running with OpenSSL
+than with this patch (Libgcrypt+SHA1-git)
+
+ [1] crypto.c:{encrypt_wep,calc_pmk,calc_mic,calc_ptk}
+     sha1-see2.h:calc_4pmk
+---
+ INSTALLING                   |    8 +-
+ src/Makefile                 |   19 +++
+ src/airbase-ng.c             |   12 ++
+ src/aircrack-ng.c            |   12 ++
+ src/airdecap-ng.c            |    7 +
+ src/airodump-ng.c            |   12 ++
+ src/airolib-ng.c             |    7 +
+ src/airtun-ng.c              |    7 +
+ src/crypto.c                 |    5 +
+ src/crypto.h                 |    5 +
+ src/gcrypt-openssl-wrapper.h |   86 ++++++++++++
+ src/sha1-git.c               |  316 ++++++++++++++++++++++++++++++++++++++++++
+ src/sha1-git.h               |   47 ++++++
+ src/tkiptun-ng.c             |    7 +
+ 14 files changed, 549 insertions(+), 1 deletions(-)
+ create mode 100644 src/gcrypt-openssl-wrapper.h
+ create mode 100644 src/sha1-git.c
+ create mode 100644 src/sha1-git.h
+
+diff --git a/INSTALLING b/INSTALLING
+index 5186dda..0e706c7 100644
+--- a/INSTALLING
++++ b/INSTALLING
+@@ -1,6 +1,6 @@
+ === Requirements ===
+ 
+- * OpenSSL development package
++ * OpenSSL development package or libgcrypt development package
+  * If you want to use airolib-ng and '-r' option in aircrack-ng,
+    SQLite development package >= 3.3.17 (3.6.X version or better is recommended):
+    -  libsqlite3-devel
+@@ -43,11 +43,17 @@ to compile and install the suite:
+             Note: Experimental. Each script has its own dependences.
+             Note: It's only required in install phase.
+ 
++* gcrypt:   Use libgcrypt crypto library instead of the default OpenSSL.
++            And also use internal fast sha1 implementation (borrowed from GIT)
++
+ Example:
+ 
+   * Compiling:
+     make sqlite=true unstable=true
+ 
++  * Compiling with gcrypt
++    make gcrypt=true
++
+   * Installing:
+     make sqlite=true unstable=true install
+ 
+diff --git a/src/Makefile b/src/Makefile
+index d3878e2..cf8d4db 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -106,6 +106,25 @@ endif
+ LIBOSD		= $(OSD)/lib$(OSD).a
+ 
+ LIBSSL		= -lssl -lcrypto
++ifeq ($(filter true, $(gcrypt) $(GCRYPT)), true)
++	LIBSSL		= -lgcrypt $(LDFLAGS)
++	CFLAGS 		+= -DUSE_GCRYPT
++	OBJS_AC		+= sha1-git.o
++	OBJS_AD		+= sha1-git.o
++	OBJS_PF		+= sha1-git.o
++	OBJS_IV		+= sha1-git.o
++	OBJS_AR		+= sha1-git.o
++	OBJS_ADU	+= sha1-git.o
++	OBJS_AT		+= sha1-git.o
++	OBJS_AB		+= sha1-git.o
++	OBJS_AL		+= sha1-git.o
++	OBJS_WS		+= sha1-git.o
++	OBJS_TT		+= sha1-git.o
++	OBJS_BS		+= sha1-git.o
++else
++	LIBSSL		= -lssl -lcrypto $(LDFLAGS)
++endif
++
+ LIBSQL		=
+ ifeq ($(SQLITE), true)
+ 	LIBSQL		= -L/usr/local/lib -lsqlite3
+diff --git a/src/airbase-ng.c b/src/airbase-ng.c
+index 8bbb73e..ad75f0a 100644
+--- a/src/airbase-ng.c
++++ b/src/airbase-ng.c
+@@ -68,6 +68,10 @@
+ #include "osdep/osdep.h"
+ #include "osdep/common.h"
+ 
++#ifdef USE_GCRYPT
++    GCRY_THREAD_OPTION_PTHREAD_IMPL;
++#endif
++
+ static struct wif *_wi_in, *_wi_out;
+ 
+ #define CRYPT_NONE 0
+@@ -3880,6 +3884,14 @@ int main( int argc, char *argv[] )
+     rCF = (pCF_t) malloc(sizeof(struct CF_packet));
+     memset(rCF, 0, sizeof(struct CF_packet));
+ 
++#ifdef USE_GCRYPT
++    // Register callback functions to ensure proper locking in the sensitive parts of libgcrypt.
++    gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
++    // Disable secure memory.
++    gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++    // Tell Libgcrypt that initialization has completed.
++    gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++#endif
+     pthread_mutex_init( &mx_cf, NULL );
+     pthread_mutex_init( &mx_cap, NULL );
+ 
+diff --git a/src/aircrack-ng.c b/src/aircrack-ng.c
+index b06af6d..af5439e 100644
+--- a/src/aircrack-ng.c
++++ b/src/aircrack-ng.c
+@@ -76,6 +76,10 @@
+ sqlite3 *db;
+ #endif
+ 
++#ifdef USE_GCRYPT
++	GCRY_THREAD_OPTION_PTHREAD_IMPL;
++#endif
++
+ extern int get_nb_cpus();
+ 
+ static uchar ZERO[32] =
+@@ -4890,6 +4894,14 @@ int main( int argc, char *argv[] )
+ 	char *sql;
+ #endif
+ 
++#ifdef USE_GCRYPT
++	// Register callback functions to ensure proper locking in the sensitive parts of libgcrypt.
++	gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
++	// Disable secure memory.
++	gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++	// Tell Libgcrypt that initialization has completed.
++	gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++#endif
+ 	ret = FAILURE;
+ 	showhelp = 0;
+ 
+diff --git a/src/airdecap-ng.c b/src/airdecap-ng.c
+index 6f73ecf..953d8d7 100644
+--- a/src/airdecap-ng.c
++++ b/src/airdecap-ng.c
+@@ -215,6 +215,13 @@ int main( int argc, char *argv[] )
+     struct pcap_file_header pfh;
+     struct pcap_pkthdr pkh;
+ 
++    #ifdef USE_GCRYPT
++        // Disable secure memory.
++        gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++        // Tell Libgcrypt that initialization has completed.
++        gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++    #endif
++
+     /* parse the arguments */
+ 
+     memset( ZERO, 0, sizeof( ZERO ) );
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index 3ee0c8a..72bad64 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -69,6 +69,10 @@
+ #include "osdep/common.h"
+ #include "common.h"
+ 
++#ifdef USE_GCRYPT
++	GCRY_THREAD_OPTION_PTHREAD_IMPL;
++#endif
++
+ void dump_sort( void );
+ void dump_print( int ws_row, int ws_col, int if_num );
+ 
+@@ -5264,6 +5268,14 @@ int main( int argc, char *argv[] )
+     };
+ 
+ 
++#ifdef USE_GCRYPT
++    // Register callback functions to ensure proper locking in the sensitive parts of libgcrypt.
++    gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
++    // Disable secure memory.
++    gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++    // Tell Libgcrypt that initialization has completed.
++    gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++#endif
+ 	pthread_mutex_init( &(G.mx_print), NULL );
+     pthread_mutex_init( &(G.mx_sort), NULL );
+ 
+diff --git a/src/airolib-ng.c b/src/airolib-ng.c
+index ed8f182..0f2b880 100644
+--- a/src/airolib-ng.c
++++ b/src/airolib-ng.c
+@@ -904,6 +904,13 @@ int main(int argc, char **argv) {
+ 		{0,             0, 0,  0 }
+ 	};
+ 
++#ifdef USE_GCRYPT
++	// Disable secure memory.
++	gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++	// Tell Libgcrypt that initialization has completed.
++	gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++#endif
++
+ 	option = getopt_long( argc, argv, "bc:d:e:hi:s:t:v:", long_options, &option_index );
+ 
+ 	if( option > 0 )
+diff --git a/src/airtun-ng.c b/src/airtun-ng.c
+index be78b93..2476c8b 100644
+--- a/src/airtun-ng.c
++++ b/src/airtun-ng.c
+@@ -1130,6 +1130,13 @@ int main( int argc, char *argv[] )
+     char *s, buf[128];
+     int caplen;
+ 
++    #ifdef USE_GCRYPT
++        // Disable secure memory.
++        gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++        // Tell Libgcrypt that initialization has completed.
++        gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++    #endif
++
+     /* check the arguments */
+ 
+     memset( &opt, 0, sizeof( opt ) );
+diff --git a/src/crypto.c b/src/crypto.c
+index 54e883a..4e87455 100644
+--- a/src/crypto.c
++++ b/src/crypto.c
+@@ -1269,6 +1269,11 @@ int decrypt_ccmp( uchar *h80211, int caplen, uchar TK1[16] )
+         offset += n;
+     }
+ 
++    // We need to free the ctx when using gcrypt to avoid memory leaks
++    #ifdef USE_GCRYPT
++        gcry_cipher_close(aes_ctx);
++    #endif
++
+     return( memcmp( h80211 + offset, MIC, 8 ) == 0 );
+ }
+ 
+diff --git a/src/crypto.h b/src/crypto.h
+index 596a569..3cd508a 100644
+--- a/src/crypto.h
++++ b/src/crypto.h
+@@ -43,11 +43,16 @@
+ #define uint32 unsigned long int
+ #endif
+ 
++#ifdef USE_GCRYPT
++#include "gcrypt-openssl-wrapper.h"
++#include "sha1-git.h"
++#else
+ #include <openssl/hmac.h>
+ #include <openssl/sha.h>
+ // We don't use EVP. Bite me
+ #include <openssl/rc4.h>
+ #include <openssl/aes.h>
++#endif
+ 
+ #define S_LLC_SNAP      "\xAA\xAA\x03\x00\x00\x00"
+ #define S_LLC_SNAP_ARP  (S_LLC_SNAP "\x08\x06")
+diff --git a/src/gcrypt-openssl-wrapper.h b/src/gcrypt-openssl-wrapper.h
+new file mode 100644
+index 0000000..79a0376
+--- /dev/null
++++ b/src/gcrypt-openssl-wrapper.h
+@@ -0,0 +1,86 @@
++#ifndef _GCRYPT_OPENSSL_WRAPPER_H
++#define _GCRYPT_OPENSSL_WRAPPER_H
++/*
++ *
++ * gcrypt-openssl-wrapper.h
++ *
++ * Copyright (C) 2012 Carlos Alberto Lopez Perez <clopez@igalia.com>
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ *
++ */
++#include <gcrypt.h>
++// RC4_*
++#define RC4_KEY                                         gcry_cipher_hd_t
++#define RC4_set_key(h, l, k)                            do { \
++                                                            gcry_cipher_open(h, GCRY_CIPHER_ARCFOUR, GCRY_CIPHER_MODE_STREAM, 0); \
++                                                            gcry_cipher_setkey(*h, k, l); \
++                                                        } while (0)
++                                                        // we need to release the handle to avoid memory leaks.
++                                                        // And in the actual code there are not repeat calls to RC4() without calling
++                                                        // RC4_set_key() first, so we can encapsulate the call to gcry_cipher_close() inside RC4()
++                                                        // This should be changed if you call RC4() without calling RC4_set_key before
++#define RC4(h, l, s, d)                                 do { \
++                                                            gcry_cipher_encrypt(*h, d, l, s, l) ; \
++                                                            gcry_cipher_close(*h); \
++                                                        } while(0)
++// SHA_* (We use the sha1-git implementation because is much faster)
++#define SHA_CTX                                         blk_SHA_CTX
++#define SHA1_Init(ctx)                                  blk_SHA1_Init(ctx)
++#define SHA1_Update(ctx,buffer,len)                     blk_SHA1_Update(ctx,buffer,len)
++#define SHA1_Final(digest,ctx)                          blk_SHA1_Final(digest,ctx)
++// EVP_*
++#define EVP_md5()                                       GCRY_MD_MD5
++#define EVP_sha1()                                      GCRY_MD_SHA1
++// AES_*
++#define AES_KEY                                         gcry_cipher_hd_t
++#define AES_encrypt(text, enc_out, ctx)                 gcry_cipher_encrypt(*ctx, enc_out, 16, text, 16)
++#define AES_set_encrypt_key(key, len, ctx)              do  { \
++                                                            gcry_cipher_open(ctx, GCRY_CIPHER_AES, GCRY_CIPHER_MODE_ECB, 0); \
++                                                            gcry_cipher_setkey(*ctx, key, len/8); \
++                                                        } while (0)
++// HMAC_*
++#define HMAC_CTX                                        gcry_md_hd_t
++#define HMAC_CTX_cleanup(ctx)                           gcry_md_close(*ctx)
++#define HMAC_CTX_init(ctx)                              ; // noop
++#define HMAC_Init_ex(ctx, key, len, md, engine)         HMAC_Init(ctx, key, len, md)
++#define HMAC_Init(ctx, key, len, md)                    do  { \
++                                                            if ((len==0)||(key==NULL)||(md==0)) { \
++                                                                gcry_md_reset(*ctx); \
++                                                            } else { \
++                                                                gcry_md_open(ctx, md, GCRY_MD_FLAG_HMAC); \
++                                                                gcry_md_setkey(*ctx, key, len); \
++                                                            } \
++                                                        }  while (0)
++#define HMAC_Update(ctx, data, len)                     gcry_md_write(*ctx, data, len)
++#define HMAC_Final(ctx, md, len)                        do  { \
++                                                            memcpy(   md,  \
++                                                                gcry_md_read(*ctx, 0), \
++                                                                gcry_md_get_algo_dlen(gcry_md_get_algo(*ctx)) \
++                                                            ); \
++                                                        } while (0)
++#define HMAC(algo, key, klen, data, dlen, res, rlen)    do  { \
++                                                            gcry_md_hd_t mdh; \
++                                                            gcry_md_open(&mdh, algo, GCRY_MD_FLAG_HMAC); \
++                                                            gcry_md_setkey(mdh, key, klen); \
++                                                            gcry_md_write(mdh, data, dlen); \
++                                                            memcpy(res, gcry_md_read(mdh, algo), \
++                                                                gcry_md_get_algo_dlen (algo));  \
++                                                            gcry_md_close(mdh); \
++                                                        } while (0)
++// http://tumblr.spantz.org/post/214737529/the-use-of-do-while-0-in-c-macros
++#endif // _GCRYPT_OPENSSL_WRAPPER_H
+diff --git a/src/sha1-git.c b/src/sha1-git.c
+new file mode 100644
+index 0000000..79f4b40
+--- /dev/null
++++ b/src/sha1-git.c
+@@ -0,0 +1,316 @@
++#ifndef _SHA1_GIT
++/*
++ * sha1-git.c
++ *
++ * This code is based on the GIT SHA1 Implementation.
++ *
++ * Copyright (C) 2009 Linus Torvalds <torvalds@linux-foundation.org>
++ * Copyright (C) 2009 Nicolas Pitre <nico@cam.org>
++ * Copyright (C) 2009 Junio C Hamano <gitster@pobox.com>
++ * Copyright (C) 2009 Brandon Casey <drafnel@gmail.com>
++ * Copyright (C) 2010 Ramsay Jones <ramsay@ramsay1.demon.co.uk>
++ * Copyright (C) 2012 Carlos Alberto Lopez Perez <clopez@igalia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ *
++ */
++
++/*
++ * SHA1 routine optimized to do word accesses rather than byte accesses,
++ * and to avoid unnecessary copies into the context array.
++ *
++ * This was initially based on the Mozilla SHA1 implementation, although
++ * none of the original Mozilla code remains.
++ */
++
++/* this is only to get definitions for memcpy(), ntohl() and htonl() */
++//#include "../git-compat-util.h"
++#include <string.h>
++#include <arpa/inet.h>
++#include "sha1-git.h"
++
++#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
++
++/*
++ * Force usage of rol or ror by selecting the one with the smaller constant.
++ * It _can_ generate slightly smaller code (a constant of 1 is special), but
++ * perhaps more importantly it's possibly faster on any uarch that does a
++ * rotate with a loop.
++ */
++
++#define SHA_ASM(op, x, n) ({ unsigned int __res; __asm__(op " %1,%0":"=r" (__res):"i" (n), "0" (x)); __res; })
++#define SHA_ROL(x,n)	SHA_ASM("rol", x, n)
++#define SHA_ROR(x,n)	SHA_ASM("ror", x, n)
++
++#else
++
++#define SHA_ROT(X,l,r)	(((X) << (l)) | ((X) >> (r)))
++#define SHA_ROL(X,n)	SHA_ROT(X,n,32-(n))
++#define SHA_ROR(X,n)	SHA_ROT(X,32-(n),n)
++
++#endif
++
++/*
++ * If you have 32 registers or more, the compiler can (and should)
++ * try to change the array[] accesses into registers. However, on
++ * machines with less than ~25 registers, that won't really work,
++ * and at least gcc will make an unholy mess of it.
++ *
++ * So to avoid that mess which just slows things down, we force
++ * the stores to memory to actually happen (we might be better off
++ * with a 'W(t)=(val);asm("":"+m" (W(t))' there instead, as
++ * suggested by Artur Skawina - that will also make gcc unable to
++ * try to do the silly "optimize away loads" part because it won't
++ * see what the value will be).
++ *
++ * Ben Herrenschmidt reports that on PPC, the C version comes close
++ * to the optimized asm with this (ie on PPC you don't want that
++ * 'volatile', since there are lots of registers).
++ *
++ * On ARM we get the best code generation by forcing a full memory barrier
++ * between each SHA_ROUND, otherwise gcc happily get wild with spilling and
++ * the stack frame size simply explode and performance goes down the drain.
++ */
++
++#if defined(__i386__) || defined(__x86_64__)
++  #define setW(x, val) (*(volatile unsigned int *)&W(x) = (val))
++#elif defined(__GNUC__) && defined(__arm__)
++  #define setW(x, val) do { W(x) = (val); __asm__("":::"memory"); } while (0)
++#else
++  #define setW(x, val) (W(x) = (val))
++#endif
++
++/*
++ * Performance might be improved if the CPU architecture is OK with
++ * unaligned 32-bit loads and a fast ntohl() is available.
++ * Otherwise fall back to byte loads and shifts which is portable,
++ * and is faster on architectures with memory alignment issues.
++ */
++
++#if defined(__i386__) || defined(__x86_64__) || \
++    defined(_M_IX86) || defined(_M_X64) || \
++    defined(__ppc__) || defined(__ppc64__) || \
++    defined(__powerpc__) || defined(__powerpc64__) || \
++    defined(__s390__) || defined(__s390x__)
++
++#define get_be32(p)	ntohl(*(unsigned int *)(p))
++#define put_be32(p, v)	do { *(unsigned int *)(p) = htonl(v); } while (0)
++
++#else
++
++#define get_be32(p)	( \
++	(*((unsigned char *)(p) + 0) << 24) | \
++	(*((unsigned char *)(p) + 1) << 16) | \
++	(*((unsigned char *)(p) + 2) <<  8) | \
++	(*((unsigned char *)(p) + 3) <<  0) )
++#define put_be32(p, v)	do { \
++	unsigned int __v = (v); \
++	*((unsigned char *)(p) + 0) = __v >> 24; \
++	*((unsigned char *)(p) + 1) = __v >> 16; \
++	*((unsigned char *)(p) + 2) = __v >>  8; \
++	*((unsigned char *)(p) + 3) = __v >>  0; } while (0)
++
++#endif
++
++/* This "rolls" over the 512-bit array */
++#define W(x) (array[(x)&15])
++
++/*
++ * Where do we get the source from? The first 16 iterations get it from
++ * the input data, the next mix it from the 512-bit array.
++ */
++#define SHA_SRC(t) get_be32(data + t)
++#define SHA_MIX(t) SHA_ROL(W(t+13) ^ W(t+8) ^ W(t+2) ^ W(t), 1)
++
++#define SHA_ROUND(t, input, fn, constant, A, B, C, D, E) do { \
++	unsigned int TEMP = input(t); setW(t, TEMP); \
++	E += TEMP + SHA_ROL(A,5) + (fn) + (constant); \
++	B = SHA_ROR(B, 2); } while (0)
++
++#define T_0_15(t, A, B, C, D, E)  SHA_ROUND(t, SHA_SRC, (((C^D)&B)^D) , 0x5a827999, A, B, C, D, E )
++#define T_16_19(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (((C^D)&B)^D) , 0x5a827999, A, B, C, D, E )
++#define T_20_39(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (B^C^D) , 0x6ed9eba1, A, B, C, D, E )
++#define T_40_59(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, ((B&C)+(D&(B^C))) , 0x8f1bbcdc, A, B, C, D, E )
++#define T_60_79(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (B^C^D) ,  0xca62c1d6, A, B, C, D, E )
++
++static void blk_SHA1_Block(blk_SHA_CTX *ctx, const unsigned int *data)
++{
++	unsigned int A,B,C,D,E;
++	unsigned int array[16];
++
++	A = ctx->H[0];
++	B = ctx->H[1];
++	C = ctx->H[2];
++	D = ctx->H[3];
++	E = ctx->H[4];
++
++	/* Round 1 - iterations 0-16 take their input from 'data' */
++	T_0_15( 0, A, B, C, D, E);
++	T_0_15( 1, E, A, B, C, D);
++	T_0_15( 2, D, E, A, B, C);
++	T_0_15( 3, C, D, E, A, B);
++	T_0_15( 4, B, C, D, E, A);
++	T_0_15( 5, A, B, C, D, E);
++	T_0_15( 6, E, A, B, C, D);
++	T_0_15( 7, D, E, A, B, C);
++	T_0_15( 8, C, D, E, A, B);
++	T_0_15( 9, B, C, D, E, A);
++	T_0_15(10, A, B, C, D, E);
++	T_0_15(11, E, A, B, C, D);
++	T_0_15(12, D, E, A, B, C);
++	T_0_15(13, C, D, E, A, B);
++	T_0_15(14, B, C, D, E, A);
++	T_0_15(15, A, B, C, D, E);
++
++	/* Round 1 - tail. Input from 512-bit mixing array */
++	T_16_19(16, E, A, B, C, D);
++	T_16_19(17, D, E, A, B, C);
++	T_16_19(18, C, D, E, A, B);
++	T_16_19(19, B, C, D, E, A);
++
++	/* Round 2 */
++	T_20_39(20, A, B, C, D, E);
++	T_20_39(21, E, A, B, C, D);
++	T_20_39(22, D, E, A, B, C);
++	T_20_39(23, C, D, E, A, B);
++	T_20_39(24, B, C, D, E, A);
++	T_20_39(25, A, B, C, D, E);
++	T_20_39(26, E, A, B, C, D);
++	T_20_39(27, D, E, A, B, C);
++	T_20_39(28, C, D, E, A, B);
++	T_20_39(29, B, C, D, E, A);
++	T_20_39(30, A, B, C, D, E);
++	T_20_39(31, E, A, B, C, D);
++	T_20_39(32, D, E, A, B, C);
++	T_20_39(33, C, D, E, A, B);
++	T_20_39(34, B, C, D, E, A);
++	T_20_39(35, A, B, C, D, E);
++	T_20_39(36, E, A, B, C, D);
++	T_20_39(37, D, E, A, B, C);
++	T_20_39(38, C, D, E, A, B);
++	T_20_39(39, B, C, D, E, A);
++
++	/* Round 3 */
++	T_40_59(40, A, B, C, D, E);
++	T_40_59(41, E, A, B, C, D);
++	T_40_59(42, D, E, A, B, C);
++	T_40_59(43, C, D, E, A, B);
++	T_40_59(44, B, C, D, E, A);
++	T_40_59(45, A, B, C, D, E);
++	T_40_59(46, E, A, B, C, D);
++	T_40_59(47, D, E, A, B, C);
++	T_40_59(48, C, D, E, A, B);
++	T_40_59(49, B, C, D, E, A);
++	T_40_59(50, A, B, C, D, E);
++	T_40_59(51, E, A, B, C, D);
++	T_40_59(52, D, E, A, B, C);
++	T_40_59(53, C, D, E, A, B);
++	T_40_59(54, B, C, D, E, A);
++	T_40_59(55, A, B, C, D, E);
++	T_40_59(56, E, A, B, C, D);
++	T_40_59(57, D, E, A, B, C);
++	T_40_59(58, C, D, E, A, B);
++	T_40_59(59, B, C, D, E, A);
++
++	/* Round 4 */
++	T_60_79(60, A, B, C, D, E);
++	T_60_79(61, E, A, B, C, D);
++	T_60_79(62, D, E, A, B, C);
++	T_60_79(63, C, D, E, A, B);
++	T_60_79(64, B, C, D, E, A);
++	T_60_79(65, A, B, C, D, E);
++	T_60_79(66, E, A, B, C, D);
++	T_60_79(67, D, E, A, B, C);
++	T_60_79(68, C, D, E, A, B);
++	T_60_79(69, B, C, D, E, A);
++	T_60_79(70, A, B, C, D, E);
++	T_60_79(71, E, A, B, C, D);
++	T_60_79(72, D, E, A, B, C);
++	T_60_79(73, C, D, E, A, B);
++	T_60_79(74, B, C, D, E, A);
++	T_60_79(75, A, B, C, D, E);
++	T_60_79(76, E, A, B, C, D);
++	T_60_79(77, D, E, A, B, C);
++	T_60_79(78, C, D, E, A, B);
++	T_60_79(79, B, C, D, E, A);
++
++	ctx->H[0] += A;
++	ctx->H[1] += B;
++	ctx->H[2] += C;
++	ctx->H[3] += D;
++	ctx->H[4] += E;
++}
++
++void blk_SHA1_Init(blk_SHA_CTX *ctx)
++{
++	ctx->size = 0;
++
++	/* Initialize H with the magic constants (see FIPS180 for constants) */
++	ctx->H[0] = 0x67452301;
++	ctx->H[1] = 0xefcdab89;
++	ctx->H[2] = 0x98badcfe;
++	ctx->H[3] = 0x10325476;
++	ctx->H[4] = 0xc3d2e1f0;
++}
++
++void blk_SHA1_Update(blk_SHA_CTX *ctx, const void *data, unsigned long len)
++{
++	unsigned int lenW = ctx->size & 63;
++
++	ctx->size += len;
++
++	/* Read the data into W and process blocks as they get full */
++	if (lenW) {
++		unsigned int left = 64 - lenW;
++		if (len < left)
++			left = len;
++		memcpy(lenW + (char *)ctx->W, data, left);
++		lenW = (lenW + left) & 63;
++		len -= left;
++		data = ((const char *)data + left);
++		if (lenW)
++			return;
++		blk_SHA1_Block(ctx, ctx->W);
++	}
++	while (len >= 64) {
++		blk_SHA1_Block(ctx, data);
++		data = ((const char *)data + 64);
++		len -= 64;
++	}
++	if (len)
++		memcpy(ctx->W, data, len);
++}
++
++void blk_SHA1_Final(unsigned char hashout[20], blk_SHA_CTX *ctx)
++{
++	static const unsigned char pad[64] = { 0x80 };
++	unsigned int padlen[2];
++	int i;
++
++	/* Pad with a binary 1 (ie 0x80), then zeroes, then length */
++	padlen[0] = htonl((uint32_t)(ctx->size >> 29));
++	padlen[1] = htonl((uint32_t)(ctx->size << 3));
++
++	i = ctx->size & 63;
++	blk_SHA1_Update(ctx, pad, 1+ (63 & (55 - i)));
++	blk_SHA1_Update(ctx, padlen, 8);
++
++	/* Output hash */
++	for (i = 0; i < 5; i++)
++		put_be32(hashout + i*4, ctx->H[i]);
++}
++#define _SHA1_GIT
++#endif
+diff --git a/src/sha1-git.h b/src/sha1-git.h
+new file mode 100644
+index 0000000..6e3c2c9
+--- /dev/null
++++ b/src/sha1-git.h
+@@ -0,0 +1,47 @@
++/*
++ * sha1-git.h
++ *
++ * This code is based on the GIT SHA1 Implementation.
++ *
++ * Copyright (C) 2009 Linus Torvalds <torvalds@linux-foundation.org>
++ * Copyright (C) 2009 Nicolas Pitre <nico@cam.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ *
++ */
++
++/*
++ * SHA1 routine optimized to do word accesses rather than byte accesses,
++ * and to avoid unnecessary copies into the context array.
++ *
++ * This was initially based on the Mozilla SHA1 implementation, although
++ * none of the original Mozilla code remains.
++ */
++
++typedef struct {
++	unsigned long long size;
++	unsigned int H[5];
++	unsigned int W[16];
++} blk_SHA_CTX;
++
++void blk_SHA1_Init(blk_SHA_CTX *ctx);
++void blk_SHA1_Update(blk_SHA_CTX *ctx, const void *dataIn, unsigned long len);
++void blk_SHA1_Final(unsigned char hashout[20], blk_SHA_CTX *ctx);
++
++#define git_SHA_CTX	blk_SHA_CTX
++#define git_SHA1_Init	blk_SHA1_Init
++#define git_SHA1_Update	blk_SHA1_Update
++#define git_SHA1_Final	blk_SHA1_Final
+diff --git a/src/tkiptun-ng.c b/src/tkiptun-ng.c
+index c508699..5c0e80b 100644
+--- a/src/tkiptun-ng.c
++++ b/src/tkiptun-ng.c
+@@ -3735,6 +3735,13 @@ int main( int argc, char *argv[] )
+     int packet1_len, packet2_len;
+     struct timeval mic_fail;
+ 
++    #ifdef USE_GCRYPT
++        // Disable secure memory.
++        gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
++        // Tell Libgcrypt that initialization has completed.
++        gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
++    #endif
++
+     /* check the arguments */
+ 
+     memset( &opt, 0, sizeof( opt ) );
+-- 
+1.7.9.1
+

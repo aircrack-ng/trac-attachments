@@ -1,0 +1,15 @@
+Index: src/osdep/cygwin_tap.c
+===================================================================
+--- src/osdep/cygwin_tap.c	(revision 2675)
++++ src/osdep/cygwin_tap.c	(working copy)
+@@ -31,8 +31,9 @@
+ #include <winioctl.h>
+ #include <ipexport.h>
+ #include <iptypes.h>
++#include <initguid.h>
++#include <devguid.h>
+ #include <setupapi.h>
+-#include <devguid.h>
+ 
+ #include "network.h"
+ #include "tap-win32/common.h"

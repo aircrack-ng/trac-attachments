@@ -1,0 +1,25 @@
+--- aircrack-ng.c	2006-08-31 17:21:54.000000000 -0400
++++ aircrack-ng.c.new	2006-10-01 14:18:56.000000000 -0400
+@@ -76,6 +76,7 @@
+ 
+ 
+ #define BROADCAST "\xFF\xFF\xFF\xFF\xFF\xFF"
++#define SPANTREE  "\x01\x80\xC2\x00\x00\x00"
+ 
+ static uchar ZERO[32] =
+ "\x00\x00\x00\x00\x00\x00\x00\x00"
+@@ -809,6 +810,14 @@
+ 			memcpy( buffer    , h80211 + z    , 3 );
+ 			memcpy( buffer + 3, h80211 + z + 4, 2 );
+ 
++			/* Special handling for spanning-tree packets */
++			if ( memcmp( h80211 +  4, SPANTREE, 6 ) == 0 ||
++				 memcmp( h80211 + 16, SPANTREE, 6 ) == 0 )
++			{
++				buffer[3] = (buffer[3] ^ 0x42) ^ 0xAA;
++				buffer[4] = (buffer[4] ^ 0x42) ^ 0xAA;
++			}
++			
+ 			goto add_wep_iv;
+ 		}
+ 

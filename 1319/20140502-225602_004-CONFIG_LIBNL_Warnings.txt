@@ -1,0 +1,82 @@
+jano:~/aircrack-ng$ make sqlite=true unstable=true libnl=true pcre=true
+make -C src all
+make[1]: ingresso nella directory "/home/jano/aircrack-ng/src"
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o aircrack-ng.o aircrack-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o crypto.o crypto.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o common.o common.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o uniqueiv.o uniqueiv.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o aircrack-ptw-lib.o aircrack-ptw-lib.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  aircrack-ng.o crypto.o common.o uniqueiv.o aircrack-ptw-lib.o sha1-sse2.S -o aircrack-ng -lpthread -lssl -lcrypto  -L/usr/local/lib -lsqlite3
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airdecap-ng.o airdecap-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airdecap-ng.o crypto.o common.o -o airdecap-ng -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o packetforge-ng.o packetforge-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  packetforge-ng.o common.o crypto.o -o packetforge-ng -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o ivstools.o ivstools.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  ivstools.o common.o crypto.o uniqueiv.o -o ivstools -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o kstats.o kstats.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  kstats.o -o kstats 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o makeivs-ng.o makeivs-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  makeivs-ng.o common.o uniqueiv.o -o makeivs-ng 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airdecloak-ng.o airdecloak-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o osdep/radiotap/radiotap.o osdep/radiotap/radiotap.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airdecloak-ng.o common.o osdep/radiotap/radiotap.o -o airdecloak-ng 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o wpaclean.o wpaclean.c
+make -C osdep
+make[2]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+Building for Linux
+make[3]: ingresso nella directory "/home/jano/aircrack-ng/src/osdep"
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o osdep.o osdep.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o network.o network.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o file.o file.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o linux.o linux.c
+linux.c: In function ‘error_handler’:
+linux.c:375:46: warning: unused parameter ‘nla’ [-Wunused-parameter]
+linux.c: In function ‘test_callback’:
+linux.c:384:42: warning: unused parameter ‘msg’ [-Wunused-parameter]
+linux.c:384:53: warning: unused parameter ‘arg’ [-Wunused-parameter]
+linux.c: In function ‘linux_set_channel_nl80211’:
+linux.c:1020:5: warning: implicit declaration of function ‘if_nametoindex’ [-Wimplicit-function-declaration]
+linux.c:1021:5: warning: implicit declaration of function ‘ieee80211_channel_to_frequency’ [-Wimplicit-function-declaration]
+linux.c:945:18: warning: unused variable ‘wrq’ [-Wunused-variable]
+linux.c: At top level:
+linux.c:375:12: warning: ‘error_handler’ defined but not used [-Wunused-function]
+linux.c:384:13: warning: ‘test_callback’ defined but not used [-Wunused-function]
+linux.c:1057:12: warning: ‘linux_set_channel’ defined but not used [-Wunused-function]
+linux.c:2068:13: warning: ‘linux_close’ defined but not used [-Wunused-function]
+linux.c: In function ‘do_linux_open’:
+linux.c:186:14: warning: ‘iwpriv’ may be used uninitialized in this function [-Wuninitialized]
+linux.c:1622:11: note: ‘iwpriv’ was declared here
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o linux_tap.o linux_tap.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -fPIC -I..    -c -o common.o common.c
+ar cru libosdep.a  osdep.o network.o file.o linux.o linux_tap.o radiotap/radiotap.o common.o
+ranlib libosdep.a 
+touch .os.Linux
+make[3]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+make[2]: uscita dalla directory "/home/jano/aircrack-ng/src/osdep"
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  wpaclean.o osdep/radiotap/radiotap.o -o wpaclean -Losdep -losdep -lnl-genl-3 -lnl-3  
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o besside-ng-crawler.o besside-ng-crawler.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  besside-ng-crawler.o -o besside-ng-crawler -lpcap
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airolib-ng.o airolib-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airolib-ng.o crypto.o common.o -o airolib-ng -lssl -lcrypto  -DHAVE_REGEXP -L/usr/local/lib -lsqlite3
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o buddy-ng.o buddy-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  buddy-ng.o common.o -o buddy-ng 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o aireplay-ng.o aireplay-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  aireplay-ng.o common.o crypto.o osdep/radiotap/radiotap.o -o aireplay-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airodump-ng.o airodump-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airodump-ng.o common.o crypto.o uniqueiv.o osdep/radiotap/radiotap.o -o airodump-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto  -lpthread -L/usr/lib/i386-linux-gnu -lpcre
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airserv-ng.o airserv-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airserv-ng.o common.o osdep/radiotap/radiotap.o -o airserv-ng -Losdep -losdep -lnl-genl-3 -lnl-3  
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airtun-ng.o airtun-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airtun-ng.o common.o crypto.o osdep/radiotap/radiotap.o -o airtun-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o airbase-ng.o airbase-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  airbase-ng.o common.o crypto.o osdep/radiotap/radiotap.o -o airbase-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto  -lpthread
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o besside-ng.o besside-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  besside-ng.o crypto.o common.o osdep/radiotap/radiotap.o aircrack-ptw-lib.o -o besside-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto  -lz
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o wesside-ng.o wesside-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  wesside-ng.o crypto.o common.o osdep/radiotap/radiotap.o aircrack-ptw-lib.o -o wesside-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto  -lz
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o tkiptun-ng.o tkiptun-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  tkiptun-ng.o common.o crypto.o osdep/radiotap/radiotap.o -o tkiptun-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lssl -lcrypto 
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude   -c -o easside-ng.o easside-ng.c
+gcc -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=2392  -I/usr/local/include -DHAVE_SQLITE  -DHAVE_PCRE -DCONFIG_LIBNL30 -DCONFIG_LIBNL -I/usr/include/libnl3   -Wno-unused-but-set-variable -Wno-array-bounds -Iinclude  easside-ng.o common.o osdep/radiotap/radiotap.o -o easside-ng -Losdep -losdep -lnl-genl-3 -lnl-3   -lz
+make[1]: uscita dalla directory "/home/jano/aircrack-ng/src"
+

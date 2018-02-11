@@ -1,0 +1,273 @@
+Index: common.mak
+===================================================================
+--- common.mak	(revision 2929)
++++ common.mak	(working copy)
+@@ -128,7 +128,7 @@
+ 		NLLIBNAME ?= $(error Cannot find development files for any supported version of libnl. install either libnl1 or libnl3.)
+ 
+ 		LIBS += $(shell $(PKG_CONFIG) --libs $(NLLIBNAME))
+-		COMMON_CFLAGS +=$(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
++		COMMON_CFLAGS +=$(shell $(PKG_CONFIG) --cflags $(NLLIBNAME)) -DHT_CHANNELS
+ 		COMMON_CFLAGS := $(COMMON_CFLAGS)
+ 	endif
+ endif
+Index: manpages/airodump-ng.8
+===================================================================
+--- manpages/airodump-ng.8	(revision 2929)
++++ manpages/airodump-ng.8	(working copy)
+@@ -47,6 +47,15 @@
+ .I -s <method>, --cswitch <method>
+ Defines the way airodump-ng sets the channels when using more than one card. Valid values: 0 (FIFO, default value), 1 (Round Robin) or 2 (Hop on last).
+ .TP
++.I -2, --ht20
++Set the channel to be in HT20 (802.11n).
++.TP
++.I -3, --ht40+
++Set the channel to be in HT40+ (802.11n). It requires the frequency 20MHz above to be available (4 channels above) and thus some channels are not usable in HT40+. Only channels up to 7 are available in HT40+ in the US (and 9 in most of Europe).
++.TP
++.I -5, --ht40-
++Set the channel to be in HT40- (802.11n). It requires the frequency 20MHz below to be available (4 channels be)low and thus some channels are not usable in HT40-. In 2.4GHz, HT40- channels start at channel 5.
++.TP
+ .I -r <file>
+ Reads packet from a file.
+ .TP
+Index: src/airodump-ng.c
+===================================================================
+--- src/airodump-ng.c	(revision 2929)
++++ src/airodump-ng.c	(working copy)
+@@ -69,6 +69,7 @@
+ #include "pcap.h"
+ #include "uniqueiv.h"
+ #include "crypto.h"
++#include "osdep/channel.h"
+ #include "osdep/osdep.h"
+ #include "airodump-ng.h"
+ #include "osdep/common.h"
+@@ -682,6 +683,9 @@
+ "\n"
+ "  By default, airodump-ng hop on 2.4GHz channels.\n"
+ "  You can make it capture on other/specific channel(s) by using:\n"
++"      --ht20                : Set channel to HT20 (802.11n)\n"
++"      --ht40-               : Set channel to HT40- (802.11n)\n"
++"      --ht40+               : Set channel to HT40+ (802.11n)\n"
+ "      --channel <channels>  : Capture on specific channels\n"
+ "      --band <abg>          : Band on which airodump-ng should hop\n"
+ "      -C    <frequencies>   : Uses these frequencies in MHz to hop\n"
+@@ -5415,7 +5419,11 @@
+ 
+             ch = G.channels[ch_idx];
+ 
++#ifdef HT_CHANNELS
++            if(wi_set_ht_channel(wi[card], ch, G.htval) == 0 )
++#else
+             if(wi_set_channel(wi[card], ch ) == 0 )
++#endif
+             {
+                 G.channel[card] = ch;
+                 unused = write( G.cd_pipe[1], &card, sizeof(int) );
+@@ -5966,7 +5974,11 @@
+         {
+             memset(G.message, '\x00', sizeof(G.message));
+             snprintf(G.message, sizeof(G.message), "][ fixed channel %s: %d ", wi_get_ifname(wi[i]), chan);
++#ifdef HT_CHANNELS
++            wi_set_ht_channel(wi[i], G.channel[i], G.htval);
++#else
+             wi_set_channel(wi[i], G.channel[i]);
++#endif
+         }
+     }
+     return 0;
+@@ -6148,6 +6160,9 @@
+     fd_set             rfds;
+ 
+     static struct option long_options[] = {
++        {"ht20",     0, 0, '2'},
++        {"ht40-",    0, 0, '3'},
++        {"ht40+",    0, 0, '5'},
+         {"band",     1, 0, 'b'},
+         {"beacon",   0, 0, 'e'},
+         {"beacons",  0, 0, 'e'},
+@@ -6263,6 +6278,9 @@
+     G.file_write_interval = 5; // Write file every 5 seconds by default
+     G.maxsize_wps_seen  =  6;
+     G.show_wps     = 0;
++#ifdef HT_CHANNELS
++    G.htval        = CHANNEL_NO_HT;
++#endif
+ #ifdef HAVE_PCRE
+     G.f_essid_regex = NULL;
+ #endif
+@@ -6744,6 +6762,31 @@
+                     G.active_scan_sim = 0;
+                 break;
+ 
++            case '2':
++            	#ifndef HT_CHANNELS
++            		printf("HT Channel unsupported\n");
++            		return EXIT_FAILURE;
++            	#else
++	                G.htval = CHANNEL_HT20;
++	            #endif
++                break;
++            case '3':
++            	#ifndef HT_CHANNELS
++            		printf("HT Channel unsupported\n");
++            		return EXIT_FAILURE;
++            	#else
++                	G.htval = CHANNEL_HT40_MINUS;
++                #endif
++                break;
++            case '5':
++            	#ifndef HT_CHANNELS
++            		printf("HT Channel unsupported\n");
++            		return EXIT_FAILURE;
++            	#else
++                	G.htval = CHANNEL_HT40_PLUS;
++                #endif
++                break;
++
+             default : goto usage;
+         }
+     } while ( 1 );
+@@ -6901,7 +6944,11 @@
+             {
+                 for( i=0; i<G.num_cards; i++ )
+                 {
++#ifdef HT_CHANNELS
++                    wi_set_ht_channel(wi[i], G.channel[0], G.htval);
++#else
+                     wi_set_channel(wi[i], G.channel[0]);
++#endif
+                     G.channel[i] = G.channel[0];
+                 }
+                 G.singlechan = 1;
+Index: src/airodump-ng.h
+===================================================================
+--- src/airodump-ng.h	(revision 2929)
++++ src/airodump-ng.h	(working copy)
+@@ -478,6 +478,9 @@
+     int file_write_interval;
+     u_int maxsize_wps_seen;
+     int show_wps;
++#ifdef HT_CHANNELS
++    int htval;
++#endif
+ }
+ G;
+ 
+Index: src/osdep/linux.c
+===================================================================
+--- src/osdep/linux.c	(revision 2929)
++++ src/osdep/linux.c	(working copy)
+@@ -66,6 +66,7 @@
+ #include "crctable_osdep.h"
+ #include "common.h"
+ #include "byteorder.h"
++#include "channel.h"
+ 
+ #ifdef CONFIG_LIBNL
+ struct nl80211_state state;
+@@ -943,7 +944,7 @@
+     return (chan + 1000) * 5;
+ }
+ 
+-static int linux_set_channel_nl80211(struct wif *wi, int channel)
++static int linux_set_ht_channel_nl80211(struct wif *wi, int channel, unsigned int htval)
+ {
+     struct priv_linux *dev = wi_priv(wi);
+     char s[32];
+@@ -952,7 +953,6 @@
+     unsigned int devid;
+     struct nl_msg *msg;
+     unsigned int freq;
+-    unsigned int htval = NL80211_CHAN_NO_HT;
+ 
+     memset( s, 0, sizeof( s ) );
+ 
+@@ -1032,8 +1032,21 @@
+ 
+     NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, devid);
+     NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_FREQ, freq);
+-    NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_CHANNEL_TYPE, htval);
+ 
++    unsigned ht = NL80211_CHAN_NO_HT;
++    switch (htval) {
++        case CHANNEL_HT20:
++            ht = NL80211_CHAN_HT20;
++            break;
++        case CHANNEL_HT40_PLUS:
++            ht = NL80211_CHAN_HT40PLUS;
++            break;
++        case CHANNEL_HT40_MINUS:
++            ht = NL80211_CHAN_HT40MINUS;
++            break;
++    }
++    NLA_PUT_U32(msg, NL80211_ATTR_WIPHY_CHANNEL_TYPE, ht);
++
+     nl_send_auto_complete(state.nl_sock,msg);
+     nlmsg_free(msg);
+ 
+@@ -1043,6 +1056,11 @@
+  nla_put_failure:
+     return -ENOBUFS;
+ }
++
++static int linux_set_channel_nl80211(struct wif *wi, int channel)
++{
++    return linux_set_ht_channel_nl80211(wi, channel, CHANNEL_NO_HT);
++}
+ #else //CONFIG_LIBNL
+ 
+ static int linux_set_channel(struct wif *wi, int channel)
+@@ -2192,10 +2210,13 @@
+         wi->wi_write            = linux_write;
+ #ifdef CONFIG_LIBNL
+         linux_nl80211_init(&state);
++        #ifdef HT_CHANNELS
++            wi->wi_set_ht_channel   = linux_set_ht_channel_nl80211;
++        #endif
+         wi->wi_set_channel      = linux_set_channel_nl80211;
+ #else
+         wi->wi_set_channel      = linux_set_channel;
+-#endif
++#endif //CONFIG_LIBNL
+         wi->wi_get_channel      = linux_get_channel;
+         wi->wi_set_freq		= linux_set_freq;
+         wi->wi_get_freq		= linux_get_freq;
+Index: src/osdep/osdep.c
+===================================================================
+--- src/osdep/osdep.c	(revision 2929)
++++ src/osdep/osdep.c	(working copy)
+@@ -40,6 +40,12 @@
+         return wi->wi_write(wi, h80211, len, ti);
+ }
+ 
++int wi_set_ht_channel(struct wif *wi, int chan, unsigned int htval)
++{
++        assert(wi->wi_set_ht_channel);
++        return wi->wi_set_ht_channel(wi, chan, htval);
++}
++
+ int wi_set_channel(struct wif *wi, int chan)
+ {
+         assert(wi->wi_set_channel);
+Index: src/osdep/osdep.h
+===================================================================
+--- src/osdep/osdep.h	(revision 2929)
++++ src/osdep/osdep.h	(working copy)
+@@ -85,6 +85,7 @@
+                            struct rx_info *ri);
+         int     (*wi_write)(struct wif *wi, unsigned char *h80211, int len,
+                             struct tx_info *ti);
++        int     (*wi_set_ht_channel)(struct wif *wi, int chan, unsigned int htval);
+         int     (*wi_set_channel)(struct wif *wi, int chan);
+         int     (*wi_get_channel)(struct wif *wi);
+         int     (*wi_set_freq)(struct wif *wi, int freq);
+@@ -110,6 +111,7 @@
+ extern int wi_write(struct wif *wi, unsigned char *h80211, int len,
+ 		    struct tx_info *ti);
+ extern int wi_set_channel(struct wif *wi, int chan);
++extern int wi_set_ht_channel(struct wif *wi, int chan, unsigned int htval);
+ extern int wi_get_channel(struct wif *wi);
+ extern int wi_set_freq(struct wif *wi, int freq);
+ extern int wi_get_freq(struct wif *wi);

@@ -1,0 +1,139 @@
+From a34a248276b345b728f93b5e985bbd86b4aef98d Mon Sep 17 00:00:00 2001
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Fri, 22 Feb 2013 00:09:13 +0100
+Subject: [PATCH] Add new optional option --manufacturer that displays a
+ manufacturer column
+
+  * This patchs adds a new option to airodump-ng " --manufacturer / -M "
+    that when enabled shows a manufacturer column after the ESSID one.
+
+  * This manufacturer column displays the name of the manufacturer obtained
+    from the IEEE OUI list which is downloaded with airodump-ng-oui-update
+
+  * The manufacturer column automatically places itself two spaces after the
+    longest ESSID seen (meanwhile the terminal has enough horizontal space).
+    If the terminal hasn't enough horizontal space then the string is cut at
+    that point. You can test it on a xterm by resizing it meanwhile you run
+    "airodump-ng --manufacturer"
+
+  * The new option (--manufacturer) is disabled by default.
+---
+ src/airodump-ng.c | 40 +++++++++++++++++++++++++++++++++++++---
+ src/airodump-ng.h |  2 ++
+ 2 files changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index c2ad166..467974b 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -612,6 +612,7 @@ char usage[] =
+ "                              are received (Default: 120 seconds)\n"
+ "      -r             <file> : Read packets from that file\n"
+ "      -x            <msecs> : Active Scanning Simulation\n"
++"      --manufacturer        : Display manufacturer from IEEE OUI list\n"
+ "      --output-format\n"
+ "                  <formats> : Output format. Possible values:\n"
+ "                              pcap, ivs, csv, gps, kismet, netxml\n"
+@@ -2971,6 +2972,12 @@ void dump_print( int ws_row, int ws_col, int if_num )
+ 			    "    #Data, #/s  CH  MB   ENC  CIPHER AUTH ESSID", columns_ap );
+ 	}
+ 
++	if ( G.show_manufacturer && ( ws_col > (columns_ap - 4) ) ) {
++		// write spaces (32).
++		memset(strbuf+columns_ap, 32, G.maxsize_essid_seen - 5 ); // 5 is the len of "ESSID"
++		snprintf(strbuf+columns_ap+G.maxsize_essid_seen-5, 15,"%s","  MANUFACTURER");
++	}
++
+ 	strbuf[ws_col - 1] = '\0';
+ 	fprintf( stderr, "%s\n", strbuf );
+ 
+@@ -3133,14 +3140,33 @@ void dump_print( int ws_row, int ws_col, int if_num )
+ 		if(ap_cur->essid[0] != 0x00)
+ 		{
+ 		    snprintf( strbuf,  sizeof( strbuf ) - 1,
+-			    "%-256s", ap_cur->essid );
++			    "%s", ap_cur->essid );
+ 		}
+ 		else
+ 		{
+ 		    snprintf( strbuf,  sizeof( strbuf ) - 1,
+-			    "<length:%3d>%-256s", ap_cur->ssid_length, "\x00" );
++			    "<length:%3d>%s", ap_cur->ssid_length, "\x00" );
++		}
++
++		if (G.show_manufacturer) {
++
++			if (G.maxsize_essid_seen <= strlen(strbuf))
++				G.maxsize_essid_seen = strlen(strbuf);
++			else // write spaces (32)
++				memset( strbuf+strlen(strbuf), 32,  (G.maxsize_essid_seen - strlen(strbuf))  );
++
++			if (ap_cur->manuf == NULL)
++				ap_cur->manuf = get_manufacturer(ap_cur->bssid[0], ap_cur->bssid[1], ap_cur->bssid[2]);
++
++			snprintf( strbuf + G.maxsize_essid_seen , sizeof(strbuf)-G.maxsize_essid_seen, "  %s", ap_cur->manuf );
+ 		}
++
++		// write spaces (32) until the end of column
++		memset( strbuf+strlen(strbuf), 32, ws_col - (columns_ap - 4 ) );
++
++		// end the string at the end of the column
+ 		strbuf[ws_col - (columns_ap - 4)] = '\0';
++
+ 		fprintf( stderr, "  %s", strbuf );
+ 	    }
+ 
+@@ -5385,6 +5411,7 @@ int main( int argc, char *argv[] )
+         {"detect-anomaly", 0, 0, 'E'},
+         {"output-format",  1, 0, 'o'},
+         {"ignore-negative-one", 0, &G.ignore_negative_one, 1},
++        {"manufacturer",  0, 0, 'M'},
+         {0,          0, 0,  0 }
+     };
+ 
+@@ -5451,6 +5478,8 @@ int main( int argc, char *argv[] )
+     G.show_sta     =  1;
+     G.show_ack     =  0;
+     G.hide_known   =  0;
++    G.maxsize_essid_seen  =  5; // Initial value: length of "ESSID"
++    G.show_manufacturer = 0;
+     G.hopfreq      =  DEFAULT_HOPFREQ;
+     G.s_file       =  NULL;
+     G.s_iface      =  NULL;
+@@ -5541,7 +5570,7 @@ int main( int argc, char *argv[] )
+         option_index = 0;
+ 
+         option = getopt_long( argc, argv,
+-                        "b:c:egiw:s:t:u:m:d:aHDB:Ahf:r:EC:o:x:",
++                        "b:c:egiw:s:t:u:m:d:aHDB:Ahf:r:EC:o:x:M",
+                         long_options, &option_index );
+ 
+         if( option < 0 ) break;
+@@ -5591,6 +5620,11 @@ int main( int argc, char *argv[] )
+                 G.decloak = 0;
+                 break;
+ 
++	    case 'M':
++
++                G.show_manufacturer = 1;
++                break;
++
+             case 'c' :
+ 
+                 if (G.channel[0] > 0 || G.chanoption == 1) {
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index eb1ab58..90e1817 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -453,6 +453,8 @@ struct globals
+     uchar selected_bssid[6];	/* bssid that is selected */
+ 
+     int ignore_negative_one;
++    u_int maxsize_essid_seen;
++    int show_manufacturer;
+ }
+ G;
+ 
+-- 
+1.8.0
+

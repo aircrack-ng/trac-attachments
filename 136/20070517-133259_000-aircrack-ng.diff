@@ -1,0 +1,38 @@
+2480c2480
+< 	int i, j, cid, len1, len2;
+---
+> 	int i, j, cid, len1, len2, num_cpus;
+2489a2490,2491
+> 	num_cpus = opt.nbcpu;
+> 
+2492c2494
+< 	for( cid = 0; cid < opt.nbcpu; cid++ )
+---
+> 	for( cid = 0; cid < num_cpus; cid++ )
+2544c2546
+< 	while( 1 )
+---
+> 	while( num_cpus > 0 )
+2546c2548
+< 		for( cid = 0; cid < opt.nbcpu; cid++ )
+---
+> 		for( cid = 0; cid < num_cpus; cid++ )
+2563c2565
+< 					printf( "\nPassphrase not in dictionnary %s \n", opt.dicts[opt.nbdict] );
+---
+> 					/* printf( "\nPassphrase not in dictionnary %s \n", opt.dicts[opt.nbdict] );*/
+2566c2568,2571
+< 						return( FAILURE );
+---
+> 						/* no more words, but we still have to collect results from words sent to previous cpus */
+> 						num_cpus = cid;
+> 						goto collect_and_test;
+> 						/* return( FAILURE ); */
+2627c2632,2634
+< 		for( cid = 0; cid < opt.nbcpu; cid++ )
+---
+> collect_and_test:
+> 
+> 		for( cid = 0; cid < num_cpus; cid++ )
+2706a2714
+> 	printf( "\nPassphrase not in dictionnary \n" );

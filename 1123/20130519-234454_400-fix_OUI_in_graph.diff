@@ -1,0 +1,13 @@
+Index: libOuiParse.py
+===================================================================
+--- libOuiParse.py	(revision 2288)
++++ libOuiParse.py	(working copy)
+@@ -143,7 +143,7 @@
+             if Hex.search(line) != None: 
+                 lineList = Hex.search(line).group().replace("\t"," ").split("  ") 
+                 #return the matched text and build a list out of it
+-                HexOui[lineList[0].replace("-",":")] = lineList[2] 
++                HexOui[lineList[1].replace("-",":")] = lineList[3] 
+                 #build a dict in the format of mac:company name 
+         return HexOui
+     

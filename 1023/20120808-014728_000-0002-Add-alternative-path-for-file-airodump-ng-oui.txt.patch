@@ -1,0 +1,51 @@
+From 6615f714768f0039a801d920191a2135be35e287 Mon Sep 17 00:00:00 2001
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Wed, 8 Aug 2012 03:35:46 +0200
+Subject: [PATCH 2/2] Add alternative path for file airodump-ng-oui.txt
+
+ * On Debian systems the "orthodox" path for this kind of files is
+   /usr/share/aircrack-ng/airodump-ng-oui.txt
+
+ * In case of doubt, just check this:
+   $ dpkg -L nmap|grep mac
+   /usr/share/nmap/nmap-mac-prefixes
+---
+ src/airodump-ng.c |    9 +++++++--
+ src/airodump-ng.h |    1 +
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index 39d4c2e..8acdcaa 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -3665,8 +3665,13 @@ char *get_manufacturer(unsigned char mac0, unsigned char mac1, unsigned char mac
+ 			fp = fopen(OUI_PATH0, "r");
+ 			if (fp == NULL) {
+ 				fp = fopen(OUI_PATH1, "r");
+-				if (fp != NULL) {
+-					oui_location = OUI_PATH1;
++				if (fp == NULL) {
++				    fp = fopen(OUI_PATH2, "r");
++				    if (fp != NULL) {
++					oui_location = OUI_PATH2;
++				    }
++				} else {
++				    oui_location = OUI_PATH1;
+ 				}
+ 			} else {
+ 				oui_location = OUI_PATH0;
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index b87b0d4..424b3a3 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -144,6 +144,7 @@ static uchar ZERO[32] =
+ 
+ #define OUI_PATH0 "/etc/aircrack-ng/airodump-ng-oui.txt"
+ #define OUI_PATH1 "/usr/local/etc/aircrack-ng/airodump-ng-oui.txt"
++#define OUI_PATH2 "/usr/share/aircrack-ng/airodump-ng-oui.txt"
+ #define MIN_RAM_SIZE_LOAD_OUI_RAM 32768
+ 
+ int read_pkts=0;
+-- 
+1.7.10.4
+

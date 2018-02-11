@@ -1,0 +1,23 @@
+diff -Naur aircrack-ng-master/src/aircrack-ng.c aircrack-ng/src/aircrack-ng.c
+--- aircrack-ng-master/src/aircrack-ng.c	2014-03-23 23:40:24.000000000 +0200
++++ aircrack-ng/src/aircrack-ng.c	2014-03-24 03:23:31.381494635 +0200
+@@ -40,7 +40,7 @@
+ #define _GNU_SOURCE
+ 
+ #include <sys/types.h>
+-#include <sys/termios.h>
++#include <termios.h>
+ #include <sys/ioctl.h>
+ #include <sys/wait.h>
+ #include <sys/stat.h>
+diff -Naur aircrack-ng-master/src/osdep/radiotap/radiotap.c aircrack-ng/src/osdep/radiotap/radiotap.c
+--- aircrack-ng-master/src/osdep/radiotap/radiotap.c	2014-03-23 23:40:24.000000000 +0200
++++ aircrack-ng/src/osdep/radiotap/radiotap.c	2014-03-24 15:23:07.962778706 +0200
+@@ -15,6 +15,7 @@
+  */
+ #include "radiotap_iter.h"
+ #include "platform.h"
++#include "byteorder.h"
+ 
+ /* function prototypes and related defs are in radiotap_iter.h */
+ 

@@ -1,0 +1,8 @@
+#!/bin/bash
+#Easy MAC spoofing!! 
+#please change the wlan0 to your interface's name
+`iwconfig wlan0 mode Managed` && 
+echo "Typ the new MAC adress" 
+read MAC  
+`ifconfig wlan0 hw ether $MAC` && 
+`iwconfig wlan0 mode Monitor`

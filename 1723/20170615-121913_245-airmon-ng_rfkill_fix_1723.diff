@@ -1,0 +1,40 @@
+Index: airmon-ng
+===================================================================
+--- airmon-ng	(revisión: 2910)
++++ airmon-ng	(copia de trabajo)
+@@ -298,7 +298,7 @@
+ 		#immediatly return if rfkill isn't supported
+ 		return 0
+ 	fi
+-	rfkill_status="$(rfkill unblock ${1#phy} 2>&1)"
++	rfkill_status="$(rfkill unblock "$index" 2>&1)"
+ 	if [ $? != 0 ]; then
+ 		printf "rfkill error: ${rfkill_status}\n"
+ 		printf "Unable to unblock.\n"
+@@ -373,9 +373,9 @@
+ 	rfkill_check ${PHYDEV}
+ 	rfkill_retcode="$?"
+ 	case ${rfkill_retcode} in
+-		1) printf "\t${1} is soft blocked, please run \"rfkill unblock ${1#phy}\" to use this interface.\n" ;;
++		1) printf "\t${1} is soft blocked, please run \"rfkill unblock "$index"\" to use this interface.\n" ;;
+ 		2) printf "\t${1} is hard blocked, please flip the hardware wifi switch to on.\n"
+-		   printf "\tIt may also be possible to unblock with \"rfkill unblock ${1#phy}\"\n"
++		   printf "\tIt may also be possible to unblock with \"rfkill unblock "$index"\"\n"
+ 		   if [ "${checkvm_status}" != "run" ]; then
+ 		   	checkvm
+ 		   fi
+@@ -383,12 +383,12 @@
+ 		   	printf "Detected VM using ${vm_from}\n"
+ 		   	printf "This appears to be a ${vm} Virtual Machine\n"
+ 		   	printf "Some distributions have bugs causing rfkill hard block to be forced on in a VM.\n"
+-		   	printf "If toggling the rfkill hardware switch and \"rfkill unblock ${1#phy}\" both fail\n"
++		   	printf "If toggling the rfkill hardware switch and \"rfkill unblock "$index"\" both fail\n"
+ 		   	printf "to fix this, please try not running in a VM.\n"
+ 		   fi
+ 		   ;;
+ 		3) printf "\t${1} is hard and soft blocked, please flip the hardware wifi switch to on.\n"
+-		   printf "\tIt may also be needed to unblock with \"rfkill unblock ${1#phy}\"\n" ;;
++		   printf "\tIt may also be needed to unblock with \"rfkill unblock "$index"\"\n" ;;
+ 	esac
+ 	if [ "${rfkill_retcode}" != 0 ]; then
+ 		printf "rfkill error, unable to start ${1}\n\n"

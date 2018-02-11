@@ -1,0 +1,55 @@
+diff -uNr aircrack-ng-1.0rc2/src/aircrack-ng.c aircrack-ng-1.0rc2-wordlist/src/aircrack-ng.c
+--- aircrack-ng-1.0rc2/src/aircrack-ng.c	2008-11-22 17:05:59.000000000 -0800
++++ aircrack-ng-1.0rc2-wordlist/src/aircrack-ng.c	2008-11-22 18:30:31.000000000 -0800
+@@ -3746,6 +3746,11 @@
+ 
+ int next_dict(int nb)
+ {
++
++	int i;
++	int n = 0;
++	char c[10];
++
+ 	if(opt.dict != NULL)
+ 	{
+ 		if(!opt.stdin_dict) fclose(opt.dict);
+@@ -3792,6 +3797,30 @@
+ 			}
+ 
+ 			rewind( opt.dict );
++
++			for (i = 0; i < 20; i++)
++			{
++
++				fread(&c[i], 1, 1, opt.dict);
++				fseek(opt.dict, 1, SEEK_CUR);
++
++				if ( ( c[i] < 32 || c[i] > 126 ) && c[i] != 9 && c[i] != 10 && c[i] != 13 )
++				{
++					n = 1;	
++				}
++
++			}
++
++			if ( n == 1 )
++			{
++				fclose( opt.dict );
++				opt.dict = NULL;
++				printf( "The file is not a dictionary\n" );
++				opt.nbdict++;
++				continue;
++			}
++
++			rewind( opt.dict );
+ 		}
+ 		break;
+ 	}
+@@ -4247,7 +4276,7 @@
+ 		opt.nbdict++;
+ 	}
+ 
+-	next_dict(0);
++	//next_dict(0);
+ 
+ 	while(next_dict(opt.nbdict+1) == 0) {}
+ 

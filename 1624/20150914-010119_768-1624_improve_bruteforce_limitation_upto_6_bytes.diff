@@ -1,0 +1,214 @@
+Index: src/aircrack-ng.c
+===================================================================
+--- src/aircrack-ng.c	(revision 2684)
++++ src/aircrack-ng.c	(working copy)
+@@ -3341,7 +3341,7 @@
+ 
+ int do_wep_crack1( int B )
+ {
+-	int i, j, l, m, tsel, charread, askchange;
++	int i, j, l, m, n, o, tsel, charread, askchange;
+ 	int remove_keybyte_nr, remove_keybyte_value;
+ 	//int a,b;
+ 	static int k = 0;
+@@ -3498,7 +3498,7 @@
+ 			if (opt.nbcpu==1 || opt.do_mt_brute==0)
+ 			{
+ 
+-				if (opt.do_brute==4)
++				if (opt.do_brute==6)
+ 				{
+ 					for( l = 0; l < 256; l++)
+ 					{
+@@ -3516,6 +3516,75 @@
+ 								{
+ 									wep.key[opt.brutebytes[3]] = j;
+ 
++									for( n = 0; n < 256; n++ )
++									{
++										wep.key[opt.brutebytes[4]] = n;
++										
++										for( o = 0; o < 256; o++ )
++										{
++											wep.key[opt.brutebytes[5]] = o;
++
++											if (check_wep_key( wep.key, B + 1, 0 ) == SUCCESS)
++											return SUCCESS;
++										}
++									}
++
++									
++								}
++							}
++						}
++					}
++				}
++				else if (opt.do_brute==5)
++				{
++					for( l = 0; l < 256; l++)
++					{
++						wep.key[opt.brutebytes[0]] = l;
++
++						for( m = 0; m < 256; m++ )
++						{
++							wep.key[opt.brutebytes[1]] = m;
++
++							for( i = 0; i < 256; i++ )
++							{
++								wep.key[opt.brutebytes[2]] = i;
++
++								for( j = 0; j < 256; j++ )
++								{
++									wep.key[opt.brutebytes[3]] = j;
++
++									for( n = 0; n < 256; n++ )
++									{
++										wep.key[opt.brutebytes[4]] = n;
++										
++										if (check_wep_key( wep.key, B + 1, 0 ) == SUCCESS)
++										return SUCCESS;
++									}
++
++									
++								}
++							}
++						}
++					}
++				}
++				else if (opt.do_brute==4)
++				{
++					for( l = 0; l < 256; l++)
++					{
++						wep.key[opt.brutebytes[0]] = l;
++
++						for( m = 0; m < 256; m++ )
++						{
++							wep.key[opt.brutebytes[1]] = m;
++
++							for( i = 0; i < 256; i++ )
++							{
++								wep.key[opt.brutebytes[2]] = i;
++
++								for( j = 0; j < 256; j++ )
++								{
++									wep.key[opt.brutebytes[3]] = j;
++
+ 									if (check_wep_key( wep.key, B + 1, 0 ) == SUCCESS)
+ 										return SUCCESS;
+ 								}
+@@ -3721,7 +3790,7 @@
+ 
+ int inner_bruteforcer_thread(void *arg)
+ {
+-	int i, j, k, l, reduce=0;
++	int i, j, k, l, m, n, reduce=0;
+ 	size_t nthread = (size_t)arg;
+ 	unsigned char wepkey[64];
+ 	int ret=0;
+@@ -3749,7 +3818,7 @@
+ 	if( close_aircrack )
+ 		return(ret);
+ 	/* now we test the 256*256 keys... if we succeed we'll save it and exit the thread */
+-	if (opt.do_brute==4)
++	if (opt.do_brute==6)
+ 	{
+ 		for( l = 0; l < 256; l++ )
+ 		{
+@@ -3766,7 +3835,72 @@
+ 					for( j = 0; j < 256; j++ )
+ 					{
+ 						wepkey[opt.brutebytes[3]] = j;
++						
++						for ( m = 0; m < 256; m++ )
++						{
++							wepkey[opt.brutebytes[4]] = m;
+ 
++							for ( n = 0; n < 256; n++ )
++							{
++								wepkey[opt.brutebytes[5]] = m;
++
++								if( check_wep_key( wepkey, opt.keylen - 2, 0 ) == SUCCESS )
++									return(SUCCESS);
++							}
++						}
++					}
++				}
++			}
++		}
++	}
++	else if (opt.do_brute==5)
++	{
++		for( l = 0; l < 256; l++ )
++		{
++			wepkey[opt.brutebytes[0]] = l;
++
++			for( k = 0; k < 256; k++ )
++			{
++				wepkey[opt.brutebytes[1]] = k;
++
++				for( i = 0; i < 256; i++ )
++				{
++					wepkey[opt.brutebytes[2]] = i;
++
++					for( j = 0; j < 256; j++ )
++					{
++						wepkey[opt.brutebytes[3]] = j;
++						
++						for ( m = 0; m < 256; m++ )
++						{
++							wepkey[opt.brutebytes[4]] = m;
++
++							if( check_wep_key( wepkey, opt.keylen - 2, 0 ) == SUCCESS )
++								return(SUCCESS);
++						}
++					}
++				}
++			}
++		}
++	}
++	else if (opt.do_brute==4)
++	{
++		for( l = 0; l < 256; l++ )
++		{
++			wepkey[opt.brutebytes[0]] = l;
++
++			for( k = 0; k < 256; k++ )
++			{
++				wepkey[opt.brutebytes[1]] = k;
++
++				for( i = 0; i < 256; i++ )
++				{
++					wepkey[opt.brutebytes[2]] = i;
++
++					for( j = 0; j < 256; j++ )
++					{
++						wepkey[opt.brutebytes[3]] = j;
++
+ 						if( check_wep_key( wepkey, opt.keylen - 2, 0 ) == SUCCESS )
+ 							return(SUCCESS);
+ 					}
+@@ -5362,10 +5496,9 @@
+ 
+ 				if (optarg)
+ 				{
+-					if (sscanf(optarg, "%d", &opt.do_brute)!=1
+-						|| opt.do_brute<0 || opt.do_brute>4)
++					if (sscanf(optarg, "%d", &opt.do_brute)!=1 || opt.do_brute<1 || opt.do_brute > 6)
+ 					{
+-						printf("Invalid option -x%s. [0-4]\n", optarg);
++						printf("Invalid option -x%s. [0-6]\n", optarg);
+ 						printf("\"%s --help\" for help.\n", argv[0]);
+ 						return FAILURE;
+ 					}
+@@ -5835,9 +5968,9 @@
+ 		if( opt.keylen == 0 )
+ 			opt.keylen = 13;
+ 
+-		if(j + opt.do_brute > 4)
++		if(j + opt.do_brute > 6)
+ 		{
+-			printf( "Bruteforcing more then 4 bytes will take too long, aborting!" );
++			printf( "Bruteforcing more than 6 bytes will take too long, aborting!" );
+ 			goto exit_main;
+ 		}
+ 

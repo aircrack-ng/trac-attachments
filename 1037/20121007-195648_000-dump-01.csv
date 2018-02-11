@@ -1,0 +1,95 @@
+
+BSSID, First time seen, Last time seen, channel, Speed, Privacy, Cipher, Authentication, Power, # beacons, # IV, LAN IP, ID-length, ESSID, Key
+00:3A:99:F6:EF:60, 2012-09-28 04:25:53, 2012-09-28 04:26:53, 108,  -1, OPN ,       ,   ,  -1,        0,        2,   0.  0.  0.  0,   0, , 
+DE:AD:DE:AD:BE:EF, 2012-09-28 04:25:04, 2012-09-28 04:25:36,  1,  54, OPN ,       ,   , -80,      298,      425, 169.254. 36.182,   7, attwifi, 
+10:BF:48:E5:CD:E0, 2012-09-28 04:25:04, 2012-09-28 04:27:56,  1,  54, WPA2, CCMP,PSK, -79,     1474,      205,   0.  0.  0.  0,  17, Free_Viruses_Here, 
+00:12:D9:ED:31:F0, 2012-09-28 04:25:04, 2012-09-28 04:27:56,  1,  54, OPN ,       ,   , -95,      526,       21, 172. 17.  1.  1,  16, Hyatt_Louisville, 
+00:40:96:A0:A5:02, 2012-09-28 04:25:04, 2012-09-28 04:27:56,  1,  11, WEP , WEP,   , -63,     1357,       46,   0.  0.  0.  0,  14, aircrackngwep2, 
+00:12:43:9F:8A:70, 2012-09-28 04:25:04, 2012-09-28 04:27:56,  1,  54, OPN ,       ,   , -63,      853,      440, 172. 17.  1.  1,  16, Hyatt_Louisville, 
+BC:AE:C5:E7:FA:3F, 2012-09-28 04:25:18, 2012-09-28 04:27:56,  1,  54, WPA2, CCMP,PSK, -111,       34,       10,   0.  0.  0.  0,  10, Metasploit, 
+00:21:29:6C:AA:AF, 2012-09-28 04:25:04, 2012-09-28 04:27:56,  1,  54, WPA2, CCMP,PSK, -79,     1578,        0,   0.  0.  0.  0,  13, aircrackngwpa, 
+00:C0:CA:57:0E:14, 2012-09-28 04:25:07, 2012-09-28 04:27:56,  6,  54, OPN ,       ,   , -94,      115,        0,   0.  0.  0.  0,  19, 'drop table guest;', 
+00:C0:CA:62:01:E6, 2012-09-28 04:25:47, 2012-09-28 04:27:37, 11,  54, WPA2, CCMP,PSK, -62,        5,        0,   0.  0.  0.  0,   7, Synapse, 
+
+Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs
+C8:60:00:08:44:9D, 2012-09-28 04:26:43, 2012-09-28 04:26:43, -127,       38, (not associated) , Naptowne Inn,Zero Wireless Office 2,UGuest,DementedRobot2,Dementedrobot2,attwifi,Fuze Network,Comfort Inn On-WiFi 2,Comfort Inn On-WiFi 20,kaladi brothers coffee
+B8:C7:5D:AB:80:28, 2012-09-28 04:26:32, 2012-09-28 04:26:32, -46,        1, (not associated) , registration
+E0:B9:A5:A1:78:9A, 2012-09-28 04:26:30, 2012-09-28 04:26:30, -127,        3, (not associated) ,
+8C:70:5A:2B:57:28, 2012-09-28 04:25:21, 2012-09-28 04:26:30, -127,        2, (not associated) , Hyatt_Louisville
+24:77:03:78:42:34, 2012-09-28 04:25:18, 2012-09-28 04:26:30, -127,        6, (not associated) , Powershell
+A4:D1:D2:52:C9:E2, 2012-09-28 04:26:21, 2012-09-28 04:27:54, -127,       10, (not associated) , PWND FTW,University of Washington,C-Mart,schmanning,gogoinflight,MOST AMAZING COFFEE  - TRABANT,Allegro WiFi
+A8:6A:6F:ED:48:93, 2012-09-28 04:26:22, 2012-09-28 04:26:23, -47,        7, (not associated) , insight_wifi_7617,FreeWifi,ancre2,gogoinflight
+A0:88:B4:10:18:C8, 2012-09-28 04:26:09, 2012-09-28 04:26:09, -127,        2, (not associated) ,
+18:34:51:50:A5:70, 2012-09-28 04:25:23, 2012-09-28 04:26:03, -127,        8, (not associated) , Hyatt_Louisville
+7C:61:93:9B:43:26, 2012-09-28 04:25:35, 2012-09-28 04:25:40, -45,       25, (not associated) , attwifi
+7C:C5:37:77:6D:BF, 2012-09-28 04:25:29, 2012-09-28 04:25:29, -46,        1, (not associated) ,
+F8:7B:7A:CB:D5:A1, 2012-09-28 04:25:21, 2012-09-28 04:25:21, -127,        3, (not associated) , FBIVan
+A8:6A:6F:95:BC:50, 2012-09-28 04:25:16, 2012-09-28 04:25:16, -45,        3, (not associated) , Hyatt_Louisville
+A0:88:B4:40:4A:DC, 2012-09-28 04:25:44, 2012-09-28 04:25:44, -127,        3, (not associated) , Free_Viruses_Here
+98:B8:E3:85:81:47, 2012-09-28 04:25:57, 2012-09-28 04:25:57, -46,        1, (not associated) ,
+00:C0:CA:62:14:37, 2012-09-28 04:26:04, 2012-09-28 04:26:04, -48,        1, (not associated) ,
+78:D6:F0:39:AF:7B, 2012-09-28 04:26:18, 2012-09-28 04:26:18, -48,        2, (not associated) ,
+8C:FA:BA:DB:D3:C4, 2012-09-28 04:26:14, 2012-09-28 04:26:14, -46,        2, (not associated) ,
+00:37:6D:F9:37:51, 2012-09-28 04:26:25, 2012-09-28 04:26:25, -47,        2, (not associated) , Hyatt_Louisville
+00:21:6A:BB:A6:0A, 2012-09-28 04:25:31, 2012-09-28 04:26:34, -47,        3, (not associated) ,
+00:27:10:73:45:98, 2012-09-28 04:25:37, 2012-09-28 04:26:47, -47,        2, (not associated) , Hyatt_Louisville
+58:1F:AA:34:D6:CA, 2012-09-28 04:26:16, 2012-09-28 04:27:42, -127,        3, (not associated) , Hyatt_Louisville
+1C:4B:D6:A6:74:37, 2012-09-28 04:25:30, 2012-09-28 04:27:36, -127,        5, (not associated) , Powershell
+90:21:55:7A:FD:AB, 2012-09-28 04:25:42, 2012-09-28 04:27:51, -127,        8, (not associated) ,
+64:80:99:3F:BF:80, 2012-09-28 04:25:17, 2012-09-28 04:27:36, -127,        2, (not associated) ,
+00:27:10:7D:BF:DC, 2012-09-28 04:25:17, 2012-09-28 04:27:38, -127,        8, (not associated) , Corelan_Live
+10:BF:48:D0:83:B3, 2012-09-28 04:25:30, 2012-09-28 04:27:56, -48,       35, (not associated) , Telekom_FlyNet,DefaultSsid2-1,Superior carwash,''"<XSS>({}),BusyDolphin-guest,JUSTICE LEAGUE,commissary,ILLEGAL HACKER WIFI,Telekom,TheHobbit
+00:24:D7:F5:3F:FC, 2012-09-28 04:25:05, 2012-09-28 04:27:24, -127,        9, (not associated) , Powershell
+AC:72:89:E7:40:BE, 2012-09-28 04:26:05, 2012-09-28 04:27:09, -127,        4, (not associated) , Corelan_Live
+0C:D2:92:01:23:31, 2012-09-28 04:26:05, 2012-09-28 04:27:11, -127,        8, (not associated) ,
+00:21:6A:43:B8:F6, 2012-09-28 04:26:02, 2012-09-28 04:27:11, -127,       10, (not associated) ,
+10:0B:A9:5E:9E:7C, 2012-09-28 04:25:58, 2012-09-28 04:27:04, -127,        3, (not associated) ,
+70:DE:E2:24:A9:AE, 2012-09-28 04:25:41, 2012-09-28 04:27:12, -127,       26, (not associated) , Kail,BWI-WiFi,SouthwestWiFi,McCarran WiFi,TUSecure,NETGEAR,Vault42
+F0:CB:A1:AF:D5:51, 2012-09-28 04:25:29, 2012-09-28 04:27:10, -127,       13, (not associated) ,
+6C:3E:6D:52:82:74, 2012-09-28 04:25:35, 2012-09-28 04:27:51, -127,       29, (not associated) , RazorVols,Marco's Pizza #8079,Little High Little Low,Conference-Renaissance,CLTNET,Tucker Guest Network,AuntieAnnes-guest,cpwl,CANCUN PALACE (REST FRIDA),Renaissance
+A4:EE:57:58:C0:88, 2012-09-28 04:26:52, 2012-09-28 04:27:53, -127,        3, (not associated) ,
+30:85:A9:D6:B9:89, 2012-09-28 04:25:33, 2012-09-28 04:27:31, -127,       15, (not associated) , attwifi,identity_theft,HarborLink - Buffalo Wild Wings,pwnsauce
+CC:AF:78:DB:30:10, 2012-09-28 04:26:00, 2012-09-28 04:27:00, -127,        3, (not associated) ,
+08:ED:B9:B2:AC:23, 2012-09-28 04:27:01, 2012-09-28 04:27:01, -127,        1, (not associated) ,
+34:51:C9:47:AC:56, 2012-09-28 04:25:41, 2012-09-28 04:27:57, -127,       22, (not associated) , JHILGER,ac-gnex,GLO-ESX-IN-YOUR-FACE,ThisIsTheEnd,dwkgrpw,OurInternet,NachoInternet,Calahan,tradersmillgrillandbar,a-town
+60:FA:CD:EF:43:D9, 2012-09-28 04:25:08, 2012-09-28 04:27:15, -127,       41, (not associated) ,
+10:BF:48:F5:10:2D, 2012-09-28 04:25:19, 2012-09-28 04:27:19, -127,        4, (not associated) ,
+60:FA:CD:E9:39:6F, 2012-09-28 04:27:22, 2012-09-28 04:27:22, -127,        1, (not associated) ,
+68:5D:43:7C:88:F0, 2012-09-28 04:27:26, 2012-09-28 04:27:26, -127,        4, (not associated) , Corelan_Live
+F0:B4:79:53:FA:DD, 2012-09-28 04:27:32, 2012-09-28 04:27:32, -127,        7, (not associated) , Peter Pan Free WiFi,SKYNET,Sebastians-7Cam-WiFi,JCB,chbguest,TCHpeap
+24:77:03:5B:F3:04, 2012-09-28 04:27:33, 2012-09-28 04:27:33, -127,        1, (not associated) ,
+58:1F:AA:50:EA:2B, 2012-09-28 04:25:19, 2012-09-28 04:27:35, -127,       54, (not associated) , Denny's Bayamon,Margarita,AndroidAP,597D,UNO,RMG - AERONET,CHILIS -AERONET,attwifi_free_lobby,ZIPPERLINK,belkin54g
+00:08:CA:F1:B9:96, 2012-09-28 04:25:39, 2012-09-28 04:27:44, -127,        9, (not associated) , Corelan_Live
+28:E7:CF:58:7B:AC, 2012-09-28 04:27:04, 2012-09-28 04:27:40, -127,        2, (not associated) ,
+E4:CE:8F:21:3B:EE, 2012-09-28 04:27:28, 2012-09-28 04:27:44, -127,        9, (not associated) , Free_Viruses_Here
+20:C9:D0:6F:29:8E, 2012-09-28 04:25:18, 2012-09-28 04:27:37, -48,       38, (not associated) , MGSD-Staff
+10:BF:48:CD:46:15, 2012-09-28 04:25:17, 2012-09-28 04:27:50, -48,      115, (not associated) , M1thr1!,NeverNeverLan,AndroidTether,HC Summerchase 40 West,gogoinflight,SATURNV_PUBLIC,neverlan,MarriottLouisville,hhonors
+00:24:D6:08:E8:BA, 2012-09-28 04:25:58, 2012-09-28 04:27:05, -48,        8, (not associated) , AirCrack
+A4:D1:D2:68:BA:6D, 2012-09-28 04:27:24, 2012-09-28 04:27:24, -48,        1, (not associated) ,
+7C:D1:C3:DF:BF:37, 2012-09-28 04:27:41, 2012-09-28 04:27:52, -47,       18, (not associated) , tagged.com,Unauthorized,FreeVirusHere,Viruses4all,DoJ-Surveillance-Van,bobsburgers,freepenis
+7C:61:93:01:6A:25, 2012-09-28 04:25:14, 2012-09-28 04:27:43, -47,       81, (not associated) , tech,attwifi
+7C:11:BE:39:E8:DD, 2012-09-28 04:25:13, 2012-09-28 04:27:33, -47,       53, (not associated) , TheAndaman (Public Area),NTGINTERNAL,QUICKPLAY,i-Hotel,LHOME,datavalet,dlink,Toronto Pearson Wi-Fi,RRRRC,Boingo Hotspot
+00:27:10:05:94:2C, 2012-09-28 04:26:21, 2012-09-28 04:27:28, -47,        3, (not associated) , Verizon MiFi2200 A358 Secure
+2C:44:01:C4:6B:24, 2012-09-28 04:25:27, 2012-09-28 04:27:25, -47,       44, (not associated) , Wilbur,a-town5ghz,Valhalla,J-Bird,Belkin_N+_431FBC,SuiteWIFI,2WIRE610,Red Lion Guest,VMworld2012,MyMiFi
+D0:DF:9A:95:11:D1, 2012-09-28 04:25:09, 2012-09-28 04:27:15, -47,       15, (not associated) ,
+98:D6:BB:AC:BE:CA, 2012-09-28 04:25:12, 2012-09-28 04:27:09, -47,       58, (not associated) , attwifi
+90:27:E4:56:AC:82, 2012-09-28 04:25:45, 2012-09-28 04:27:16, -47,       77, (not associated) , BeachColony_32,molesa,millerbee,No_Entry,beekeepers,SCH-I905 0239,classic,westell8713,BillyBobsFreeWifi,PAAWireless_Guest
+BC:67:78:1F:85:F3, 2012-09-28 04:26:41, 2012-09-28 04:27:20, -47,        7, (not associated) , registration
+58:94:6B:D3:75:DC, 2012-09-28 04:25:40, 2012-09-28 04:27:51, -46,        9, (not associated) , Free_Viruses_Here
+00:27:10:D7:0C:D8, 2012-09-28 04:25:46, 2012-09-28 04:27:47, -46,        2, (not associated) ,
+8C:70:5A:CF:6D:20, 2012-09-28 04:25:12, 2012-09-28 04:27:31, -46,       12, (not associated) , Free_Viruses_Here
+E0:B9:BA:D7:89:AA, 2012-09-28 04:25:51, 2012-09-28 04:27:21, -46,        4, (not associated) , daniel wifi,eku_secure,Password = Family10,TSC-MAC-49651A
+F0:CB:A1:87:B4:98, 2012-09-28 04:25:39, 2012-09-28 04:27:21, -46,       70, (not associated) , attwifi
+58:94:6B:A8:C1:40, 2012-09-28 04:26:03, 2012-09-28 04:27:14, -46,        5, (not associated) , RedTeam
+00:1D:E0:4D:15:E5, 2012-09-28 04:25:46, 2012-09-28 04:27:14, -46,       10, (not associated) , Free_Viruses_Here
+8C:70:5A:89:67:30, 2012-09-28 04:26:00, 2012-09-28 04:27:06, -46,        9, (not associated) , Free_Viruses_Here
+58:94:6B:D3:CA:E8, 2012-09-28 04:27:07, 2012-09-28 04:27:07, -46,        2, (not associated) , RedTeam
+00:1E:4C:33:31:EE, 2012-09-28 04:27:43, 2012-09-28 04:27:46, -46,        4, (not associated) ,
+48:5D:60:83:1A:59, 2012-09-28 04:25:58, 2012-09-28 04:27:39, -45,        8, (not associated) , Free_Viruses_Here
+48:5D:60:9A:A4:71, 2012-09-28 04:25:21, 2012-09-28 04:27:30, -45,       14, (not associated) , AirCrack
+F8:1E:DF:D9:0D:60, 2012-09-28 04:25:29, 2012-09-28 04:27:55, -48,       13, (not associated) , Air-
+D8:00:4D:EC:40:C3, 2012-09-28 04:25:22, 2012-09-28 04:26:58, -45,        3, (not associated) ,
+68:96:7B:65:E7:2F, 2012-09-28 04:27:02, 2012-09-28 04:27:30, -45,        2, (not associated) ,
+00:1F:3B:01:07:6F, 2012-09-28 04:27:12, 2012-09-28 04:27:12, -44,        2, (not associated) , Free_Viruses_Here
+B8:FF:61:CE:7B:08, 2012-09-28 04:27:54, 2012-09-28 04:27:54, -127,       13, (not associated) , NETGEAR,AtriaGuest,NETGEAR-5G,Netgear,charles,Ft.Laud-Hlwd_Airport-Public,ibahn,EdenCrest
+

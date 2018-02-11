@@ -1,0 +1,13 @@
+Index: scripts/airodump-ng-oui-update
+===================================================================
+--- scripts/airodump-ng-oui-update	(revisione 2271)
++++ scripts/airodump-ng-oui-update	(copia locale)
+@@ -71,7 +71,7 @@
+ 	fi
+ 
+ 	# Parse it
+-	grep "(hex)" ${OUI_IEEE} > ${AIRODUMP_NG_OUI}
++	grep "(hex)" ${OUI_IEEE} | sed 's/^[ \t]*//;s/[ \t]*$//' > ${AIRODUMP_NG_OUI}
+ 	if [ "${?}" -ne 0 ]; then
+ 		echo "[*] Error: Failed to parse OUI, aborting..."
+ 		exit 1

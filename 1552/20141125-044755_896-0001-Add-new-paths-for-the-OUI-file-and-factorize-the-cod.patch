@@ -1,0 +1,146 @@
+From b8fce61f54bf970a09138e431089bb20aa7e8217 Mon Sep 17 00:00:00 2001
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Tue, 25 Nov 2014 05:01:56 +0100
+Subject: [PATCH] Add new paths for the OUI file and factorize the code to find
+ it.
+
+ * Add two new paths for searching the OUI file:
+   /var/lib/ieee-data/oui.txt /usr/share/ieee-data/oui.txt
+   On Debian, aircrack-ng relies on the package ieee-data to get
+   the OUI data. This package now uses the above two paths.
+
+ * Add also "/var/lib/misc/oui.txt" that was removed on r2278.
+
+ * Sync the path defines both on src/airodump-ng.h and
+   scripts/airdrop-ng/airdrop/libOuiParse.py
+
+ * Factorize and simplify the logic to find the OUI file.
+---
+ scripts/airdrop-ng/airdrop/libOuiParse.py |  3 +++
+ src/airodump-ng.c                         | 44 ++++++++++++-------------------
+ src/airodump-ng.h                         | 18 ++++++++++---
+ 3 files changed, 34 insertions(+), 31 deletions(-)
+
+diff --git a/scripts/airdrop-ng/airdrop/libOuiParse.py b/scripts/airdrop-ng/airdrop/libOuiParse.py
+index 40d4df4..510a48a 100755
+--- a/scripts/airdrop-ng/airdrop/libOuiParse.py
++++ b/scripts/airdrop-ng/airdrop/libOuiParse.py
+@@ -44,7 +44,10 @@ class macOUI_lookup:
+         self.OUI_PATH = ["/etc/aircrack-ng/airodump-ng-oui.txt",
+             "/usr/local/etc/aircrack-ng/airodump-ng-oui.txt",
+             "/usr/share/aircrack-ng/airodump-ng-oui.txt",
++            "/var/lib/misc/oui.txt",
+             "/usr/share/misc/oui.txt",
++            "/var/lib/ieee-data/oui.txt",
++            "/usr/share/ieee-data/oui.txt",
+             "/etc/manuf/oui.txt",
+             "/usr/share/wireshark/wireshark/manuf/oui.txt",
+             "/usr/share/wireshark/manuf/oui.txt"]
+diff --git a/src/airodump-ng.c b/src/airodump-ng.c
+index ea6f82d..7e0e6a7 100644
+--- a/src/airodump-ng.c
++++ b/src/airodump-ng.c
+@@ -396,6 +396,20 @@ void trim(char *str)
+     str[i - begin] = '\0'; // Null terminate string.
+ }
+ 
++FILE *open_oui_file(void) {
++	FILE *fp;
++	int i;
++
++	for (i=0; OUI_PATHS[i] != NULL; i++) {
++		fp = fopen(OUI_PATHS[i], "r");
++		if ( fp != NULL ) {
++			break;
++		}
++	}
++
++	return fp;
++}
++
+ struct oui * load_oui_file(void) {
+ 	FILE *fp;
+ 	char * manuf;
+@@ -405,14 +419,8 @@ struct oui * load_oui_file(void) {
+ 	unsigned char c[2];
+ 	struct oui *oui_ptr = NULL, *oui_head = NULL;
+ 
+-	if (!(fp = fopen(OUI_PATH0, "r"))) {
+-		if (!(fp = fopen(OUI_PATH1, "r"))) {
+-			if (!(fp = fopen(OUI_PATH2, "r"))) {
+-				if (!(fp = fopen(OUI_PATH3, "r"))) {
+-					return NULL;
+-				}
+-			}
+-		}
++	if (!(fp = open_oui_file())) {
++		return NULL;
+ 	}
+ 
+ 	memset(buffer, 0x00, sizeof(buffer));
+@@ -3775,7 +3783,6 @@ char * sanitize_xml(unsigned char * text, int length)
+ #define OUI_STR_SIZE 8
+ #define MANUF_SIZE 128
+ char *get_manufacturer(unsigned char mac0, unsigned char mac1, unsigned char mac2) {
+-	static char * oui_location = NULL;
+ 	char oui[OUI_STR_SIZE + 1];
+ 	char *manuf;
+ 	//char *buffer_manuf;
+@@ -3809,24 +3816,7 @@ char *get_manufacturer(unsigned char mac0, unsigned char mac1, unsigned char mac
+ 		}
+ 	} else {
+ 		// If the file exist, then query it each time we need to get a manufacturer.
+-		if (oui_location == NULL) {
+-			fp = fopen(OUI_PATH0, "r");
+-			if (fp == NULL) {
+-				fp = fopen(OUI_PATH1, "r");
+-				if (fp == NULL) {
+-				    fp = fopen(OUI_PATH2, "r");
+-				    if (fp != NULL) {
+-					oui_location = OUI_PATH2;
+-				    }
+-				} else {
+-				    oui_location = OUI_PATH1;
+-				}
+-			} else {
+-				oui_location = OUI_PATH0;
+-			}
+-		} else {
+-			fp = fopen(oui_location, "r");
+-		}
++		fp = open_oui_file();
+ 
+ 		if (fp != NULL) {
+ 
+diff --git a/src/airodump-ng.h b/src/airodump-ng.h
+index 02cf0d8..93e8162 100644
+--- a/src/airodump-ng.h
++++ b/src/airodump-ng.h
+@@ -142,10 +142,20 @@ static unsigned char ZERO[32] =
+ "\x00\x00\x00\x00\x00\x00\x00\x00"
+ "\x00\x00\x00\x00\x00\x00\x00\x00";
+ 
+-#define OUI_PATH0 "/etc/aircrack-ng/airodump-ng-oui.txt"
+-#define OUI_PATH1 "/usr/local/etc/aircrack-ng/airodump-ng-oui.txt"
+-#define OUI_PATH2 "/usr/share/aircrack-ng/airodump-ng-oui.txt"
+-#define OUI_PATH3 "/usr/share/misc/oui.txt"
++const char *OUI_PATHS[] = {
++    "/etc/aircrack-ng/airodump-ng-oui.txt",
++    "/usr/local/etc/aircrack-ng/airodump-ng-oui.txt",
++    "/usr/share/aircrack-ng/airodump-ng-oui.txt",
++    "/var/lib/misc/oui.txt",
++    "/usr/share/misc/oui.txt",
++    "/var/lib/ieee-data/oui.txt",
++    "/usr/share/ieee-data/oui.txt",
++    "/etc/manuf/oui.txt",
++    "/usr/share/wireshark/wireshark/manuf/oui.txt",
++    "/usr/share/wireshark/manuf/oui.txt",
++    NULL
++};
++
+ #define MIN_RAM_SIZE_LOAD_OUI_RAM 32768
+ 
+ int read_pkts=0;
+-- 
+2.0.0.rc2
+

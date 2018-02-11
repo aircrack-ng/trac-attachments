@@ -1,0 +1,38 @@
+Index: scripts/airmon-ng
+===================================================================
+--- scripts/airmon-ng	(revision 2885)
++++ scripts/airmon-ng	(working copy)
+@@ -454,6 +454,16 @@
+ 	fi
+ }
+ 
++startBcmMonIface() {
++	[ -z $1 ] && return
++	ifconfig $1 down
++	rmmod brcmfmac
++	modprobe brcmutil
++	cp /root/brcmfmac43430-sdio.bin /lib/firmware/brcm/brcmfmac43430-sdio.bin
++	insmod /root/brcmfmac.ko
++	ifconfig $1 up 2> /dev/null
++}
++
+ startwlIface() {
+ 	if [ -f "/proc/brcm_monitor0" ]; then
+ 		if [ -r "/proc/brcm_monitor0" ]; then
+@@ -623,6 +633,16 @@
+ 	fi
+ }
+ 
++stopBcmMonIface() {
++	[ -z $1 ] && return
++	ifconfig $1 down
++	cp /root/brcmfmac43430-sdio.orig.bin /lib/firmware/brcm/brcmfmac43430-sdio.bin
++	rmmod brcmfmac
++	sleep 1
++	modprobe brcmfmac
++	ifconfig $1 up 2> /dev/null
++}
++
+ stopwlIface() {
+ 	if [ -f "/proc/brcm_monitor0" ]; then
+ 		if [ -r "/proc/brcm_monitor0" ]; then

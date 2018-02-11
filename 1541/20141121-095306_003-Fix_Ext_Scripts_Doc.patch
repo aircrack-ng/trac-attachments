@@ -1,0 +1,122 @@
+Index: scripts/airdrop-ng/Makefile
+===================================================================
+--- scripts/airdrop-ng/Makefile	(revisione 2449)
++++ scripts/airdrop-ng/Makefile	(copia locale)
+@@ -1,16 +1,15 @@
+ AC_ROOT		= ../..
+-DOCFILES        = README
+ include		$(AC_ROOT)/common.mak
+ 
+ default: all
+ 
+ all:
+-	@echo Nothing to do. Run make install
++	@echo "Nothing to do. Run make install"
+ 
+-install: doc
++install: docs
+ 	python setup.py install --prefix="$(prefix)" --record files.txt
+ 
+-doc:
++docs:
+ 	$(MAKE) -C doc install 
+ 
+ uninstall:
+@@ -17,7 +16,6 @@
+ 	$(MAKE) -C doc $(@)
+ 	cat files.txt | xargs rm -rf
+ 	rm -f files.txt
+-
+ clean:
+ 	python setup.py clean
+ 	rm -rf build
+Index: scripts/airdrop-ng/doc/Makefile
+===================================================================
+--- scripts/airdrop-ng/doc/Makefile	(revisione 2449)
++++ scripts/airdrop-ng/doc/Makefile	(copia locale)
+@@ -1,14 +1,16 @@
+-DOCFILES = Apple.sample.txt dropRules.conf.example
++AC_ROOT		= ../../..
++include		$(AC_ROOT)/common.mak
++
++MP_FILES        = airdrop-ng.1
++
+ default: all
+ 
+ all:
+-	@echo "Nothing to do, run make install" 
++	@echo "Nothing to do. Run make install"
++	
++install: uninstall
++	install -d $(DESTDIR)$(mandir)
++	install -m 644 $(MP_FILES) $(DESTDIR)$(mandir)
+ 
+ uninstall:
+-	rm $(DESTDIR)$(docdir)/Apple.sample.txt  $(DESTDIR)$(docdir)/dropRules.conf.example $(DESTDIR)$(mandir)/airdrop-ng.1
+-
+-install:
+-	install -d $(DESTDIR)$(docdir)
+-	install -d $(DESTDIR)$(mandir)
+-	install -m 644 $(DOCFILES) $(DESTDIR)$(docdir)
+-	install -m 644 airdrop-ng.1 $(DESTDIR)$(mandir)
++	@-$(foreach CUR_MP,$(MP_FILES), rm -f $(DESTDIR)$(mandir)/$(CUR_MP); echo rm -f $(DESTDIR)$(mandir)/$(CUR_MP); )
+Index: scripts/airgraph-ng/Makefile
+===================================================================
+--- scripts/airgraph-ng/Makefile	(revisione 2449)
++++ scripts/airgraph-ng/Makefile	(copia locale)
+@@ -1,11 +1,10 @@
+ AC_ROOT		= ../..
+-DOCFILES        = README
+ include		$(AC_ROOT)/common.mak
+ 
+ default: all
+ 
+ all:
+-	@echo Nothing to do. Run make install
++	@echo "Nothing to do. Run make install"
+ 
+ install: doc
+ 	python setup.py install --prefix="$(prefix)" --record files.txt
+@@ -12,9 +11,6 @@
+ 
+ doc:
+ 	$(MAKE) -C man install 
+-	install -d $(prefix)$(docdir)
+-	install -d $(prefix)/share/airgraph-ng
+-	install -m 644 $(DOCFILES) $(DESTDIR)$(docdir)
+ 
+ uninstall: clean
+ 	$(MAKE) -C man $(@)
+Index: scripts/airgraph-ng/man/Makefile
+===================================================================
+--- scripts/airgraph-ng/man/Makefile	(revisione 2449)
++++ scripts/airgraph-ng/man/Makefile	(copia locale)
+@@ -7,8 +7,8 @@
+ default: all
+ 
+ all:
+-	@echo Nothing to do. Run make install
+-	
++	@echo "Nothing to do. Run make install"
++
+ install: uninstall
+ 	install -d $(DESTDIR)$(mandir)
+ 	install -m 644 $(MP_FILES) $(DESTDIR)$(mandir)
+Index: scripts/versuck-ng/Makefile
+===================================================================
+--- scripts/versuck-ng/Makefile	(revisione 2449)
++++ scripts/versuck-ng/Makefile	(copia locale)
+@@ -8,7 +8,7 @@
+ default: all
+ 
+ all:
+-	@echo Nothing to do. Run make install
++	@echo "Nothing to do. Run make install"
+ 
+ install: uninstall
+ 	install -d $(DESTDIR)$(mandir)
+@@ -28,4 +28,3 @@
+ 	@echo Nothing to do.
+ 
+ distclean: clean
+-	

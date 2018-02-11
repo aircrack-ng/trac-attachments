@@ -1,0 +1,272 @@
+version:1
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main gmake 4.1_0 exists in the ports tree
+:debug:main gmake 4.1_0  is the latest installed
+:debug:main gmake 4.1_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gmake
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! gmake 4.1_0 >= gmake 4.1_0
+:debug:main epoch: in tree: 2 installed: 2
+:debug:main gettext 0.19.7_0 exists in the ports tree
+:debug:main gettext 0.19.7_0  is the latest installed
+:debug:main gettext 0.19.7_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gettext
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Sourcing PortGroup compiler_blacklist_versions 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/compiler_blacklist_versions-1.0.tcl
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Sourcing PortGroup muniversal 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/muniversal-1.0.tcl
+:debug:main compiler clang 211.10.1 not blacklisted because it doesn't match {clang < 211.10.1}
+:debug:main universal variant already exists, so not adding the default one
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! gettext 0.19.7_0 >= gettext 0.19.7_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main expat 2.1.0_0 exists in the ports tree
+:debug:main expat 2.1.0_0  is the latest installed
+:debug:main expat 2.1.0_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/textproc/expat
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! expat 2.1.0_0 >= expat 2.1.0_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main libiconv 1.14_0 exists in the ports tree
+:debug:main libiconv 1.14_0  is the latest installed
+:debug:main libiconv 1.14_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/textproc/libiconv
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Sourcing PortGroup muniversal 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/muniversal-1.0.tcl
+:debug:main universal variant already exists, so not adding the default one
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! libiconv 1.14_0 >= libiconv 1.14_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main ncurses 6.0_0 exists in the ports tree
+:debug:main ncurses 6.0_0  is the latest installed
+:debug:main ncurses 6.0_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/ncurses
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! ncurses 6.0_0 >= ncurses 6.0_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main pkgconfig 0.29.1_0 exists in the ports tree
+:debug:main pkgconfig 0.29.1_0  is the latest installed
+:debug:main pkgconfig 0.29.1_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/pkgconfig
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! pkgconfig 0.29.1_0 >= pkgconfig 0.29.1_0
+:debug:main epoch: in tree: 1 installed: 1
+:debug:main openssl 1.0.2g_0 exists in the ports tree
+:debug:main openssl 1.0.2g_0  is the latest installed
+:debug:main openssl 1.0.2g_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/openssl
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Sourcing PortGroup muniversal 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/muniversal-1.0.tcl
+:debug:main universal variant already exists, so not adding the default one
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! openssl 1.0.2g_0 >= openssl 1.0.2g_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main zlib 1.2.8_0 exists in the ports tree
+:debug:main zlib 1.2.8_0  is the latest installed
+:debug:main zlib 1.2.8_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/archivers/zlib
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Sourcing PortGroup xcodeversion 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/xcodeversion-1.0.tcl
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! zlib 1.2.8_0 >= zlib 1.2.8_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main pcre 8.38_0 exists in the ports tree
+:debug:main pcre 8.38_0  is the latest installed
+:debug:main pcre 8.38_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/pcre
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! pcre 8.38_0 >= pcre 8.38_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main bzip2 1.0.6_0 exists in the ports tree
+:debug:main bzip2 1.0.6_0  is the latest installed
+:debug:main bzip2 1.0.6_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/archivers/bzip2
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main universal variant already exists, so not adding the default one
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! bzip2 1.0.6_0 >= bzip2 1.0.6_0
+:debug:main epoch: in tree: 20090923 installed: 20090923
+:debug:main libedit 20150325-3.1_0 exists in the ports tree
+:debug:main libedit 20150325-3.1_0  is the latest installed
+:debug:main libedit 20150325-3.1_0  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/libedit
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Sourcing PortGroup muniversal 1.0 from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/group/muniversal-1.0.tcl
+:debug:main universal variant already exists, so not adding the default one
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! libedit 20150325-3.1_0 >= libedit 20150325-3.1_0
+:debug:main epoch: in tree: 0 installed: 0
+:debug:main sqlite3 3.11.1_1 exists in the ports tree
+:debug:main sqlite3 3.11.1_1  is the latest installed
+:debug:main sqlite3 3.11.1_1  is active
+:debug:main Merging existing variants '' into variants
+:debug:main new fully merged portvariants: 
+:debug:main Changing to port directory: /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/databases/sqlite3
+:debug:main OS darwin/10.8.0 (Mac OS X 10.6) arch i386
+:debug:main adding the default universal variant
+:debug:main Reading variant descriptions from /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/_resources/port1.0/variant_descriptions.conf
+:debug:main Running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Finished running callback portconfigure::add_automatic_compiler_dependencies
+:debug:main Running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main Finished running callback portbuild::add_automatic_buildsystem_dependencies
+:debug:main No need to upgrade! sqlite3 3.11.1_1 >= sqlite3 3.11.1_1
+:msg:main --->  Computing dependencies for aircrack-ng:info:main .:debug:main aircrack-ng has no conflicts
+:debug:main Searching for dependency: gmake
+:debug:main Found Dependency: receipt exists for gmake
+:debug:main Searching for dependency: pkgconfig
+:debug:main Found Dependency: receipt exists for pkgconfig
+:debug:main Searching for dependency: openssl
+:debug:main Found Dependency: receipt exists for openssl
+:debug:main Searching for dependency: pcre
+:debug:main Found Dependency: receipt exists for pcre
+:debug:main Searching for dependency: sqlite3
+:debug:main Found Dependency: receipt exists for sqlite3
+:msg:main 
+:debug:main Executing org.macports.main (aircrack-ng)
+:debug:main changing euid/egid - current euid: 0 - current egid: 0
+:debug:main egid changed to: 501
+:debug:main euid changed to: 503
+:debug:main Skipping completed org.macports.archivefetch (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:main Skipping completed org.macports.fetch (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:main Skipping completed org.macports.checksum (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:main Skipping completed org.macports.extract (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:main Skipping completed org.macports.patch (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:main Skipping completed org.macports.configure (aircrack-ng)
+:debug:main Privilege de-escalation not attempted as not running as root.
+:debug:build build phase started at Sat Mar 19 22:06:20 CET 2016
+:notice:build --->  Building aircrack-ng
+:debug:build Executing org.macports.build (aircrack-ng)
+:debug:build Environment: 
+CC_PRINT_OPTIONS='YES'
+CC_PRINT_OPTIONS_FILE='/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/.CC_PRINT_OPTIONS'
+CPATH='/opt/local/include'
+LIBRARY_PATH='/opt/local/lib'
+MACOSX_DEPLOYMENT_TARGET='10.6'
+:debug:build Assembled command: 'cd "/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3" && /opt/local/bin/gmake -j2 -w all prefix=/opt/local libnl=false pcre=true sqlite=true ASM_AC= CC="/usr/bin/llvm-gcc-4.2 -arch x86_64 -I/opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/aircrack-ng/files"'
+:debug:build Executing command line:  cd "/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3" && /opt/local/bin/gmake -j2 -w all prefix=/opt/local libnl=false pcre=true sqlite=true ASM_AC= CC="/usr/bin/llvm-gcc-4.2 -arch x86_64 -I/opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/aircrack-ng/files" 
+:info:build gmake: Entering directory '/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3'
+:info:build /opt/local/bin/gmake -C src all
+:info:build gmake[1]: Entering directory '/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3/src'
+:info:build /usr/bin/llvm-gcc-4.2 -arch x86_64 -I/opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/aircrack-ng/files -g -W -Wall -O3 -D_FILE_OFFSET_BITS=64 -D_REVISION=0  -DHAVE_SQLITE -isystem/opt/local/include -DHAVE_PCRE -fstack-protector -Iinclude  airodump-ng.o common.o crypto.o uniqueiv.o osdep/radiotap/radiotap.o osdep/common.o -o airodump-ng -Losdep -losdep  -lssl -lcrypto  -lpthread -L/opt/local/lib -lpcre
+:info:build Undefined symbols for architecture x86_64:
+:info:build   "_strnlen", referenced from:
+:info:build       _is_filtered_essid in airodump-ng.o
+:info:build       _dump_write_kismet_csv in airodump-ng.o
+:info:build       _dump_write_kismet_netxml in airodump-ng.o
+:info:build       _dump_write_csv in airodump-ng.o
+:info:build       _get_sta_list_count in airodump-ng.o
+:info:build       _get_ap_list_count in airodump-ng.o
+:info:build       _dump_print in airodump-ng.o
+:info:build       ...
+:info:build   "_dprintf", referenced from:
+:info:build       _sighandler in airodump-ng.o
+:info:build ld: symbol(s) not found for architecture x86_64
+:info:build collect2: ld returned 1 exit status
+:info:build Makefile:145: recipe for target 'airodump-ng' failed
+:info:build gmake[1]: *** [airodump-ng] Error 1
+:info:build gmake[1]: Leaving directory '/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3/src'
+:info:build Makefile:25: recipe for target 'all' failed
+:info:build gmake: *** [all] Error 2
+:info:build gmake: Leaving directory '/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3'
+:info:build Command failed:  cd "/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/work/aircrack-ng-1.2-rc3" && /opt/local/bin/gmake -j2 -w all prefix=/opt/local libnl=false pcre=true sqlite=true ASM_AC= CC="/usr/bin/llvm-gcc-4.2 -arch x86_64 -I/opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/security/aircrack-ng/files" 
+:info:build Exit code: 2
+:error:build org.macports.build for port aircrack-ng returned: command execution failed
+:debug:build Error code: CHILDSTATUS 220 2
+:debug:build Backtrace: command execution failed
+    while executing
+"system -nice 0 $fullcmdstring"
+    ("eval" body line 1)
+    invoked from within
+"eval system $notty $nice \$fullcmdstring"
+    invoked from within
+"command_exec build"
+    (procedure "portbuild::build_main" line 8)
+    invoked from within
+"portbuild::build_main org.macports.build"
+    ("eval" body line 1)
+    invoked from within
+"eval $procedure $targetname"
+:info:build Warning: targets not executed for aircrack-ng: org.macports.activate org.macports.build org.macports.destroot org.macports.install
+:notice:build Please see the log file for port aircrack-ng for details:
+    /opt/local/var/macports/logs/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_security_aircrack-ng/aircrack-ng/main.log

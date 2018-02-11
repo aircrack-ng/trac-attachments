@@ -1,0 +1,184 @@
+diff -ur aircrack-ng-1.2-rc1/src/airdecap-ng.c /root/aircrack-ng-1.2-rc1/src/airdecap-ng.c
+--- aircrack-ng-1.2-rc1/src/airdecap-ng.c	2014-07-12 04:24:03.000000000 +0200
++++ aircrack-ng-1.2-rc1/src/airdecap-ng.c	2015-03-28 22:08:04.300471585 +0100
+@@ -96,7 +96,9 @@
+     char essid[36];
+     char passphrase[65];
+     unsigned char bssid[6];
+-    unsigned char pmk[40];
++    unsigned char **pmk;
++    int maxpmk;
++    int nextpmk;
+     unsigned char wepkey[64];
+     int weplen, crypt;
+     int store_bad;
+@@ -228,6 +230,15 @@
+     memset( ZERO, 0, sizeof( ZERO ) );
+     memset( &opt, 0, sizeof( opt  ) );
+ 
++    opt.maxpmk = 0;
++    opt.nextpmk = 0;
++    opt.pmk = malloc (sizeof(char*));
++    if (opt.pmk  == NULL)
++    {
++         printf("Error allocating memory for PMK array!\n");
++         return 1;
++    }
++
+     while( 1 )
+     {
+         int option_index = 0;
+@@ -296,7 +307,7 @@
+ 
+             case 'k' :
+ 
+-                if( opt.crypt != CRYPT_NONE )
++                if( (opt.crypt != CRYPT_NONE) && (opt.crypt != CRYPT_WPA ))
+                 {
+                     printf( "Encryption key already specified.\n" );
+                     printf("\"%s --help\" for help.\n", argv[0]);
+@@ -305,6 +316,25 @@
+ 
+                 opt.crypt = CRYPT_WPA;
+ 
++                if (opt.maxpmk > 0)
++                {
++		    /* We need the link header to look for the 4-way handshake */
++		    opt.no_convert = 1;
++                    opt.pmk = realloc(opt.pmk, (opt.maxpmk + 1) * sizeof(char*));
++                    if ( opt.pmk == NULL )
++                    {
++                        printf("Error extending memory for PMK array!\n");
++                        return 1 ;
++                    }
++                }
++
++   	        opt.pmk[opt.maxpmk] = malloc (40);
++		if (opt.pmk[opt.maxpmk] == NULL)
++		{
++		    printf("Error allocating memory for PSK!\n");
++		    return 1;
++		}
++
+                 i = 0;
+                 s = optarg;
+ 
+@@ -321,7 +351,7 @@
+                         return( 1 );
+                     }
+ 
+-                    opt.pmk[i++] = n;
++                    opt.pmk[opt.maxpmk][i++] = n;
+                     if( i >= 32 ) break;
+ 
+                     s += 2;
+@@ -336,6 +366,8 @@
+                     buf[1] = s[1];
+                 }
+ 
++                opt.maxpmk++;
++
+                 if( i != 32 )
+                 {
+                     printf( "Invalid WPA PMK.\n" );
+@@ -466,8 +498,14 @@
+ 	    		printf("\"%s --help\" for help.\n", argv[0]);
+                 return( 1 );
+             }
++            opt.pmk[opt.nextpmk] = malloc (40);
++            if (opt.pmk[opt.nextpmk] == NULL)
++            {   
++                printf("Error allocating memory for PSK!\n");
++                return 1;
++            }
+ 
+-            calc_pmk( opt.passphrase, opt.essid, opt.pmk );
++            calc_pmk( opt.passphrase, opt.essid, opt.pmk[opt.nextpmk] );
+         }
+     }
+ 
+@@ -885,12 +923,12 @@
+ 
+                 if( write_packet( f_out, &pkh, h80211 ) != 0 )
+                     break;
++		z -= 18;
+             }
+         }
+-        else
+-        {
++//        else
++//        {
+             /* check ethertype == EAPOL */
+-
+             z += 6;
+ 
+             if( h80211[z] != 0x88 || h80211[z + 1] != 0x8E )
+@@ -914,24 +952,26 @@
+                 ( h80211[z + 4] != 0xFE && h80211[z + 4] != 0x02 ) )
+                 continue;
+ 
+-            /* frame 1: Pairwise == 1, Install == 0, Ack == 1, MIC == 0 */
++            /* frame 1: Pairwise == 1, Install == 0, Ack == 1, MIC == 0 Secure == 0 */
+ 
+             if( ( h80211[z + 6] & 0x08 ) != 0 &&
+                 ( h80211[z + 6] & 0x40 ) == 0 &&
+                 ( h80211[z + 6] & 0x80 ) != 0 &&
+-                ( h80211[z + 5] & 0x01 ) == 0 )
++                ( h80211[z + 5] & 0x01 ) == 0 &&
++                ( h80211[z + 5] & 0x02 ) == 0 )
+             {
+                 /* set authenticator nonce */
+ 
+                 memcpy( st_cur->anonce, &h80211[z + 17], 32 );
+             }
+ 
+-            /* frame 2 or 4: Pairwise == 1, Install == 0, Ack == 0, MIC == 1 */
++            /* frame 2 or 4: Pairwise == 1, Install == 0, Ack == 0, MIC == 1 Secure == 0 */
+ 
+             if( ( h80211[z + 6] & 0x08 ) != 0 &&
+                 ( h80211[z + 6] & 0x40 ) == 0 &&
+                 ( h80211[z + 6] & 0x80 ) == 0 &&
+-                ( h80211[z + 5] & 0x01 ) != 0 )
++                ( h80211[z + 5] & 0x01 ) != 0 &&
++                ( h80211[z + 5] & 0x02 ) == 0 )
+             {
+                 if( memcmp( &h80211[z + 17], ZERO, 32 ) != 0 )
+                 {
+@@ -962,12 +1002,13 @@
+                 st_cur->keyver = h80211[z + 6] & 7;
+             }
+ 
+-            /* frame 3: Pairwise == 1, Install == 1, Ack == 1, MIC == 1 */
++            /* frame 3: Pairwise == 1, Install == 1, Ack == 1, MIC == 1 Secure == 1 */
+ 
+             if( ( h80211[z + 6] & 0x08 ) != 0 &&
+                 ( h80211[z + 6] & 0x40 ) != 0 &&
+                 ( h80211[z + 6] & 0x80 ) != 0 &&
+-                ( h80211[z + 5] & 0x01 ) != 0 )
++                ( h80211[z + 5] & 0x01 ) != 0 &&
++                ( h80211[z + 5] & 0x02 ) != 0 )
+             {
+                 if( memcmp( &h80211[z + 17], ZERO, 32 ) != 0 )
+                 {
+@@ -997,9 +1038,19 @@
+ 
+                 st_cur->keyver = h80211[z + 6] & 7;
+             }
++	    /* frame 4: Pairwise == 1, Install == 0, Ack == 0, MIC == 1 Secure == 1 */
+ 
+-            st_cur->valid_ptk = calc_ptk( st_cur, opt.pmk );
+-        }
++	    if( ( h80211[z + 6] & 0x08 ) != 0 &&
++	        ( h80211[z + 6] & 0x40 ) == 0 &&
++		( h80211[z + 6] & 0x80 ) == 0 &&
++		( h80211[z + 5] & 0x01 ) != 0 &&
++                ( h80211[z + 5] & 0x02 ) != 0 )
++	    {
++	        /* set new PTK, using the next PMK if we have more than one */
++	        st_cur->valid_ptk = calc_ptk( st_cur, opt.pmk[opt.nextpmk] );
++
++		if (opt.maxpmk > opt.nextpmk) opt.nextpmk++;
++            }
+     }
+ 
+     fclose( f_in  );

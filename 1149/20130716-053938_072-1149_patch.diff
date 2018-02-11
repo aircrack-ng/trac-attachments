@@ -1,0 +1,77 @@
+Index: aireplay-ng.c
+===================================================================
+--- aireplay-ng.c	(revision 2312)
++++ aireplay-ng.c	(working copy)
+@@ -2449,6 +2449,7 @@
+             if( read( dev.fd_rtc, &n, sizeof( n ) ) < 0 )
+             {
+                 perror( "read(/dev/rtc) failed" );
++                free(arp);
+                 return( 1 );
+             }
+ 
+@@ -2491,14 +2492,18 @@
+                     ticks[0] = 0;
+ 
+                 if( send_packet( arp[arp_off1].buf,
+-                                 arp[arp_off1].len ) < 0 )
++                                 arp[arp_off1].len ) < 0 ){
++                    free(arp);
+                     return( 1 );
++                }
+ 
+                 if( ((double)ticks[0]/(double)RTC_RESOLUTION)*(double)opt.r_nbpps > (double)nb_pkt_sent  )
+                 {
+                     if( send_packet( arp[arp_off1].buf,
+-                                    arp[arp_off1].len ) < 0 )
++                                    arp[arp_off1].len ) < 0 ){
++                        free(arp);
+                         return( 1 );
++                    }
+                 }
+ 
+                 if( ++arp_off1 >= nb_arp )
+@@ -2514,7 +2519,10 @@
+ 
+             caplen = read_packet( h80211, sizeof( h80211 ), NULL );
+ 
+-            if( caplen  < 0 ) return( 1 );
++            if( caplen  < 0 ){
++                free(arp);
++                return( 1 );
++            }
+             if( caplen == 0 ) continue;
+         }
+         else
+@@ -2717,6 +2725,7 @@
+ 
+                 if( ( arp[nb_arp].buf = malloc( 128 ) ) == NULL ) {
+                     perror( "malloc failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -2734,6 +2743,7 @@
+ 
+                 if( fwrite( &pkh, n, 1, f_cap_out ) != 1 ) {
+                     perror( "fwrite failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -2741,6 +2751,7 @@
+ 
+                 if( fwrite( h80211, n, 1, f_cap_out ) != 1 ) {
+                     perror( "fwrite failed" );
++                    free(arp);
+                     return( 1 );
+                 }
+ 
+@@ -2749,6 +2760,7 @@
+         }
+     }
+ 
++    free(arp);
+     return( 0 );
+ }
+ 

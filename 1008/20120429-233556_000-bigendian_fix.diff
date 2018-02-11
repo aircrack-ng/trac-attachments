@@ -1,0 +1,120 @@
+--- aircrack-ng/src/aircrack-ng.c	2012-02-29 21:09:01.000000000 -0700
++++ Downloads/aircrack-ng.c	2012-04-30 01:27:52.000000000 -0600
+@@ -115,7 +115,7 @@
+ int wpa_wordlists_done = 0;
+ static pthread_mutex_t mx_nb = PTHREAD_MUTEX_INITIALIZER;
+ static pthread_mutex_t mx_wpastats = PTHREAD_MUTEX_INITIALIZER;
+-
++int BIGENDIAN=0;
+ 
+ #define	GOT_IV	0x00000001
+ #define	USE_IV	0x00000002
+@@ -137,6 +137,14 @@
+ #define K16_IV	0x00080000
+ #define K17_IV	0x00100000
+ 
++/*
++typedef struct
++{
++	unsigned int used;
++}used_iv;
++used_iv* all_ivs;
++*/
++
+ typedef struct
+ {
+ 	int off1;
+@@ -176,7 +184,7 @@
+ 
+ char usage[] =
+ "\n"
+-"  %s - (C) 2006-2010 Thomas d\'Otreppe\n"
++"  %s - (C) 2006, 2007, 2008, 2009 Thomas d\'Otreppe\n"
+ "  Original work: Christophe Devine\n"
+ "  http://www.aircrack-ng.org\n"
+ "\n"
+@@ -830,6 +838,15 @@
+ 				perror( "read(file header) failed" );
+ 				goto read_fail;
+ 			}
++          if(fivs2.version == 256)
++            BIGENDIAN = 1;
++
++          if (BIGENDIAN)
++            {
++              printf("Using big endian ivs file.\n");
++              SWAP16(fivs2.version);
++            }
++			
+ 			if(fivs2.version > IVS2_VERSION)
+ 			{
+ 				printf( "Error, wrong %s version: %d. Supported up to version %d.\n", IVS2_EXTENSION, fivs2.version, IVS2_VERSION );
+@@ -885,6 +902,12 @@
+ 			if( close_aircrack )
+ 				break;
+ 
++          if (BIGENDIAN)
++            {
++              SWAP16(ivs2.flags);
++              SWAP16(ivs2.len);
++            }
++
+ 			if(ivs2.flags & IVS2_BSSID)
+ 			{
+ 				while( ! atomic_read( &rb, fd, 6, bssid ) )
+@@ -1269,6 +1292,12 @@
+ 				ap_cur->crypt = 3;
+ 				memcpy( &ap_cur->wpa, buffer,
+ 					sizeof( struct WPA_hdsk ) );
++              if(BIGENDIAN)
++                {
++                  SWAP32(ap_cur->wpa.keyver);
++                  SWAP32(ap_cur->wpa.eapol_size);
++                  SWAP32(ap_cur->wpa.state);
++                }
+ 			}
+ 			goto unlock_mx_apl;
+ 		}
+@@ -1772,6 +1801,16 @@
+ 				perror( "read(file header) failed" );
+ 				goto read_fail;
+ 			}
++
++          if(fivs2.version == 256)
++            BIGENDIAN=1;
++
++          if(BIGENDIAN)
++            {
++              printf("Using big endian ivs file.\n");
++              SWAP16(fivs2.version);
++            }
++			    
+ 			if(fivs2.version > IVS2_VERSION)
+ 			{
+ 				printf( "Error, wrong %s version: %d. Supported up to version %d.\n", IVS2_EXTENSION, fivs2.version, IVS2_VERSION );
+@@ -1818,6 +1857,12 @@
+ 			while( ! atomic_read( &rb, fd, sizeof( struct ivs2_pkthdr ), &ivs2 ) )
+ 				goto read_fail;
+ 
++          if (BIGENDIAN)
++            {
++              SWAP16(ivs2.flags);
++              SWAP16(ivs2.len);
++            }
++
+ 			if(ivs2.flags & IVS2_BSSID)
+ 			{
+ 				while( ! atomic_read( &rb, fd, 6, bssid ) )
+@@ -2084,6 +2129,12 @@
+ 				ap_cur->crypt = 3;
+ 				memcpy( &ap_cur->wpa, buffer,
+ 					sizeof( struct WPA_hdsk ) );
++              if(BIGENDIAN)
++                {
++                  SWAP32(ap_cur->wpa.keyver);
++                  SWAP32(ap_cur->wpa.eapol_size);
++                  SWAP32(ap_cur->wpa.state);
++                }
+ 			}
+ 			goto unlock_mx_apl;
+ 		}

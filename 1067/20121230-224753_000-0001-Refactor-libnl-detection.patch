@@ -1,0 +1,102 @@
+From 4491a9f46e9ef7455516dda072056cd75934238f Mon Sep 17 00:00:00 2001
+From: Wouter van Kesteren <woutershep@gmail.com>
+Date: Fri, 28 Dec 2012 21:51:02 +0100
+Subject: [PATCH] Refactor libnl detection
+
+Try the newest libnl first. Then fall back to older ones.
+
+--
+
+Removed the finding of libnl-2 and the accompanying error when it was
+found. This prevented aircrack to properly build on systems with
+libnl-2 installed. Test instead if we have something that _does_ work.
+
+--
+
+Make it work when libnl-1 is not installed. Libnl-3 also needed
+-DCONFIG_LIBNL set. This was only set when libnl-1 was found. Even
+though libnl-3 would have been used.
+
+--
+
+Enable -DCONFIG_LIBNL30 for libnl-3.0 too, just like 3.1 and >=3.2.
+
+--
+
+Make the error message actually happen [$NLLIBNAME -> $(NLLIBNAME)]
+
+--
+
+Removed unused NLVERSION
+---
+ common.mak | 31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
+
+diff --git a/common.mak b/common.mak
+index b80edf4..f56b5fd 100644
+--- a/common.mak
++++ b/common.mak
+@@ -49,33 +49,29 @@ endif
+ ifeq ($(OSNAME), cygwin)
+ 	COMMON_CFLAGS   += -DCYGWIN
+ else ifeq ($(libnl), true)
+-	NL1FOUND := $(shell $(PKG_CONFIG) --atleast-version=1 libnl-1 && echo Y)
+-	NL2FOUND := $(shell $(PKG_CONFIG) --atleast-version=2 libnl-2.0 && echo Y)
+-	NL3FOUND := $(shell $(PKG_CONFIG) --atleast-version=3 libnl-3.0 && echo Y)
+-	NL31FOUND := $(shell $(PKG_CONFIG) --exact-version=3.1 libnl-3.1 && echo Y)
+ 	NL3xFOUND := $(shell $(PKG_CONFIG) --atleast-version=3.2 libnl-3.0 && echo Y)
++	ifneq ($(NL3xFOUND),Y)
++	NL31FOUND := $(shell $(PKG_CONFIG) --exact-version=3.1 libnl-3.1 && echo Y)
++	ifneq ($(NL31FOUND),Y)
++	NL3FOUND := $(shell $(PKG_CONFIG) --atleast-version=3 libnl-3.0 && echo Y)
++	ifneq ($(NL3FOUND),Y)
++	NL1FOUND := $(shell $(PKG_CONFIG) --atleast-version=1 libnl-1 && echo Y)
++	endif
++	endif
++	endif
+ 	
+ 	ifeq ($(NL1FOUND),Y)
+-		COMMON_CFLAGS += -DCONFIG_LIBNL
+ 		NLLIBNAME = libnl-1
+ 	endif
+ 	
+-	ifeq ($(NL2FOUND),Y)
+-		#COMMON_CFLAGS += -DCONFIG_LIBNL
+-		#LIBS += -lnl-genl
+-		NLLIBNAME = libnl-2.0
+-        $(error libnl2 is not supported. install either libnl1 or libnl3)
+-	endif
+-	
+ 	ifeq ($(NL3xFOUND),Y)
+-		NL3FOUND = N
+ 		COMMON_CFLAGS += -DCONFIG_LIBNL30
+ 		LIBS += -lnl-genl-3
+ 		NLLIBNAME = libnl-3.0
+ 	endif
+ 	
+ 	ifeq ($(NL3FOUND),Y)
+-		COMMON_CFLAGS += -DCONFIG_LIBNL
++		COMMON_CFLAGS += -DCONFIG_LIBNL30
+ 		LIBS += -lnl-genl
+ 		NLLIBNAME = libnl-3.0
+ 	endif
+@@ -88,13 +84,12 @@ else ifeq ($(libnl), true)
+ 		NLLIBNAME = libnl-3.1
+ 	endif
+ 	
+-	ifeq ($NLLIBNAME,)
+-        $(error Cannot find development files for any supported version of libnl)
++	ifeq ($(NLLIBNAME),)
++        	$(error Cannot find development files for any supported version of libnl. install either libnl1 or libnl3.)
+ 	endif
+ 	
+ 	LIBS += $(shell $(PKG_CONFIG) --libs $(NLLIBNAME))
+-	COMMON_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
+-	NLVERSION :=$(shell $(PKG_CONFIG) --print-provides $(NLLIBNAME))
++	COMMON_CFLAGS += -DCONFIG_LIBNL $(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
+ endif
+ 
+ ifeq ($(airpcap), true)
+-- 
+1.8.0.2
+
